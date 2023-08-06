@@ -1,11 +1,20 @@
-// CPUBackend.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include "Init.h"
 
 int main()
 {
     std::cout << "Hello World!\n";
+    REAL** matrix = MatrixMAlloc(5, 5);
+    matrix[4][4] = 4;
+
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            std::cout << matrix[i][j] << "\n";
+        }
+        std::cout << "\n";
+    }
+
+    FreeMatrix(matrix, 5);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
