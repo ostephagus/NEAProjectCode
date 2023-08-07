@@ -21,12 +21,24 @@
     <ClCompile Include="Init.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Boundary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Computation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Definitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Boundary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Computation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

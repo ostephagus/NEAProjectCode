@@ -1,4 +1,6 @@
 #include <iostream>
+#include "Boundary.h"
+#include "Computation.h"
 #include "Init.h"
 
 int main()

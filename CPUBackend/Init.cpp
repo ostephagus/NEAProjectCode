@@ -19,3 +19,4 @@ void FreeMatrix(REAL** matrix, int xLength) {
 	}
 	delete[] matrix;
 }
+

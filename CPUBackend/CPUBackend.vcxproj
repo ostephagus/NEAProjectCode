@@ -127,10 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Boundary.cpp" />
+    <ClCompile Include="Computation.cpp" />
     <ClCompile Include="CPUBackend.cpp" />
     <ClCompile Include="Init.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boundary.h" />
+    <ClInclude Include="Computation.h" />
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="Init.h" />
   </ItemGroup>
