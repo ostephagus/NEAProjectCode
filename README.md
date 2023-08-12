@@ -2,7 +2,7 @@
 This is a repository for the code I make as part of my technical solution of my A-Level Computer Science NEA.
 
 ## CPU Backend
-The CPU Backend is the first part of the project, allowing me to get to grips with C++, and is mostly the same as the code in the Griebels Book. 
+The CPU Backend is the first part of the project, allowing me to get to grips with C++, and is mostly the same as the code in the Griebels Book. **INDEV**
 
 ## GPU Backend
 The GPU Backend is the evolution of the CPU Backend to work on a GPU, using parallelisation and SIMD (Single-Instruction Multiple-Data) for greater processing efficiency. **TODO**
