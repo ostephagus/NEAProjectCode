@@ -2,6 +2,7 @@
 #include "Computation.h"
 #include "DiscreteDerivatives.h"
 #include "Init.h"
+#include <algorithm>
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -73,25 +74,52 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 	timestep = safetyFactor * smallestRestriction;
 }
 
-void CopyBoundaryPressures(REAL** pressure, int iMax, int jMax) {
+void CopyBoundaryPressures(REAL** newPressure, REAL** oldPressure, int iMax, int jMax) {
 	for (int i = 1; i <= iMax; i++) {
-		pressure[i][0] = pressure[i][1];
-		pressure[i][jMax + 1] = pressure[i][jMax];
+		newPressure[i][0] = oldPressure[i][1];
+		newPressure[i][jMax + 1] = oldPressure[i][jMax];
 	}
 	for (int j = 1; j <= jMax; j++) {
-		pressure[0][j] = pressure[1][j];
-		pressure[iMax + 1][j] = pressure[iMax][j];
+		newPressure[0][j] = oldPressure[1][j];
+		newPressure[iMax + 1][j] = oldPressure[iMax][j];
 	}
 }
 
-int Poisson(REAL** pressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL residualNorm) { 
+int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL residualNorm) { 
 	int currentIteration = 0;
-	REAL** residualField = MatrixMAlloc(iMax + 2, jMax + 2);
+	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
+	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
-		CopyBoundaryPressures(pressure, iMax, jMax);
-		//IDEAS: Might need 2 different fields for the "previous" iteration and the "current" iteration. These could easily be 2 different memory allocations that are overwritten in turn each iteration. There would need to be some management here about which memory allocation to use, and then at the end some sort of copying to the actual pressure field that is passed as a parameter. This could be done with an array of pointers, 
+		CopyBoundaryPressures(nextPressure, currentPressure, iMax, jMax);
+		residualNorm = 0;
+		for (int i = 1; i <= iMax; i++) {
+			for (int j = 1; j <= jMax; j++) {
+				REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
+				REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
+				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
+
+				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
+				
+				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
+				residualNorm += square(currentResidual);
+			}
+		}
+		std::swap(currentPressure, nextPressure);
+		residualNorm = sqrt(residualNorm);
 		currentIteration++;
 	} while (currentIteration < maxIterations && residualNorm > residualTolerance);
 
-	FreeMatrix(residualField, iMax + 1);
+	FreeMatrix(nextPressure, iMax + 1);
+	return currentIteration;
+}
+
+void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
+	for (int i = 1; i < iMax; i++) {
+		for (int j = 0; j < jMax; j++) {
+			velocities.x[i][j] - FG.x[i][j] - (timestep / stepSizes.x) * (pressure[i + 1][j] - pressure[i][j]);
+			velocities.y[i][j] - FG.y[i][j] - (timestep / stepSizes.y) * (pressure[i][j + 1] - pressure[i][j]);
+		}
+	}
+	velocities.x[iMax - 1][jMax] - FG.x[iMax - 1][jMax] - (timestep / stepSizes.x) * (pressure[iMax][jMax] - pressure[iMax - 1][jMax]);
+	velocities.y[iMax][jMax - 1] - FG.x[iMax][jMax - 1] - (timestep / stepSizes.y) * (pressure[iMax][jMax] - pressure[iMax][jMax - 1]);
 }

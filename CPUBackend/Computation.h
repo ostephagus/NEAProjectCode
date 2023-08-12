@@ -8,6 +8,8 @@ void ComputeRHS(DoubleField FG, REAL** RHS, int iMax, int jMax, REAL timestep, D
 
 void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, DoubleField velocities, REAL reynoldsNo, REAL safetyFactor);
 
-void CopyBoundaryPressures(REAL** pressure, int iMax, int jMax);
+void CopyBoundaryPressures(REAL** newPressure, REAL** oldPressure, int iMax, int jMax);
 
-int Poisson(REAL** pressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL residualNorm);
+int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL residualNorm);
+
+void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, int iMax, int jMax, REAL timestep, DoubleReal stepSizes);
