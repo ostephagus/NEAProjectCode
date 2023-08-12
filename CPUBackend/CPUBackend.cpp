@@ -6,17 +6,35 @@
 int main()
 {
     std::cout << "Hello World!\n";
-    REAL** matrix = MatrixMAlloc(5, 5);
-    matrix[4][4] = 4;
+    REAL** matrixX = MatrixMAlloc(5, 5);
+    matrixX[4][4] = 4;
+
+    REAL** matrixY = MatrixMAlloc(5, 5);
+    matrixY[4][4] = 5;
+
+    DoubleField matrices;
+    matrices.x = matrixX;
+    matrices.y = matrixY;
+
+    REAL** matrixOne = matrices.x;
+    REAL** matrixTwo = matrices.y;
+
+    matrixOne[0][0] = 1;
+    matrixTwo[0][0] = 2;
 
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 5; ++j) {
-            std::cout << matrix[i][j] << "\n";
+            std::cout << matrixOne[i][j] << "|" << matrices.x[i][j] << "\n";
         }
         std::cout << "\n";
     }
 
-    FreeMatrix(matrix, 5);
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            std::cout << matrixTwo[i][j] << "|" << matrices.y[i][j] << "\n";
+        }
+        std::cout << "\n";
+    }
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

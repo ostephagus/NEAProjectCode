@@ -1,3 +1,4 @@
 #pragma once
+#include "Definitions.h"
 
-void SetBoundaryConditions(REAL** u, REAL** v, int iMax, int jMax, BoundaryConditions boundaryConditions);
+void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, BoundaryConditions boundaryConditions);

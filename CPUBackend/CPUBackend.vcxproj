@@ -130,12 +130,14 @@
     <ClCompile Include="Boundary.cpp" />
     <ClCompile Include="Computation.cpp" />
     <ClCompile Include="CPUBackend.cpp" />
+    <ClCompile Include="DiscreteDerivatives.cpp" />
     <ClCompile Include="Init.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boundary.h" />
     <ClInclude Include="Computation.h" />
     <ClInclude Include="Definitions.h" />
+    <ClInclude Include="DiscreteDerivatives.h" />
     <ClInclude Include="Init.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
