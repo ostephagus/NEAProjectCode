@@ -7,7 +7,7 @@ REAL** MatrixMAlloc(int xLength, int yLength) {
 
 	//Create the arrays inside each outer array
 	for (int i = 0; i < xLength; ++i) {
-		matrix[i] = new REAL[yLength];
+		matrix[i] = new REAL[yLength]();
 	}
 
 	return matrix;

@@ -16,6 +16,16 @@ REAL fieldMax(REAL** field, int xLength, int yLength) {
 	return max;
 }
 
+REAL ComputeGamma(DoubleField velocities, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
+	REAL horizontalComponent = fieldMax(velocities.x, iMax, jMax) * (timestep / stepSizes.x);
+	REAL verticalComponent = fieldMax(velocities.y, iMax, jMax) * (timestep / stepSizes.y);
+
+	if (horizontalComponent > verticalComponent) {
+		return horizontalComponent;
+	}
+	return verticalComponent;
+}
+
 void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL timestep, DoubleReal stepSizes, DoubleReal bodyForces, REAL gamma, REAL reynoldsNo) {
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
@@ -85,7 +95,7 @@ void CopyBoundaryPressures(REAL** newPressure, REAL** oldPressure, int iMax, int
 	}
 }
 
-int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL residualNorm) { 
+int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) { 
 	int currentIteration = 0;
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
 	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
