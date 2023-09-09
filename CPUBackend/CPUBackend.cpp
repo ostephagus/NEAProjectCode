@@ -108,7 +108,7 @@ void StepTest5x5() {
         PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
-        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
+        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); //Finished debugging up to here
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes);
         Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
