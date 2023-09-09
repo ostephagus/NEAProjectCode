@@ -17,8 +17,8 @@ REAL fieldMax(REAL** field, int xLength, int yLength) {
 }
 
 REAL ComputeGamma(DoubleField velocities, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
-	REAL horizontalComponent = fieldMax(velocities.x, iMax, jMax) * (timestep / stepSizes.x);
-	REAL verticalComponent = fieldMax(velocities.y, iMax, jMax) * (timestep / stepSizes.y);
+	REAL horizontalComponent = fieldMax(velocities.x, iMax+2, jMax+2) * (timestep / stepSizes.x);
+	REAL verticalComponent = fieldMax(velocities.y, iMax+2, jMax+2) * (timestep / stepSizes.y);
 
 	if (horizontalComponent > verticalComponent) {
 		return horizontalComponent;
@@ -30,7 +30,9 @@ void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL 
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
 			bool skipF = false, skipG = false; //Some values are not evaluated for F, G, or both
-
+			if (i == 0 && j == 0) {
+				continue;
+			}
 			if (i == 0) { // Setting F equal to u and G equal to v at the boundaries
 				FG.x[i][j] = velocities.x[i][j];
 				continue;
@@ -43,11 +45,9 @@ void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL 
 			if (i == iMax) {
 				FG.x[i][j] = velocities.x[i][j];
 				skipF = true;
-				skipG = false;
 			}
 			if (j == jMax) {
 				FG.y[i][j] = velocities.y[i][j];
-				skipF = false;
 				skipG = true;
 			}
 			if (!skipF) {

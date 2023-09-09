@@ -53,6 +53,68 @@ void GranularTesting() {
     FreeMatrix(testv, 3);
 }
 
+void StepTest5x5() {
+    int iMax = 3, jMax = 3;
+
+    DoubleField velocities;
+    velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
+    REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    DoubleField FG;
+    FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    const REAL width = 2;
+    const REAL height = 2;
+    const REAL timeStepSafetyFactor = 0.8;
+    const REAL relaxationParameter = 1.7;
+    const REAL pressureResidualTolerance = 1; //Needs experimentation
+    const int pressureMaxIterations = 1000; //Needs experimentation
+    const REAL reynoldsNo = 2000;
+    const REAL inflowVelocity = 5;
+    REAL pressureResidualNorm = 0;
+
+    DoubleReal bodyForces;
+    bodyForces.x = 0;
+    bodyForces.y = 0;
+
+    REAL timestep;
+    DoubleReal stepSizes;
+    stepSizes.x = width / iMax;
+    stepSizes.y = height / jMax;
+
+    for (int i = 0; i <= iMax+1; i++) {
+        for (int j = 0; j <= jMax+1; j++) {
+            pressure[i][j] = 1;
+        }
+    }
+    PrintField(pressure, iMax+2, jMax+2, "Pressure");
+    for (int i = 1; i <= iMax; i++) {
+        for (int j = 1; j <= jMax; j++) {
+            velocities.x[i][j] = 4;
+            velocities.y[i][j] = 0;
+        }
+    }
+    PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
+    PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+
+    while (true) {//BREAAKPOINT REQUIRED
+        ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
+        std::cout << timestep << std::endl;
+        SetBoundaryConditions(velocities, iMax, jMax, inflowVelocity);
+        PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
+        PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+        REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
+        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
+        ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes);
+        Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
+    }
+}
+
 void TestAll()
 {
 
@@ -139,6 +201,6 @@ void TestAll()
 }
 
 int main() {
-    GranularTesting();
+    StepTest5x5();
     return 0;
 }
