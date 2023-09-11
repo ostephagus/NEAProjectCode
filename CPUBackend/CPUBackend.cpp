@@ -101,15 +101,15 @@ void StepTest5x5() {
     PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
     PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
 
-    while (true) {//BREAAKPOINT REQUIRED
+    while (true) {//BREAKPOINT REQUIRED
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
         std::cout << timestep << std::endl;
         SetBoundaryConditions(velocities, iMax, jMax, inflowVelocity);
         PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
-        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); //Finished debugging up to here
-        ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes);
+        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
+        ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
         Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
     }
