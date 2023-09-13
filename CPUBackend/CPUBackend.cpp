@@ -101,7 +101,7 @@ void StepTest5x5() {
     PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
     PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
 
-    while (true) {//BREAKPOINT REQUIRED
+    while (true) {//BREAKPOINT REQUIRED 
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
         std::cout << timestep << std::endl;
         SetBoundaryConditions(velocities, iMax, jMax, inflowVelocity);
