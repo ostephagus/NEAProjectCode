@@ -23,6 +23,18 @@ namespace UserInterface
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
+        }
+    }
+    public class Command_ChangeWindow : ICommand
+    {
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter) { return true; } //Unless app logic changes, this command can always execute.
+
+        public void Execute(object? parameter)
+        {
+            App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((Type)parameter));
         }
     }
 }
