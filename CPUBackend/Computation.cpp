@@ -3,6 +3,8 @@
 #include "DiscreteDerivatives.h"
 #include "Init.h"
 #include <algorithm>
+#include <iostream>
+
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -100,6 +102,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
 	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
+		std::cout << "Iteration " << currentIteration << std::endl;
 		CopyBoundaryPressures(nextPressure, currentPressure, iMax, jMax);
 		residualNorm = 0;
 		for (int i = 1; i <= iMax; i++) {
@@ -109,11 +112,14 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
 
 				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
-				
-				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
+				std::cout << nextPressure[i][j];
+				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y) - RHS[i][j];
 				residualNorm += square(currentResidual);
+				std::cout << ' ';
 			}
+			std::cout << std::endl;
 		}
+		
 		std::swap(currentPressure, nextPressure);
 		residualNorm = sqrt(residualNorm);
 		currentIteration++;
