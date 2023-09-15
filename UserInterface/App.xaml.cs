@@ -19,15 +19,25 @@ namespace UserInterface
 
         public static event EventHandler<UserControlChangeEventArgs>? UserControlChanged;
 
-        private void ChangeUserControl(object sender, UserControlChangeEventArgs e)
+        private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
             currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType);
             containerWindow.Content = currentUserControl;
         }
 
-        public static void RaiseUserControlChanged(object sender, UserControlChangeEventArgs e)
+        public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e)
         {
             UserControlChanged.Invoke(sender, e);
+        }
+
+        public void Start(object Sender, StartupEventArgs e)
+        {
+            currentUserControl = new ConfigScreen();
+            containerWindow = new MainWindow();
+            containerWindow.Content = currentUserControl;
+            containerWindow.Show();
+
+            UserControlChanged += ChangeUserControl;
         }
     }
 

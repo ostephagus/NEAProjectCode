@@ -34,6 +34,7 @@ namespace UserInterface
 
         public void Execute(object? parameter)
         {
+            if (parameter == null) { return; }
             App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((Type)parameter));
         }
     }
