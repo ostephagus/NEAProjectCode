@@ -113,7 +113,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 
 				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
 				std::cout << nextPressure[i][j];
-				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y) - RHS[i][j];
+				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
 				residualNorm += square(currentResidual);
 				std::cout << ' ';
 			}
