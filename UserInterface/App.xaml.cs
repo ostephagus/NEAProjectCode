@@ -32,7 +32,7 @@ namespace UserInterface
 
         public void Start(object Sender, StartupEventArgs e)
         {
-            currentUserControl = new ConfigScreen();
+            currentUserControl = new SimulationScreen();
             containerWindow = new MainWindow();
             containerWindow.Content = currentUserControl;
             containerWindow.Show();

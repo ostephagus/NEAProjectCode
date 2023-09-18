@@ -16,16 +16,18 @@ using System.Windows.Shapes;
 namespace UserInterface
 {
     /// <summary>
-    /// Interaction logic for ConfigScreen.xaml
+    /// Interaction logic for SliderWithValue.xaml
     /// </summary>
-    public partial class ConfigScreen : UserControl
+    public partial class SliderWithValue : UserControl
     {
-        public ConfigScreen()
+        public SliderWithValue()
         {
             InitializeComponent();
             DataContext = this;
         }
 
-        public ICommand Command_ChangeWindow { get; } = new Command_ChangeWindow();
+        public string Text { get; set; } = string.Empty;
+        public int minimum { get; set; } = 0;
+        public int maximum { get; set; } = 100;
     }
 }

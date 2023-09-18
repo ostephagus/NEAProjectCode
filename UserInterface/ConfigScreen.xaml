@@ -7,6 +7,29 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock>This is a test</TextBlock>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <local:ResizableCentredTextBox Text="Simulation configuration" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
+        <local:ResizableCentredTextBox Text="Parameters" Grid.Row="1" Grid.Column="0" />
+        <local:ResizableCentredTextBox Text="Simulated objects" Grid.Row="1" Grid.Column="1" />
+        <StackPanel Grid.Row="2" Grid.Column="0">
+            <local:SliderWithValue Text="Flow velocity" minimum="0" maximum="40" />
+            <local:SliderWithValue Text="Material friction" minimum="0" maximum="5" />
+            <Button>Advanced parameters</Button>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1">
+            <Label>Simulated objects</Label>
+            <Button>Select file</Button>
+            <TextBlock>No file selected..</TextBlock>
+        </StackPanel>
+        <Button Grid.Row="3" Grid.Column="1">Save and close</Button>
     </Grid>
 </UserControl>
