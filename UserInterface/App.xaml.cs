@@ -26,7 +26,6 @@ namespace UserInterface
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
             currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType);
-            Type requiredType;
             if (e.IsPopup)
             {
                 popupWindowContainer.Content = currentUserControl;
@@ -58,9 +57,8 @@ namespace UserInterface
         {
             fullScreenWindowContainer = new MainWindow(); //Initialise container windows
             popupWindowContainer = new PopupWindow();
-            
-            currentUserControl = new ConfigScreen();
-            popupWindowContainer.Content = currentUserControl; //First screen is a popup so use popup container
+            currentUserControl = new SimulationScreen();
+            popupWindowContainer.Content = currentUserControl;
             popupWindowContainer.Show();
 
             UserControlChanged += ChangeUserControl;

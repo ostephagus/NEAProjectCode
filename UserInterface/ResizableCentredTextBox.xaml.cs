@@ -16,16 +16,16 @@ using System.Windows.Shapes;
 namespace UserInterface
 {
     /// <summary>
-    /// Interaction logic for ConfigScreen.xaml
+    /// Interaction logic for ResizableCentredTextBox.xaml
     /// </summary>
-    public partial class ConfigScreen : UserControl
+    public partial class ResizableCentredTextBox : UserControl
     {
-        public ConfigScreen()
+        public ResizableCentredTextBox()
         {
             InitializeComponent();
             DataContext = this;
         }
 
-        public ICommand Command_ChangeWindow { get; } = new Command_ChangeWindow();
+        public string Text { get; set; }
     }
 }

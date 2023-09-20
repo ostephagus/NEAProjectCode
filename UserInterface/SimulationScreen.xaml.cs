@@ -16,16 +16,13 @@ using System.Windows.Shapes;
 namespace UserInterface
 {
     /// <summary>
-    /// Interaction logic for ConfigScreen.xaml
+    /// Interaction logic for SimulationScreen.xaml
     /// </summary>
-    public partial class ConfigScreen : UserControl
+    public partial class SimulationScreen : UserControl
     {
-        public ConfigScreen()
+        public SimulationScreen()
         {
             InitializeComponent();
-            DataContext = this;
         }
-
-        public ICommand Command_ChangeWindow { get; } = new Command_ChangeWindow();
     }
 }
