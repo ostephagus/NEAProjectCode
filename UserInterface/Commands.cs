@@ -21,11 +21,10 @@ namespace UserInterface
                 App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((WindowChangeParameter)parameter));
             }
         }
-
-        public struct WindowChangeParameter
-        {
-            public Type newWindow;
-            public bool isPopup;
-        }
+    }
+    public struct WindowChangeParameter
+    {
+        public Type newWindow;
+        public bool isPopup;
     }
 }

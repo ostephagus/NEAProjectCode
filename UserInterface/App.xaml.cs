@@ -57,7 +57,7 @@ namespace UserInterface
         {
             fullScreenWindowContainer = new MainWindow(); //Initialise container windows
             popupWindowContainer = new PopupWindow();
-            currentUserControl = new SimulationScreen();
+            currentUserControl = new ConfigScreen();
             popupWindowContainer.Content = currentUserControl;
             popupWindowContainer.Show();
 
@@ -75,7 +75,7 @@ namespace UserInterface
             IsPopup = isPopup;
         }
 
-        public UserControlChangeEventArgs(Commands.WindowChangeParameter parameter)
+        public UserControlChangeEventArgs(WindowChangeParameter parameter)
         {
             NewUserControlType = parameter.newWindow;
             IsPopup = parameter.isPopup;
