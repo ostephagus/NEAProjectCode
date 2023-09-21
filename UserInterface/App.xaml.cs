@@ -58,6 +58,7 @@ namespace UserInterface
             fullScreenWindowContainer = new MainWindow(); //Initialise container windows
             popupWindowContainer = new PopupWindow();
             currentUserControl = new ConfigScreen();
+            currentWindow = popupWindowContainer;
             popupWindowContainer.Content = currentUserControl;
             popupWindowContainer.Show();
 

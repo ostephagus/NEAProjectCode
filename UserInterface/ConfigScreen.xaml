@@ -20,18 +20,24 @@
         <local:ResizableCentredTextBox Text="Simulation configuration" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
         <local:ResizableCentredTextBox Text="Parameters" Grid.Row="1" Grid.Column="0" />
         <local:ResizableCentredTextBox Text="Simulated objects" Grid.Row="1" Grid.Column="1" />
-        <StackPanel Grid.Row="2" Grid.Column="0">
-            <local:SliderWithValue Text="Flow velocity" minimum="0" maximum="40" />
-            <local:SliderWithValue Text="Material friction" minimum="0" maximum="5" />
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label DockPanel.Dock="Left">Flow velocity</Label>
+            <local:SliderWithValue minimum="0" maximum="40" />
+            <Label DockPanel.Dock="Left">Material Friction</Label>
+            <local:SliderWithValue minimum="0" maximum="5" />
             <Button>Advanced parameters</Button>
-        </StackPanel>
+        </Grid>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <Button>Select file</Button>
             <TextBlock>No file selected..</TextBlock>
         </StackPanel>
         <Button Grid.Row="3" Grid.Column="1" Command="{Binding Command_ChangeWindow}">
             <Button.CommandParameter>
-                <local:WindowChangeParameter WindowType="{x:Type local:SimulationScreen}" IsPopup="true"/>
+                <local:WindowChangeParameter newWindow="{x:Type local:SimulationScreen}" isPopup="False" />
             </Button.CommandParameter>
             Simulate</Button>
     </Grid>

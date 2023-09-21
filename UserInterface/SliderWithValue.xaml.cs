@@ -25,8 +25,6 @@ namespace UserInterface
             InitializeComponent();
             DataContext = this;
         }
-
-        public string Text { get; set; } = string.Empty;
         public int minimum { get; set; } = 0;
         public int maximum { get; set; } = 100;
     }

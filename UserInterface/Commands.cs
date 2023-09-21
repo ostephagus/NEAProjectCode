@@ -24,7 +24,7 @@ namespace UserInterface
     }
     public struct WindowChangeParameter
     {
-        public Type newWindow;
-        public bool isPopup;
+        public Type newWindow { get; set; }
+        public bool isPopup { get; set; }
     }
 }
