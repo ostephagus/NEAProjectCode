@@ -18,18 +18,18 @@ namespace UserInterface
     {
         private UserControl currentUserControl;
         private Window currentWindow;
-        private MainWindow fullScreenWindowContainer;
+        private MainWindow fullScreenWindowContainer; //2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
         private PopupWindow popupWindowContainer;
 
         public static event EventHandler<UserControlChangeEventArgs>? UserControlChanged;
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType);
+            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType); //Use the Type parameter to create a new instance
             if (e.IsPopup)
             {
                 popupWindowContainer.Content = currentUserControl;
-                if (currentWindow != popupWindowContainer)
+                if (currentWindow != popupWindowContainer) //If the currently shown container window is the wrong one, swap them over
                 {
                     currentWindow.Close();
                     popupWindowContainer.Show();
@@ -48,7 +48,7 @@ namespace UserInterface
             }
         }
 
-        public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e)
+        public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) //Static method for other classes to invoke the UserControlChanged event
         {
             UserControlChanged.Invoke(sender, e);
         }
@@ -60,13 +60,15 @@ namespace UserInterface
             currentUserControl = new ConfigScreen();
             currentWindow = popupWindowContainer;
             popupWindowContainer.Content = currentUserControl;
+            popupWindowContainer.Height = 400;
+            popupWindowContainer.Width = 700;
             popupWindowContainer.Show();
 
             UserControlChanged += ChangeUserControl;
         }
     }
 
-    public class UserControlChangeEventArgs : EventArgs
+    public class UserControlChangeEventArgs : EventArgs //EventArgs child containing parameters for changing UserControl
     {
         public Type NewUserControlType { get; }
         public bool IsPopup { get; }
@@ -78,8 +80,8 @@ namespace UserInterface
 
         public UserControlChangeEventArgs(WindowChangeParameter parameter)
         {
-            NewUserControlType = parameter.newWindow;
-            IsPopup = parameter.isPopup;
+            NewUserControlType = parameter.NewWindow;
+            IsPopup = parameter.IsPopup;
         }
     }
 }
