@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="400" d:DesignWidth="700">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
@@ -34,7 +34,11 @@
             <local:SliderWithValue Grid.Column="1" Grid.Row="0" minimum="0" maximum="40" />
             <Label Grid.Column="0" Grid.Row="1">Material Friction</Label>
             <local:SliderWithValue Grid.Column="1" Grid.Row="1" minimum="0" maximum="5" />
-            <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2">Advanced parameters</Button>
+            <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Command="{Binding Command_ChangeWindow}">
+                <Button.CommandParameter>
+                    <local:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
+                </Button.CommandParameter>
+                Advanced parameters</Button>
         </Grid>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <Button>Select file</Button>

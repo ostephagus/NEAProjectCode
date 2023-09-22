@@ -32,7 +32,5 @@ namespace UserInterface
         public bool forceIntegers { get; set; } = false;
 
         public TickPlacement tickPlacement { get; } = TickPlacement.None;
-
-        public ValueConverters.BoolToTickStatus Converter_BoolToTickStatus { get; } = new();
     }
 }

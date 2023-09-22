@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:UserInterface"
              Startup="Start">
     <Application.Resources>
-         
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
     </Application.Resources>
 </Application>
