@@ -7,10 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="700">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -20,7 +16,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <local:ResizableCentredTextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Text="Advanced Parameters" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <local:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Advanced Parameters" />
         <Label Grid.Row="1" Grid.Column="0">Timestep Safety Factor &#964;</Label>
         <local:SliderWithValue Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" />
         <Label Grid.Row="2" Grid.Column="0">SOR relaxation parameter &#969;</Label>

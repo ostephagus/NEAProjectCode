@@ -22,9 +22,9 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Label Grid.Column="0" Grid.Row="0" Content="{Binding minimum}" />
-        <Label Grid.Column="2" Grid.Row="0" Content="{Binding maximum}" />
+        <Label Grid.Row="0" Grid.Column="0" Content="{Binding minimum}" />
+        <Label Grid.Row="0" Grid.Column="2" Content="{Binding maximum}" />
         <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding minimum}" Maximum="{Binding maximum}" x:Name="slider" Margin="10 0 10 0" Ticks="{Binding forceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding forceIntegers}" />
-        <TextBox Grid.Column="3" Grid.Row="1" Text="{Binding ElementName=slider, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Width="40" />
+        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding ElementName=slider, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Width="40" />
     </Grid>
 </UserControl>
