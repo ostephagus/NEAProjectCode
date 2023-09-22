@@ -6,6 +6,11 @@
              xmlns:local="clr-namespace:UserInterface"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <local:ValueConverters.BoolToTickStatus x:Key="Converter_BoolToTickPlacement" />
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -19,7 +24,7 @@
         </Grid.ColumnDefinitions>
         <Label Grid.Column="0" Grid.Row="0" Content="{Binding minimum}" />
         <Label Grid.Column="2" Grid.Row="0" Content="{Binding maximum}" />
-        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding minimum}" Maximum="{Binding maximum}" x:Name="slider" Margin="10 0 10 0" />
+        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding minimum}" Maximum="{Binding maximum}" x:Name="slider" Margin="10 0 10 0" Ticks="{Binding forceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay, ConverterParameter={Binding tickPlacement}}"/>
         <TextBox Grid.Column="3" Grid.Row="1" Text="{Binding ElementName=slider, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Width="40" />
     </Grid>
 </UserControl>

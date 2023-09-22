@@ -23,6 +23,7 @@ namespace UserInterface
         public AdvancedParameters()
         {
             InitializeComponent();
+            DataContext = this;
         }
     }
 }

@@ -29,6 +29,6 @@
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
         <local:SliderWithValue Grid.Row="4" Grid.Column="1" minimum="0" maximum="10000" />
         <Label Grid.Row="5" Grid.Column="0">Grid cells per compute unit</Label>
-        <local:SliderWithValue Grid.Row="5" Grid.Column="1" minimum="0" maximum="10" />
+        <local:SliderWithValue Grid.Row="5" Grid.Column="1" maximum="10" />
     </Grid>
 </UserControl>

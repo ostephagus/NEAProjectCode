@@ -26,6 +26,6 @@ namespace UserInterface
             DataContext = this;
         }
 
-        public ICommand Command_ChangeWindow { get; } = new Commands.Command_ChangeWindow();
+        public ICommand Command_ChangeWindow { get; } = new Commands.ChangeWindow();
     }
 }

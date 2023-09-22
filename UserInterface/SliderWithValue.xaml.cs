@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -27,5 +28,11 @@ namespace UserInterface
         }
         public int minimum { get; set; } = 0;
         public int maximum { get; set; } = 100;
+
+        public bool forceIntegers { get; set; } = false;
+
+        public TickPlacement tickPlacement { get; } = TickPlacement.None;
+
+        public ValueConverters.BoolToTickStatus Converter_BoolToTickStatus { get; } = new();
     }
 }

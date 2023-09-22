@@ -9,7 +9,7 @@ namespace UserInterface
 {
     public class Commands
     {
-        public class Command_ChangeWindow : ICommand
+        public class ChangeWindow : ICommand
         {
             public event EventHandler? CanExecuteChanged;
 
