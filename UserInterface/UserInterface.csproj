@@ -15,4 +15,12 @@
     <NoWarn>1701;1702;8600;8601;8602</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Images\ParametersIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\ParametersIcon.png" />
+  </ItemGroup>
+
 </Project>
