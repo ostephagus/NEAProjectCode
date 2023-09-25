@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MaxWidth="50" />
-            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
 
@@ -26,15 +26,13 @@
             <!-- Canvas to include visualisation -->
             <Rectangle Fill="Black" Height="10" Width="10" Canvas.Top="0" Canvas.Left="100" />
         </Canvas>
-        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
-            Drag coefficient: 0, Fluid velocity: 0, vorticity: 0.
-        </TextBlock>
-        <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Margin" Value="5 0 5 0" />
                 </Style>
             </StackPanel.Resources>
+            <TextBlock>Drag coefficient: 0, Fluid velocity: 0, vorticity: 0.</TextBlock>
             <Button>Edit simulation structure</Button>
             <Button>Parameters</Button>
             <Button>Advanced parameters</Button>
