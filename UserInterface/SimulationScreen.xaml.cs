@@ -23,6 +23,7 @@ namespace UserInterface
         public SimulationScreen()
         {
             InitializeComponent();
+            DataContext = this;
         }
     }
 }
