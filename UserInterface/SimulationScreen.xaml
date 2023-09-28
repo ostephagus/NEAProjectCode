@@ -28,15 +28,59 @@
                 </Style>
             </StackPanel.Resources>
             <Button x:Name="btnParametersSelect" Click="panelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="LightGray" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnParametersSelect">
+                                <Setter Property="Background" Value="#AAAAAA" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <Image Source="/Images/ParametersIcon.png" />
             </Button>
             <Button x:Name="btnUnitsSelect" Click="panelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="LightGray" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnUnitsSelect">
+                                <Setter Property="Background" Value="#AAAAAA" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <Image Source="/Images/UnitsIcon.png" />
+            </Button>
+            <Button x:Name="btnVisualisationSettingsSelect" Click="panelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="LightGray" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnVisualisationSettingsSelect">
+                                <Setter Property="Background" Value="#AAAAAA" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <Image Source="/Images/UnitsIcon.png" />
             </Button>
             <Button x:Name="btnRecordingSelect" Click="panelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="LightGray" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnRecordingSelect">
+                                <Setter Property="Background" Value="#AAAAAA" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <Image Source="/Images/RecordingIcon.png" />
             </Button>
         </StackPanel>
+
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
                 <Style TargetType="Label">
@@ -48,7 +92,47 @@
                     </Style.Triggers>
                 </Style>
             </Label.Style>
-            This is the parameter selection panel</Label>
+            This is the parameter selection panel
+        </Label>
+        <Label Grid.Row="2" Grid.Column="1">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnUnitsSelect">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+            This is the units selection panel
+        </Label>
+        <Label Grid.Row="2" Grid.Column="1">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnVisualisationSettingsSelect">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+            This is the visualisation settings panel
+        </Label>
+        <Label Grid.Row="2" Grid.Column="1">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnRecordingSelect">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+            This is the recording settings panel
+        </Label>
         <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Background="Green" Margin="10 0 10 10">
             <!-- Canvas to include visualisation -->
             <TextBlock Canvas.Left="200" Canvas.Top="200">This is where the simulation would go</TextBlock>
