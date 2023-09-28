@@ -17,10 +17,14 @@
 
   <ItemGroup>
     <None Remove="Images\ParametersIcon.png" />
+    <None Remove="Images\RecordingIcon.png" />
+    <None Remove="Images\UnitsIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Images\ParametersIcon.png" />
+    <Resource Include="Images\RecordingIcon.png" />
+    <Resource Include="Images\UnitsIcon.png" />
   </ItemGroup>
 
 </Project>

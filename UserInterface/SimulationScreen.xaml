@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" MaxHeight="150"/>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -19,23 +19,51 @@
             <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
 
-        <Button>
-            <Image Source="/Images/ParametersIcon.png" />
-        </Button>
-        <Canvas Grid.Row="1" Grid.RowSpan="4" Grid.Column="2">
+        <local:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulating" MaxWidth="300" />
+
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="0 0 0 0" />
+                </Style>
+            </StackPanel.Resources>
+            <Button x:Name="btnParametersSelect" Click="panelButton_Click">
+                <Image Source="/Images/ParametersIcon.png" />
+            </Button>
+            <Button x:Name="btnUnitsSelect" Click="panelButton_Click">
+                <Image Source="/Images/UnitsIcon.png" />
+            </Button>
+            <Button x:Name="btnRecordingSelect" Click="panelButton_Click">
+                <Image Source="/Images/RecordingIcon.png" />
+            </Button>
+        </StackPanel>
+        <Label Grid.Row="2" Grid.Column="1">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnParametersSelect">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+            This is the parameter selection panel</Label>
+        <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Background="Green" Margin="10 0 10 10">
             <!-- Canvas to include visualisation -->
-            <Rectangle Fill="Black" Height="10" Width="10" Canvas.Top="0" Canvas.Left="100" />
+            <TextBlock Canvas.Left="200" Canvas.Top="200">This is where the simulation would go</TextBlock>
         </Canvas>
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
                 <Style TargetType="Button">
-                    <Setter Property="Margin" Value="5 0 5 0" />
+                    <Setter Property="Margin" Value="2.5 0 2.5 5" />
                 </Style>
             </StackPanel.Resources>
-            <TextBlock>Drag coefficient: 0, Fluid velocity: 0, vorticity: 0.</TextBlock>
+            <TextBlock Margin="0 0 5 0">Drag coefficient: 0, Fluid velocity: 0, vorticity: 0</TextBlock>
             <Button>Edit simulation structure</Button>
-            <Button>Parameters</Button>
             <Button>Advanced parameters</Button>
+            <Button>Save as image</Button>
+            <Button>Save as video</Button>
         </StackPanel>
     </Grid>
 </UserControl>
