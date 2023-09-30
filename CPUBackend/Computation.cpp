@@ -86,24 +86,23 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 	timestep = safetyFactor * smallestRestriction;
 }
 
-void CopyBoundaryPressures(REAL** newPressure, REAL** oldPressure, int iMax, int jMax) {
+void CopyBoundaryPressures(REAL** pressure, int iMax, int jMax) {
 	for (int i = 1; i <= iMax; i++) {
-		newPressure[i][0] = oldPressure[i][1];
-		newPressure[i][jMax + 1] = oldPressure[i][jMax];
+		pressure[i][0] = pressure[i][1];
+		pressure[i][jMax + 1] = pressure[i][jMax];
 	}
 	for (int j = 1; j <= jMax; j++) {
-		newPressure[0][j] = oldPressure[1][j];
-		newPressure[iMax + 1][j] = oldPressure[iMax][j];
+		pressure[0][j] = pressure[1][j];
+		pressure[iMax + 1][j] = pressure[iMax][j];
 	}
 }
 
-int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) { 
+int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) {
 	int currentIteration = 0;
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
 	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
 		std::cout << "Iteration " << currentIteration << std::endl;
-		CopyBoundaryPressures(nextPressure, currentPressure, iMax, jMax);
 		residualNorm = 0;
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
@@ -120,6 +119,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 			std::cout << std::endl;
 		}
 		
+		CopyBoundaryPressures(nextPressure, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
 		residualNorm = sqrt(residualNorm);
 		currentIteration++;
@@ -130,12 +130,16 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 }
 
 void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
-	for (int i = 1; i < iMax; i++) {
-		for (int j = 0; j < jMax; j++) {
-			velocities.x[i][j] - FG.x[i][j] - (timestep / stepSizes.x) * (pressure[i + 1][j] - pressure[i][j]);
-			velocities.y[i][j] - FG.y[i][j] - (timestep / stepSizes.y) * (pressure[i][j + 1] - pressure[i][j]);
+	for (int i = 1; i <= iMax; i++) {
+		for (int j = 1; j <= jMax; j++) {
+			if (i != iMax)
+			{
+				velocities.x[i][j] = FG.x[i][j] - (timestep / stepSizes.x) * (pressure[i + 1][j] - pressure[i][j]);
+			}
+			if (j != jMax)
+			{
+				velocities.y[i][j] = FG.y[i][j] - (timestep / stepSizes.y) * (pressure[i][j + 1] - pressure[i][j]);
+			}
 		}
 	}
-	velocities.x[iMax - 1][jMax] - FG.x[iMax - 1][jMax] - (timestep / stepSizes.x) * (pressure[iMax][jMax] - pressure[iMax - 1][jMax]);
-	velocities.y[iMax][jMax - 1] - FG.x[iMax][jMax - 1] - (timestep / stepSizes.y) * (pressure[iMax][jMax] - pressure[iMax][jMax - 1]);
 }
