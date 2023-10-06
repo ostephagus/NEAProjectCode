@@ -109,8 +109,12 @@ void StepTest5x5() {
         PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
+        PrintField(FG.x, iMax + 2, jMax + 2, "F");
+        PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
+        PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
         Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
     }
 }

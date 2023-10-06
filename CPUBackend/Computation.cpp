@@ -102,7 +102,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
 	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
-		std::cout << "Iteration " << currentIteration << std::endl;
+		std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
 		residualNorm = 0;
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
