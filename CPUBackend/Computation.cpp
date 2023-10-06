@@ -102,8 +102,11 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
 	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
-		std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
 		residualNorm = 0;
+		if (currentIteration % 100 == 0)
+		{
+			std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
+		}
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
 				REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
@@ -111,12 +114,12 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
 
 				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
-				std::cout << nextPressure[i][j];
+				//std::cout << nextPressure[i][j];
 				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
 				residualNorm += square(currentResidual);
-				std::cout << ' ';
+				//std::cout << ' ';
 			}
-			std::cout << std::endl;
+			//std::cout << std::endl;
 		}
 		
 		CopyBoundaryPressures(nextPressure, iMax, jMax);

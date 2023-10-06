@@ -10,6 +10,7 @@ void PrintField(REAL** field, int iMax, int jMax, std::string name) {
     std::cout << name << ": " << std::endl;
     for (int i = iMax-1; i >= 0; i--) {
         for (int j = 0; j < jMax; j++) {
+
             std::cout << field[j][i] << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
@@ -53,8 +54,8 @@ void GranularTesting() {
     FreeMatrix(testv, 3);
 }
 
-void StepTest5x5() {
-    int iMax = 3, jMax = 3;
+void StepTestSquare() {
+    int iMax = 300, jMax = 300;
 
     DoubleField velocities;
     velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -67,8 +68,8 @@ void StepTest5x5() {
     FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
     FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
-    const REAL width = 2;
-    const REAL height = 2;
+    const REAL width = 0.03;
+    const REAL height = 0.03;
     const REAL timeStepSafetyFactor = 0.8;
     const REAL relaxationParameter = 1.7;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
@@ -88,33 +89,34 @@ void StepTest5x5() {
 
     for (int i = 0; i <= iMax+1; i++) {
         for (int j = 0; j <= jMax+1; j++) {
-            pressure[i][j] = 1;
+            pressure[i][j] = 1000;
         }
     }
-    PrintField(pressure, iMax+2, jMax+2, "Pressure");
+    //PrintField(pressure, iMax+2, jMax+2, "Pressure");
     for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
             velocities.x[i][j] = 4;
             velocities.y[i][j] = 0;
         }
     }
-    PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
-    PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+    //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
+    //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
 
     while (true) {//BREAKPOINT REQUIRED 
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
         std::cout << timestep << std::endl;
         SetBoundaryConditions(velocities, iMax, jMax, inflowVelocity);
-        PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
-        PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+        //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
+        //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
-        PrintField(FG.x, iMax + 2, jMax + 2, "F");
-        PrintField(FG.y, iMax + 2, jMax + 2, "G");
+        //PrintField(FG.x, iMax + 2, jMax + 2, "F");
+        //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
-        PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
+        //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
         Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-        PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
+        //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
+        std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
     }
 }
@@ -186,7 +188,7 @@ void TestAll()
 
         std::cout << "Number of pressure iterations: " << Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm) << std::endl;
         std::cout << "Residual norm: " << pressureResidualNorm << std::endl;
-        PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
+        PrintField(pressure, iMax + 1, jMax + 1, "Pressure");
 
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
         PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
@@ -205,6 +207,7 @@ void TestAll()
 }
 
 int main() {
-    StepTest5x5();
+    StepTestSquare();
+    //TestAll();
     return 0;
 }
