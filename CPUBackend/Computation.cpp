@@ -124,7 +124,11 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 		
 		CopyBoundaryPressures(nextPressure, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
-		residualNorm = sqrt(residualNorm);
+		residualNorm = sqrt(residualNorm) / (iMax * jMax);
+		if (currentIteration % 100 == 0)
+		{
+			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
+		}
 		currentIteration++;
 	} while (currentIteration < maxIterations && residualNorm > residualTolerance);
 
