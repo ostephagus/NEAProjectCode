@@ -92,7 +92,16 @@ void StepTestSquare() {
     FreeMatrix(FG.y, iMax + 2);
 }
 
+void TestSetFlags() {
+    bool** obstacles = ObstacleMatrixMAlloc(4,4);
+    obstacles[1][1] = 1;
+    obstacles[1][2] = 1;
+    obstacles[2][1] = 1;
+    BYTE** flags = FlagMatrixMAlloc(4, 4);
+    SetFlags(obstacles, flags, 4, 4);
+}
+
 int main() {
-    StepTestSquare();
+    TestSetFlags();
     return 0;
 }
