@@ -132,7 +132,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 		currentIteration++;
 	} while (currentIteration < maxIterations && residualNorm > residualTolerance);
 
-	FreeMatrix(nextPressure, iMax + 1);
+	FreeMatrix(nextPressure, iMax + 2);
 	return currentIteration;
 }
 
