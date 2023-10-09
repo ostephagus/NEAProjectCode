@@ -2,7 +2,7 @@
 #include "Computation.h"
 #include "DiscreteDerivatives.h"
 #include "Init.h"
-#include <algorithm>
+#include "Boundary.h"
 #include <iostream>
 
 
@@ -84,17 +84,6 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 		smallestRestriction = yTravelRestriction;
 	}
 	timestep = safetyFactor * smallestRestriction;
-}
-
-void CopyBoundaryPressures(REAL** pressure, int iMax, int jMax) {
-	for (int i = 1; i <= iMax; i++) {
-		pressure[i][0] = pressure[i][1];
-		pressure[i][jMax + 1] = pressure[i][jMax];
-	}
-	for (int j = 1; j <= jMax; j++) {
-		pressure[0][j] = pressure[1][j];
-		pressure[iMax + 1][j] = pressure[iMax][j];
-	}
 }
 
 int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) {

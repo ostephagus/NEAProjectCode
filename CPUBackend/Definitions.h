@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H
 
 typedef double REAL;
 typedef unsigned __int8 BYTE;
@@ -30,3 +31,5 @@ struct DoubleReal
 	REAL x;
 	REAL y;
 };
+
+#endif

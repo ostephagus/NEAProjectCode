@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DISCRETE_DERIVATIVES_H
+#define DISCRETE_DERIVATIVES_H
 
 REAL PuPx(REAL** hVel, int i, int j, REAL delx);
 
@@ -25,3 +26,5 @@ REAL PpPx(REAL** pressure, int i, int j, REAL delx);
 REAL PpPy(REAL** pressure, int i, int j, REAL dely);
 
 REAL square(REAL operand);
+
+#endif

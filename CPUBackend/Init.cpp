@@ -1,5 +1,5 @@
-#include "Init.h"
 #include "Definitions.h"
+#include "Init.h"
 REAL** MatrixMAlloc(int xLength, int yLength) {
 
 	// Create array of pointers pointing to more arrays

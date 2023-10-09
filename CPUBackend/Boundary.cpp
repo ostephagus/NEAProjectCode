@@ -1,5 +1,6 @@
 #include "Definitions.h"
 #include "Boundary.h"
+#include <utility>
 
 void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL inflowVelocity) {
 	//Top and bottom: free-slip
@@ -19,5 +20,19 @@ void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL infl
 		// Right: outflow
 		velocities.x[iMax][j] = velocities.x[iMax - 1][j]; // Copy the velocity values from the previous cell (mass flows out at the boundary)
 		velocities.y[iMax + 1][j] = velocities.y[iMax][j];
+	}
+}
+
+void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, BYTE** flags, int iMax, int jMax) {
+	for (int i = 1; i <= iMax; i++) {
+		pressure[i][0] = pressure[i][1];
+		pressure[i][jMax + 1] = pressure[i][jMax];
+	}
+	for (int j = 1; j <= jMax; j++) {
+		pressure[0][j] = pressure[1][j];
+		pressure[iMax + 1][j] = pressure[iMax][j];
+	}
+	for (int coord = 0; coord < *(&coordinates + 1) - coordinates; coord++) {
+
 	}
 }
