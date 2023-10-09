@@ -1,6 +1,12 @@
 #include "Definitions.h"
 #include "Boundary.h"
 #include <utility>
+#include <bitset>
+
+constexpr BYTE TOPMASK =    0b00001000;
+constexpr BYTE RIGHTMASK =  0b00000100;
+constexpr BYTE BOTTOMMASK = 0b00000010;
+constexpr BYTE LEFTMASK =   0b00000001;
 
 void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL inflowVelocity) {
 	//Top and bottom: free-slip
@@ -33,6 +39,13 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, BYT
 		pressure[iMax + 1][j] = pressure[iMax][j];
 	}
 	for (int coord = 0; coord < *(&coordinates + 1) - coordinates; coord++) {
+		BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
+		if (std::bitset<8>(relevantFlag).count() == 1) { // Only boundary cells with one edge
+			pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + (relevantFlag && TOPMASK) - (relevantFlag && BOTTOMMASK)][coordinates[coord].second + (relevantFlag && RIGHTMASK) - (relevantFlag && LEFTMASK)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
+		}
+		else { // These are boundary cells with 2 edges
+			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + (relevantFlag && TOPMASK) - (relevantFlag && BOTTOMMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + (relevantFlag && RIGHTMASK) - (relevantFlag && LEFTMASK)]) / 2; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
+		}
 
 	}
 }
