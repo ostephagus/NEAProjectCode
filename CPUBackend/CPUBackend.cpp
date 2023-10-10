@@ -4,6 +4,7 @@
 #include "Computation.h"
 #include "DiscreteDerivatives.h"
 #include "Init.h"
+#include <bitset>
 
 void PrintField(REAL** field, int iMax, int jMax, std::string name) {
     std::cout.precision(3);
@@ -12,6 +13,16 @@ void PrintField(REAL** field, int iMax, int jMax, std::string name) {
         for (int j = 0; j < jMax; j++) {
 
             std::cout << field[j][i] << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
+        }
+        std::cout << std::endl;
+    }
+}
+void PrintField(BYTE** flags, int iMax, int jMax, std::string name) {
+    std::cout << name << ": " << std::endl;
+    for (int i = iMax - 1; i >= 0; i--) {
+        for (int j = 0; j < jMax; j++) {
+            std::bitset<8> element(flags[i][j]);
+            std::cout << element << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
     }
@@ -108,6 +119,7 @@ void TestCopyBoundaryPressures() {
     obstacles[4][4] = 1;
     BYTE** flags = FlagMatrixMAlloc(6,6);
     SetFlags(obstacles, flags, 6,6);
+    PrintField(flags, 6, 6, "Flags");
     REAL** pressure = MatrixMAlloc(6, 6);
     REAL pressureCount = 0;
     for (int i = 1; i < 5; i++) {
@@ -118,7 +130,10 @@ void TestCopyBoundaryPressures() {
             }
         }
     }
-    PrintField(pressure, 6, 6, "pressure");
+    PrintField(pressure, 6, 6, "Pressure");
+    std::pair<std::pair<int, int>*, int> coordArrayWithLength = FindBoundaryCells(flags, 4, 4);
+    CopyBoundaryPressures(pressure, coordArrayWithLength.first, coordArrayWithLength.second, flags, 4, 4);
+    PrintField(pressure, 6, 6, "Pressure (with copies)");
 }
 
 int main() {

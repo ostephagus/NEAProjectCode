@@ -2,6 +2,8 @@
 #include "Boundary.h"
 #include <utility>
 #include <bitset>
+#include <vector>
+#include <iterator>
 
 constexpr BYTE TOPMASK =    0b00001000;
 constexpr BYTE RIGHTMASK =  0b00000100;
@@ -32,7 +34,7 @@ void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL infl
 	}
 }
 
-void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, BYTE** flags, int iMax, int jMax) {
+void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, int numCoords, BYTE** flags, int iMax, int jMax) {
 	for (int i = 1; i <= iMax; i++) {
 		pressure[i][0] = pressure[i][1];
 		pressure[i][jMax + 1] = pressure[i][jMax];
@@ -41,13 +43,27 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, BYT
 		pressure[0][j] = pressure[1][j];
 		pressure[iMax + 1][j] = pressure[iMax][j];
 	}
-	for (int coord = 0; coord < *(&coordinates + 1) - coordinates; coord++) {
+	for (int coord = 0; coord < numCoords; coord++) {
 		BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
 		if (std::bitset<8>(relevantFlag).count() == 1) { // Only boundary cells with one edge
-			pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + ((relevantFlag && TOPMASK) >> TOPSHIFT) - ((relevantFlag && BOTTOMMASK) >> BOTTOMSHIFT)][coordinates[coord].second + ((relevantFlag && RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag && LEFTMASK)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
+			pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
 		}
 		else { // These are boundary cells with 2 edges
-			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag && TOPMASK) >> TOPSHIFT) - ((relevantFlag && BOTTOMMASK) >> BOTTOMSHIFT)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag && RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag && LEFTMASK)]) / 2; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
+			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / 2.0; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
 		}
 	}
+}
+
+std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { //Returns size of array rather than actual array
+	std::vector<std::pair<int, int>> coordinates;
+	for (int i = 1; i <= iMax; i++) {
+		for (int j = 1; j <= jMax; j++) {
+			if (flags[i][j] > 0b00000001 && flags[i][j] < 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set. This could probably be optimised.
+				coordinates.push_back(std::pair<int, int>(i, j));
+			}
+		}
+	}
+	std::pair<int, int>* coordinatesAsArray = new std::pair<int, int>[coordinates.size()]; // Allocate mem for array into already defined pointer
+	std::copy(coordinates.begin(), coordinates.end(), coordinatesAsArray); // Copy the elements from the vector to the array
+	return std::pair<std::pair<int, int>*, int>(coordinatesAsArray, coordinates.size()); // Return the array with values copied into it and the size
 }
