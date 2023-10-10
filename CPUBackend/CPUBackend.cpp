@@ -92,16 +92,36 @@ void StepTestSquare() {
     FreeMatrix(FG.y, iMax + 2);
 }
 
-void TestSetFlags() {
-    bool** obstacles = ObstacleMatrixMAlloc(4,4);
+void TestCopyBoundaryPressures() {
+    bool** obstacles = ObstacleMatrixMAlloc(6,6);
     obstacles[1][1] = 1;
     obstacles[1][2] = 1;
+    obstacles[1][3] = 1;
+    obstacles[1][4] = 1;
     obstacles[2][1] = 1;
-    BYTE** flags = FlagMatrixMAlloc(4, 4);
-    SetFlags(obstacles, flags, 4, 4);
+    obstacles[2][4] = 1;
+    obstacles[3][1] = 1;
+    obstacles[3][4] = 1;
+    obstacles[4][1] = 1;
+    obstacles[4][2] = 1;
+    obstacles[4][3] = 1;
+    obstacles[4][4] = 1;
+    BYTE** flags = FlagMatrixMAlloc(6,6);
+    SetFlags(obstacles, flags, 6,6);
+    REAL** pressure = MatrixMAlloc(6, 6);
+    REAL pressureCount = 0;
+    for (int i = 1; i < 5; i++) {
+        for (int j = 1; j < 5; j++) {
+            if (obstacles[i][j]) {
+                pressure[i][j] = pressureCount;
+                pressureCount++;
+            }
+        }
+    }
+    PrintField(pressure, 6, 6, "pressure");
 }
 
 int main() {
-    TestSetFlags();
+    TestCopyBoundaryPressures();
     return 0;
 }

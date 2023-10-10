@@ -111,7 +111,7 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 			//std::cout << std::endl;
 		}
 		
-		CopyBoundaryPressures(nextPressure, iMax, jMax);
+		//CopyBoundaryPressures(nextPressure, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
 		residualNorm = sqrt(residualNorm) / (iMax * jMax);
 		if (currentIteration % 100 == 0)

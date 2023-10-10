@@ -49,6 +49,5 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, BYT
 		else { // These are boundary cells with 2 edges
 			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag && TOPMASK) >> TOPSHIFT) - ((relevantFlag && BOTTOMMASK) >> BOTTOMSHIFT)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag && RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag && LEFTMASK)]) / 2; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
 		}
-
 	}
 }
