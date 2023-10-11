@@ -86,10 +86,9 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 	timestep = safetyFactor * smallestRestriction;
 }
 
-int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) {
+int Poisson(REAL** currentPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) {
 	int currentIteration = 0;
 	REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
-	//REAL** residualField = MatrixMAlloc(iMax + 1, jMax + 1);
 	do {
 		residualNorm = 0;
 		if (currentIteration % 100 == 0)
@@ -106,14 +105,12 @@ int Poisson(REAL** currentPressure, REAL** RHS, int iMax, int jMax, DoubleReal s
 				//std::cout << nextPressure[i][j];
 				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
 				residualNorm += square(currentResidual);
-				//std::cout << ' ';
 			}
-			//std::cout << std::endl;
 		}
 		
-		//CopyBoundaryPressures(nextPressure, iMax, jMax);
+		CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
-		residualNorm = sqrt(residualNorm) / (iMax * jMax);
+		residualNorm = sqrt(residualNorm) / (numFluidCells);
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING

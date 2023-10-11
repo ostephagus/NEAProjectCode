@@ -42,6 +42,13 @@ void StepTestSquare() {
     FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
     FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
+    BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+    bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+    std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
+    std::pair<int, int>* coordinates = coordinatesWithLength.first;
+    int coordinatesLength = coordinatesWithLength.second;
+
     const REAL width = 0.03;
     const REAL height = 0.03;
     const REAL timeStepSafetyFactor = 0.8;
@@ -88,7 +95,7 @@ void StepTestSquare() {
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
         //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-        Poisson(pressure, RHS, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        Poisson(pressure, RHS, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);

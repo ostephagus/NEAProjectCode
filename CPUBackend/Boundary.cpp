@@ -13,7 +13,7 @@ constexpr int TOPSHIFT = 3;
 constexpr int RIGHTSHIFT = 2;
 constexpr int BOTTOMSHIFT = 1;
 
-void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL inflowVelocity) {
+void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
 	//Top and bottom: free-slip
 	for (int i = 1; i <= iMax; i++) {
 		velocities.y[i][0] = 0; // No mass crossing the boundary - velocity is 0
@@ -31,6 +31,50 @@ void SetBoundaryConditions(DoubleField velocities, int iMax, int jMax, REAL infl
 		// Right: outflow
 		velocities.x[iMax][j] = velocities.x[iMax - 1][j]; // Copy the velocity values from the previous cell (mass flows out at the boundary)
 		velocities.y[iMax + 1][j] = velocities.y[iMax][j];
+	}
+
+	// Obstacle boundary cells: partial-slip
+	for (int coord = 0; coord < coordinatesLength; coord++) {
+		BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
+		switch (relevantFlag) {
+		case B_N:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
+			break;
+		case B_NE:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = 0; //Both velocities owned by a B_NE are normal, so set to 0.
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = 0; 
+			break;
+		case B_E:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			break;
+		case B_SE:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = 0;
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			// y velocity south of a B_SE must be set to 0
+			break;
+		case B_S:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
+			// y velocity south of a B_S must be set to 0
+			break;
+		case B_SW:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			// x velocity west of a B_SW must be set to 0
+			// y velocity south of a B_SW must be set to 0
+			break;
+		case B_W:
+			// x velocity west of a B_W must be set to 0
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			break;
+		case B_NW:
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
+			// x velocity west of a B_NW must be set to 0
+			break;
+		}
+		// Any velocities for a cell with a north or east bit unset (referring to an obstacle in that direction) must be set to 0, i.e. cells south or west of a boundary.
 	}
 }
 
@@ -52,6 +96,17 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, int
 			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / 2.0; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
 		}
 	}
+}
+
+//Counts number of fluid cells in the region [1,iMax]x[1,jMax]
+int CountFluidCells(BYTE** flags, int iMax, int jMax) {
+	int count = 0;
+	for (int i = 0; i <= iMax; i++) {
+		for (int j = 0; j <= jMax; j++) {
+			count += flags[i][j] >> 4; //This will include only the "self" bit, which is one for fluid cells and 0 for boundary and obstacle cells.
+		}
+	}
+	return count;
 }
 
 std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { //Returns size of array rather than actual array
