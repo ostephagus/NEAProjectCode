@@ -111,36 +111,41 @@ void StepTestSquare() {
 }
 
 void TestCopyBoundaryPressures() {
-    bool** obstacles = ObstacleMatrixMAlloc(6,6);
+    int iMax = 5, jMax = 5;
+    bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     obstacles[1][1] = 1;
     obstacles[1][2] = 1;
     obstacles[1][3] = 1;
     obstacles[1][4] = 1;
+    obstacles[1][5] = 1;
     obstacles[2][1] = 1;
-    obstacles[2][4] = 1;
+    obstacles[2][5] = 1;
     obstacles[3][1] = 1;
-    obstacles[3][4] = 1;
+    obstacles[3][5] = 1;
     obstacles[4][1] = 1;
-    obstacles[4][2] = 1;
-    obstacles[4][3] = 1;
-    obstacles[4][4] = 1;
-    BYTE** flags = FlagMatrixMAlloc(6,6);
-    SetFlags(obstacles, flags, 6,6);
-    PrintField(flags, 6, 6, "Flags");
-    REAL** pressure = MatrixMAlloc(6, 6);
+    obstacles[4][5] = 1;
+    obstacles[5][1] = 1;
+    obstacles[5][2] = 1;
+    obstacles[5][3] = 1;
+    obstacles[5][4] = 1;
+    obstacles[5][5] = 1;
+    BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+    PrintField(flags, iMax + 2, jMax + 2, "Flags");
+    REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
     REAL pressureCount = 0;
-    for (int i = 1; i < 5; i++) {
-        for (int j = 1; j < 5; j++) {
+    for (int i = 1; i <= iMax; i++) {
+        for (int j = 1; j <= jMax; j++) {
             if (obstacles[i][j]) {
                 pressure[i][j] = pressureCount;
                 pressureCount++;
             }
         }
     }
-    PrintField(pressure, 6, 6, "Pressure");
-    std::pair<std::pair<int, int>*, int> coordArrayWithLength = FindBoundaryCells(flags, 4, 4);
-    CopyBoundaryPressures(pressure, coordArrayWithLength.first, coordArrayWithLength.second, flags, 4, 4);
-    PrintField(pressure, 6, 6, "Pressure (with copies)");
+    PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
+    std::pair<std::pair<int, int>*, int> coordArrayWithLength = FindBoundaryCells(flags, iMax, jMax);
+    CopyBoundaryPressures(pressure, coordArrayWithLength.first, coordArrayWithLength.second, flags, iMax, jMax);
+    PrintField(pressure, iMax + 2, jMax + 2, "Pressure (with copies)");
 }
 
 int main() {
