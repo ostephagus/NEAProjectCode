@@ -58,7 +58,7 @@ std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, i
 	std::vector<std::pair<int, int>> coordinates;
 	for (int i = 1; i <= iMax; i++) {
 		for (int j = 1; j <= jMax; j++) {
-			if (flags[i][j] > 0b00000001 && flags[i][j] < 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set. This could probably be optimised.
+			if (flags[i][j] >= 0b00000001 && flags[i][j] <= 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set. This could probably be optimised.
 				coordinates.push_back(std::pair<int, int>(i, j));
 			}
 		}
