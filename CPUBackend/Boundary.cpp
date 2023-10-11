@@ -14,6 +14,8 @@ constexpr int RIGHTSHIFT = 2;
 constexpr int BOTTOMSHIFT = 1;
 
 void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
+	REAL velocityModifier = 2 * chi - 1; // This converts chi from chi in [0,1] to in [-1,1]
+
 	//Top and bottom: free-slip
 	for (int i = 1; i <= iMax; i++) {
 		velocities.y[i][0] = 0; // No mass crossing the boundary - velocity is 0
@@ -38,7 +40,7 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 		BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
 		switch (relevantFlag) {
 		case B_N:
-			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
 			velocities.y[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
 			break;
 		case B_NE:
@@ -47,29 +49,29 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 			break;
 		case B_E:
 			velocities.x[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
-			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
 			break;
 		case B_SE:
 			velocities.x[coordinates[coord].first][coordinates[coord].second] = 0;
-			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
 			// y velocity south of a B_SE must be set to 0
 			break;
 		case B_S:
-			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
 			// y velocity south of a B_S must be set to 0
 			break;
 		case B_SW:
-			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
-			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
 			// x velocity west of a B_SW must be set to 0
 			// y velocity south of a B_SW must be set to 0
 			break;
 		case B_W:
 			// x velocity west of a B_W must be set to 0
-			velocities.y[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			velocities.y[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
 			break;
 		case B_NW:
-			velocities.x[coordinates[coord].first][coordinates[coord].second] = (2 * chi - 1) * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
+			velocities.x[coordinates[coord].first][coordinates[coord].second] = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
 			velocities.y[coordinates[coord].first][coordinates[coord].second] = 0; //Normal velocity = 0
 			// x velocity west of a B_NW must be set to 0
 			break;
