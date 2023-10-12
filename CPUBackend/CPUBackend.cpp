@@ -48,6 +48,8 @@ void StepTestSquare() {
     std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
     std::pair<int, int>* coordinates = coordinatesWithLength.first;
     int coordinatesLength = coordinatesWithLength.second;
+    
+    int numFluidCells = CountFluidCells(flags, iMax, jMax);
 
     const REAL width = 0.03;
     const REAL height = 0.03;
@@ -57,6 +59,7 @@ void StepTestSquare() {
     const int pressureMaxIterations = 1000; //Needs experimentation
     const REAL reynoldsNo = 2000;
     const REAL inflowVelocity = 5;
+    const REAL surfaceFrictionalPermissibility = 0;
     REAL pressureResidualNorm = 0;
 
     DoubleReal bodyForces;
@@ -86,7 +89,7 @@ void StepTestSquare() {
     while (true) {//BREAKPOINT REQUIRED
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
         std::cout << timestep << std::endl;
-        SetBoundaryConditions(velocities, iMax, jMax, inflowVelocity);
+        SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
@@ -95,7 +98,7 @@ void StepTestSquare() {
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
         //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-        Poisson(pressure, RHS, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, iMax, jMax, timestep, stepSizes);
