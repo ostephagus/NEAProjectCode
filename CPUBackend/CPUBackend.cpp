@@ -6,22 +6,22 @@
 #include "Init.h"
 #include <bitset>
 
-void PrintField(REAL** field, int iMax, int jMax, std::string name) {
+void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout.precision(3);
     std::cout << name << ": " << std::endl;
-    for (int i = iMax-1; i >= 0; i--) {
-        for (int j = 0; j < jMax; j++) {
+    for (int i = xLength-1; i >= 0; i--) {
+        for (int j = 0; j < yLength; j++) {
 
             std::cout << field[j][i] << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
     }
 }
-void PrintField(BYTE** flags, int iMax, int jMax, std::string name) {
-    std::cout << name << ": " << std::endl;
-    for (int i = iMax - 1; i >= 0; i--) {
-        for (int j = 0; j < jMax; j++) {
-            std::bitset<8> element(flags[i][j]);
+void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
+    std::cout << name << ":" << std::endl;
+    for (int i = xLength - 1; i >= 0; i--) {
+        for (int j = 0; j < yLength; j++) {
+            std::bitset<8> element(flags[j][i]);
             std::cout << element << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;

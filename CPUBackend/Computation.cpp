@@ -32,7 +32,7 @@ void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL 
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
 			bool skipF = false, skipG = false; //Some values are not evaluated for F, G, or both
-			if (i == 0 && j == 0) {
+			if (i == 0 && j == 0) { //Values equal to 0 are boundary cells and are separate with flag 0.
 				continue;
 			}
 			if (i == 0) { // Setting F equal to u and G equal to v at the boundaries
@@ -44,11 +44,11 @@ void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL 
 				continue;
 			}
 
-			if (i == iMax) {
+			if (i == iMax) { //Flag of these will be 00010xxx
 				FG.x[i][j] = velocities.x[i][j];
 				skipF = true;
 			}
-			if (j == jMax) {
+			if (j == jMax) { //Flag of these will be 0001x0xx
 				FG.y[i][j] = velocities.y[i][j];
 				skipG = true;
 			}
