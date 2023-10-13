@@ -1,5 +1,24 @@
 #include "Definitions.h"
 #include "Init.h"
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool** ReadObstaclesFromFile(std::string filename) {
+	std::ifstream binFile(filename);
+	std::vector<BYTE> buffer(std::istreambuf_iterator<char>(binFile), {}); // Copy the contents of the file to a buffer
+	int xLength = *reinterpret_cast<int*>(&buffer[0]); // Use the fact that the bits are stored concurrently in memory to get the xLength and yLength from the first and second 4 bits.
+	int yLength = *reinterpret_cast<int*>(&buffer[4]);
+	bool** obstacles = new bool* [xLength];
+	for (int i = 0; i < xLength; i++) {
+		obstacles[i] = new bool[yLength]();
+		for (int j = 0; j < yLength; j++) {
+			obstacles[i][j] = *reinterpret_cast<bool*>(&buffer[yLength * i + j + 8]);
+		}
+	}
+}
+
 REAL** MatrixMAlloc(int xLength, int yLength) {
 
 	// Create array of pointers pointing to more arrays
