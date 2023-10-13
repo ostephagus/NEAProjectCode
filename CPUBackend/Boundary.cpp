@@ -57,26 +57,26 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 		case B_SE:
 			XVEL = 0;
 			YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
-			// y velocity south of a B_SE must be set to 0
+			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SE must be set to 0
 			break;
 		case B_S:
 			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
-			// y velocity south of a B_S must be set to 0
+			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_S must be set to 0
 			break;
 		case B_SW:
 			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
 			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
-			// x velocity west of a B_SW must be set to 0
-			// y velocity south of a B_SW must be set to 0
+			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_SW must be set to 0
+			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SW must be set to 0
 			break;
 		case B_W:
-			// x velocity west of a B_W must be set to 0
 			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_W must be set to 0
 			break;
 		case B_NW:
 			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
 			YVEL = 0; //Normal velocity = 0
-			// x velocity west of a B_NW must be set to 0
+			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_NW must be set to 0
 			break;
 		}
 		// Any velocities for a cell with a north or east bit unset (referring to an obstacle in that direction) must be set to 0, i.e. cells south or west of a boundary.

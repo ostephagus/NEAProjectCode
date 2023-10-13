@@ -5,11 +5,11 @@
 #include "Boundary.h"
 #include <iostream>
 
-constexpr BYTE SELF = 0b00010000;
-constexpr BYTE NRTH = 0b00001000;
-constexpr BYTE EAST = 0b00000100;
-constexpr BYTE SOUT = 0b00000010;
-constexpr BYTE WEST = 0b00000001;
+constexpr BYTE SELF  = 0b00010000;
+constexpr BYTE NORTH = 0b00001000;
+constexpr BYTE EAST  = 0b00000100;
+constexpr BYTE SOUTH = 0b00000010;
+constexpr BYTE WEST  = 0b00000001;
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -39,7 +39,6 @@ void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, i
 	// G must be set to v when the self bit and the north bit are different (northern boundary cells and fluid cells to the south of a boundary)
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
-			bool skipF = false, skipG = false; //Some values are not evaluated for F, G, or both
 			if (i == 0 && j == 0) { //Values equal to 0 are boundary cells and are separate with flag 0.
 				continue;
 			}
@@ -59,20 +58,20 @@ void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, i
 				FG.y[i][j] = velocities.y[i][j];
 			}
 
-			if ((flags[i][j] & SELF) && (flags[i][j] & EAST)) { // If self bit and east bit are both 1 - fluid cell not near a boundary
+			if (flags[i][j] & SELF && flags[i][j] & EAST) { // If self bit and east bit are both 1 - fluid cell not near a boundary
 				FG.x[i][j] = velocities.x[i][j] + timestep * (1 / reynoldsNo * (SecondPuPx(velocities.x, i, j, stepSizes.x) + SecondPuPy(velocities.x, i, j, stepSizes.y)) - PuSquaredPx(velocities.x, i, j, stepSizes.x, gamma) - PuvPy(velocities, i, j, stepSizes, gamma) + bodyForces.x);
 			}
 			else if (!(flags[i][j] & SELF) && !(flags[i][j] & EAST)) { // If self bit and east bit are both 0 - inside an obstacle
 				FG.x[i][j] = 0;
 			}
-			else {
+			else { // The variable's position lies on a boundary (though the cell may not - a side-effect of the staggered-grid discretisation.
 				FG.x[i][j] = velocities.x[i][j];
 			}
 
-			if ((flags[i][j] & SELF) && (flags[i][j] & NRTH)) { // If self bit and east bit are both 1 - fluid cell not near a boundary
+			if (flags[i][j] & SELF && flags[i][j] & NORTH) { // Same as for G, but the relevant bits are self and north
 				FG.y[i][j] = velocities.y[i][j] + timestep * (1 / reynoldsNo * (SecondPvPx(velocities.y, i, j, stepSizes.x) + SecondPvPy(velocities.y, i, j, stepSizes.y)) - PuvPx(velocities, i, j, stepSizes, gamma) - PvSquaredPy(velocities.y, i, j, stepSizes.y, gamma) + bodyForces.y);
 			}
-			else if (!(flags[i][j] & SELF) && !(flags[i][j] & NRTH)) { // If self bit and east bit are both 0 - inside an obstacle
+			else if (!(flags[i][j] & SELF) && !(flags[i][j] & NORTH)) {
 				FG.y[i][j] = 0;
 			}
 			else {
@@ -82,9 +81,12 @@ void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, i
 	}
 }
 
-void ComputeRHS(DoubleField FG, REAL** RHS, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
+void ComputeRHS(DoubleField FG, REAL** RHS, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
 	for (int i = 1; i <= iMax; ++i) {
 		for (int j = 1; j <= jMax; ++j) {
+			if (!(flags[i][j] & SELF)) { // RHS is defined in the middle of cells, so only check the SELF bit
+				continue; // Skip if the cell is not a fluid cell
+			}
 			RHS[i][j] = (1 / timestep) * (((FG.x[i][j] - FG.x[i - 1][j]) / stepSizes.x) + ((FG.y[i][j] - FG.y[i][j - 1]) / stepSizes.y));
 		}
 	}
@@ -116,6 +118,9 @@ int Poisson(REAL** currentPressure, REAL** RHS, BYTE** flags, std::pair<int, int
 		}
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
+				if (!(flags[i][j] & SELF)) { // Pressure is defined in the middle of cells, so only check the SELF bit
+					continue; // Skip if the cell is not a fluid cell
+				}
 				REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
 				REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
 				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
@@ -141,14 +146,17 @@ int Poisson(REAL** currentPressure, REAL** RHS, BYTE** flags, std::pair<int, int
 	return currentIteration;
 }
 
-void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
+void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
 	for (int i = 1; i <= iMax; i++) {
 		for (int j = 1; j <= jMax; j++) {
-			if (i != iMax)
+			if (!(flags[i][j] & SELF)) { // If the cell is not a fluid cell, skip it
+				continue;
+			}
+			if (flags[i][j] & EAST) // If the edge the velocity is defined on is a boundary edge, skip the calculation (this is when the cell to the east is not fluid
 			{
 				velocities.x[i][j] = FG.x[i][j] - (timestep / stepSizes.x) * (pressure[i + 1][j] - pressure[i][j]);
 			}
-			if (j != jMax)
+			if (flags[i][j] & NORTH) // Same, but in this case for north boundary
 			{
 				velocities.y[i][j] = FG.y[i][j] - (timestep / stepSizes.y) * (pressure[i][j + 1] - pressure[i][j]);
 			}
