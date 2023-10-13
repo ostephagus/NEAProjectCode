@@ -5,6 +5,11 @@
 #include "Boundary.h"
 #include <iostream>
 
+constexpr BYTE SELF = 0b00010000;
+constexpr BYTE NRTH = 0b00001000;
+constexpr BYTE EAST = 0b00000100;
+constexpr BYTE SOUT = 0b00000010;
+constexpr BYTE WEST = 0b00000001;
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -28,7 +33,10 @@ REAL ComputeGamma(DoubleField velocities, int iMax, int jMax, REAL timestep, Dou
 	return verticalComponent;
 }
 
-void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL timestep, DoubleReal stepSizes, DoubleReal bodyForces, REAL gamma, REAL reynoldsNo) {
+void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes, DoubleReal bodyForces, REAL gamma, REAL reynoldsNo) {
+	// F or G must be set to the corresponding velocity when this references a velocity crossing a boundary
+	// F must be set to u when the self bit and the east bit are different (eastern boundary cells and fluid cells to the west of a boundary)
+	// G must be set to v when the self bit and the north bit are different (northern boundary cells and fluid cells to the south of a boundary)
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
 			bool skipF = false, skipG = false; //Some values are not evaluated for F, G, or both
@@ -46,18 +54,29 @@ void ComputeFG(DoubleField velocities, DoubleField FG, int iMax, int jMax, REAL 
 
 			if (i == iMax) { //Flag of these will be 00010xxx
 				FG.x[i][j] = velocities.x[i][j];
-				skipF = true;
 			}
 			if (j == jMax) { //Flag of these will be 0001x0xx
 				FG.y[i][j] = velocities.y[i][j];
-				skipG = true;
-			}
-			if (!skipF) {
-				FG.x[i][j] = velocities.x[i][j] + timestep * (1 / reynoldsNo * (SecondPuPx(velocities.x, i, j, stepSizes.x) + SecondPuPy(velocities.x, i, j, stepSizes.y)) - PuSquaredPx(velocities.x, i, j, stepSizes.x, gamma) - PuvPy(velocities, i, j, stepSizes, gamma) + bodyForces.x);
 			}
 
-			if (!skipG) {
+			if ((flags[i][j] & SELF) && (flags[i][j] & EAST)) { // If self bit and east bit are both 1 - fluid cell not near a boundary
+				FG.x[i][j] = velocities.x[i][j] + timestep * (1 / reynoldsNo * (SecondPuPx(velocities.x, i, j, stepSizes.x) + SecondPuPy(velocities.x, i, j, stepSizes.y)) - PuSquaredPx(velocities.x, i, j, stepSizes.x, gamma) - PuvPy(velocities, i, j, stepSizes, gamma) + bodyForces.x);
+			}
+			else if (!(flags[i][j] & SELF) && !(flags[i][j] & EAST)) { // If self bit and east bit are both 0 - inside an obstacle
+				FG.x[i][j] = 0;
+			}
+			else {
+				FG.x[i][j] = velocities.x[i][j];
+			}
+
+			if ((flags[i][j] & SELF) && (flags[i][j] & NRTH)) { // If self bit and east bit are both 1 - fluid cell not near a boundary
 				FG.y[i][j] = velocities.y[i][j] + timestep * (1 / reynoldsNo * (SecondPvPx(velocities.y, i, j, stepSizes.x) + SecondPvPy(velocities.y, i, j, stepSizes.y)) - PuvPx(velocities, i, j, stepSizes, gamma) - PvSquaredPy(velocities.y, i, j, stepSizes.y, gamma) + bodyForces.y);
+			}
+			else if (!(flags[i][j] & SELF) && !(flags[i][j] & NRTH)) { // If self bit and east bit are both 0 - inside an obstacle
+				FG.y[i][j] = 0;
+			}
+			else {
+				FG.y[i][j] = velocities.y[i][j];
 			}
 		}
 	}

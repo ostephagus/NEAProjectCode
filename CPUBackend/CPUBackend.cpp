@@ -93,7 +93,7 @@ void StepTestSquare() {
         //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
-        ComputeFG(velocities, FG, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
+        ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
         //PrintField(FG.x, iMax + 2, jMax + 2, "F");
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, iMax, jMax, timestep, stepSizes); //Finished debugging up to here

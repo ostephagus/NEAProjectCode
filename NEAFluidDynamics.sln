@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPUBackend", "CPUBackend\CPUBackend.vcxproj", "{9E239AF4-88D0-46D5-A7F9-8DF1DC360F88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserInterface", "UserInterface\UserInterface.csproj", "{A406C9C7-7CD6-4AA2-8D1D-8F1683499537}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserInterface", "UserInterface\UserInterface.csproj", "{A406C9C7-7CD6-4AA2-8D1D-8F1683499537}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
