@@ -17,6 +17,7 @@ bool** ReadObstaclesFromFile(std::string filename) {
 			obstacles[i][j] = *reinterpret_cast<bool*>(&buffer[yLength * i + j + 8]);
 		}
 	}
+	return obstacles;
 }
 
 REAL** MatrixMAlloc(int xLength, int yLength) {

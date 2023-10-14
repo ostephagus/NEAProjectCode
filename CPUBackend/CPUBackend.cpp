@@ -28,8 +28,51 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
     }
 }
 
+void SetObstacles(bool** obstacles) { // Input: a 2D array of bools all set to 1
+    obstacles[16][25] = 0;
+    obstacles[16][24] = 0;
+
+    obstacles[17][23] = 0;
+    obstacles[17][24] = 0;
+    obstacles[17][25] = 0;
+    obstacles[17][26] = 0;
+
+    obstacles[18][22] = 0;
+    obstacles[18][23] = 0;
+    obstacles[18][24] = 0;
+    obstacles[18][25] = 0;
+    obstacles[18][26] = 0;
+    obstacles[18][27] = 0;
+
+    for (int i = 19; i < 34; i++) { // body of the obstacle
+        obstacles[i][21] = 0;
+        obstacles[i][22] = 0;
+        obstacles[i][23] = 0;
+        obstacles[i][24] = 0;
+        obstacles[i][25] = 0;
+        obstacles[i][26] = 0;
+        obstacles[i][27] = 0;
+        obstacles[i][28] = 0;
+    }
+
+    obstacles[34][22] = 0;
+    obstacles[34][23] = 0;
+    obstacles[34][24] = 0;
+    obstacles[34][25] = 0;
+    obstacles[34][26] = 0;
+    obstacles[34][27] = 0;
+
+    obstacles[35][23] = 0;
+    obstacles[35][24] = 0;
+    obstacles[35][25] = 0;
+    obstacles[35][26] = 0;
+
+    obstacles[36][25] = 0;
+    obstacles[36][24] = 0;
+}
+
 void StepTestSquare() {
-    int iMax = 300, jMax = 300;
+    int iMax = 50, jMax = 50;
 
     DoubleField velocities;
     velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -44,15 +87,19 @@ void StepTestSquare() {
 
     BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+    SetObstacles(obstacles); // Set the obstacles
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+    //PrintField(flags, iMax + 2, jMax + 2, "flags");
+
     std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
     std::pair<int, int>* coordinates = coordinatesWithLength.first;
     int coordinatesLength = coordinatesWithLength.second;
     
     int numFluidCells = CountFluidCells(flags, iMax, jMax);
 
-    const REAL width = 0.03;
-    const REAL height = 0.03;
+    const REAL width = 1;
+    const REAL height = 1;
     const REAL timeStepSafetyFactor = 0.8;
     const REAL relaxationParameter = 1.7;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
@@ -96,7 +143,7 @@ void StepTestSquare() {
         ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
         //PrintField(FG.x, iMax + 2, jMax + 2, "F");
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
-        ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes); //Finished debugging up to here
+        ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
         //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
         Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");

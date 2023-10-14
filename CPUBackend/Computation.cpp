@@ -152,7 +152,7 @@ void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, 
 			if (!(flags[i][j] & SELF)) { // If the cell is not a fluid cell, skip it
 				continue;
 			}
-			if (flags[i][j] & EAST) // If the edge the velocity is defined on is a boundary edge, skip the calculation (this is when the cell to the east is not fluid
+			if (flags[i][j] & EAST) // If the edge the velocity is defined on is a boundary edge, skip the calculation (this is when the cell to the east is not fluid)
 			{
 				velocities.x[i][j] = FG.x[i][j] - (timestep / stepSizes.x) * (pressure[i + 1][j] - pressure[i][j]);
 			}
