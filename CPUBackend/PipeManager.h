@@ -7,6 +7,8 @@
 class PipeManager {
 private:
 	HANDLE pipeHandle;
+	void PipeSend(BYTE* buffer, int bufferLength);
+	void PipeReceive(BYTE* outBuffer);
 
 public:
 	PipeManager(std::string pipeName);

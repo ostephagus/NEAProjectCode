@@ -5,6 +5,7 @@
 #include "DiscreteDerivatives.h"
 #include "Init.h"
 #include <bitset>
+#include <chrono>
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout.precision(3);
@@ -79,6 +80,7 @@ void StepTestSquare() {
     velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
     REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
+    REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
     REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
 
     DoubleField FG;
@@ -88,7 +90,7 @@ void StepTestSquare() {
     BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-    SetObstacles(obstacles); // Set the obstacles
+    //SetObstacles(obstacles);
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
     //PrintField(flags, iMax + 2, jMax + 2, "flags");
 
@@ -101,7 +103,7 @@ void StepTestSquare() {
     const REAL width = 1;
     const REAL height = 1;
     const REAL timeStepSafetyFactor = 0.8;
-    const REAL relaxationParameter = 1.7;
+    const REAL relaxationParameter = 1.2;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
     const int pressureMaxIterations = 1000; //Needs experimentation
     const REAL reynoldsNo = 2000;
@@ -120,7 +122,7 @@ void StepTestSquare() {
 
     for (int i = 0; i <= iMax+1; i++) {
         for (int j = 0; j <= jMax+1; j++) {
-            pressure[i][j] = 1000;
+            pressure[i][j] = 10;
         }
     }
     //PrintField(pressure, iMax+2, jMax+2, "Pressure");
@@ -133,9 +135,16 @@ void StepTestSquare() {
     //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
     //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
 
-    while (true) {//BREAKPOINT REQUIRED
+    int iteration = 0;
+    std::cout << "Enter number of iterations ";
+    int iterMax;
+    std::cin >> iterMax;
+    //int iterMax = 10; //TESTING
+    int pressureIterations;
+    //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
+    while (iteration < iterMax) {
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
-        std::cout << timestep << std::endl;
+        //std::cout << timestep << std::endl;
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
@@ -145,60 +154,111 @@ void StepTestSquare() {
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
         //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-        Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
-        std::cout << pressureResidualNorm << std::endl;
+        //std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+        std::cout << "Iteration " << iteration << ": velocity before " << velocities.x[14][25] << ", velocity after " << velocities.x[37][25] << ", pressure before " << pressure[14][25] << ", pressure after " << pressure[37][25] << ", residual norm " << pressureResidualNorm << std::endl;
+        iteration++;
     }
+    //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
 
+    //std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds.";
 
     FreeMatrix(velocities.x, iMax + 2);
     FreeMatrix(velocities.y, iMax + 2);
     FreeMatrix(pressure, iMax + 2);
+    FreeMatrix(nextPressure, iMax + 2);
     FreeMatrix(RHS, iMax + 2);
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
 }
 
-void TestCopyBoundaryPressures() {
-    int iMax = 5, jMax = 5;
-    bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-    obstacles[1][1] = 1;
-    obstacles[1][2] = 1;
-    obstacles[1][3] = 1;
-    obstacles[1][4] = 1;
-    obstacles[1][5] = 1;
-    obstacles[2][1] = 1;
-    obstacles[2][5] = 1;
-    obstacles[3][1] = 1;
-    obstacles[3][5] = 1;
-    obstacles[4][1] = 1;
-    obstacles[4][5] = 1;
-    obstacles[5][1] = 1;
-    obstacles[5][2] = 1;
-    obstacles[5][3] = 1;
-    obstacles[5][4] = 1;
-    obstacles[5][5] = 1;
-    BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
-    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
-    PrintField(flags, iMax + 2, jMax + 2, "Flags");
+double TestParameters(REAL parameterValue, int iterations) {
+    int iMax = 50, jMax = 50;
+
+    DoubleField velocities;
+    velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
     REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
-    REAL pressureCount = 0;
-    for (int i = 1; i <= iMax; i++) {
-        for (int j = 1; j <= jMax; j++) {
-            if (obstacles[i][j]) {
-                pressure[i][j] = pressureCount;
-                pressureCount++;
-            }
+    REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
+    REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    DoubleField FG;
+    FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+    bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } }
+    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+
+    std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
+    std::pair<int, int>* coordinates = coordinatesWithLength.first;
+    int coordinatesLength = coordinatesWithLength.second;
+
+    int numFluidCells = CountFluidCells(flags, iMax, jMax);
+
+    const REAL width = 1;
+    const REAL height = 1;
+    const REAL timeStepSafetyFactor = 0.8;
+    REAL relaxationParameter = 1.7;
+    REAL relaxationParameter = parameterValue;
+    const REAL pressureResidualTolerance = 1;
+    const int pressureMaxIterations = 1000;
+    const REAL reynoldsNo = 2000;
+    const REAL inflowVelocity = 5;
+    const REAL surfaceFrictionalPermissibility = 0;
+    REAL pressureResidualNorm = 0;
+
+    DoubleReal bodyForces;
+    bodyForces.x = 0;
+    bodyForces.y = 0;
+
+    REAL timestep;
+    DoubleReal stepSizes;
+    stepSizes.x = width / iMax;
+    stepSizes.y = height / jMax;
+
+    for (int i = 0; i <= iMax + 1; i++) {
+        for (int j = 0; j <= jMax + 1; j++) {
+            pressure[i][j] = 10;
         }
     }
-    PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
-    std::pair<std::pair<int, int>*, int> coordArrayWithLength = FindBoundaryCells(flags, iMax, jMax);
-    CopyBoundaryPressures(pressure, coordArrayWithLength.first, coordArrayWithLength.second, flags, iMax, jMax);
-    PrintField(pressure, iMax + 2, jMax + 2, "Pressure (with copies)");
+    for (int i = 1; i <= iMax; i++) {
+        for (int j = 1; j <= jMax; j++) {
+            velocities.x[i][j] = 4;
+            velocities.y[i][j] = 0;
+        }
+    }
+    int iteration = 0;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    while (iteration < iterations) {
+        ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
+        SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
+        REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
+        ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
+        ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
+        Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+        iteration++;
+    }
+    auto endTime = std::chrono::high_resolution_clock::now();
+
+    FreeMatrix(velocities.x, iMax + 2);
+    FreeMatrix(velocities.y, iMax + 2);
+    FreeMatrix(pressure, iMax + 2);
+    FreeMatrix(nextPressure, iMax + 2);
+    FreeMatrix(RHS, iMax + 2);
+    FreeMatrix(FG.x, iMax + 2);
+    FreeMatrix(FG.y, iMax + 2);
+    return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0; // Time taken for n iterations, seconds
 }
 
 int main() {
-    StepTestSquare();
+    for (REAL i = 1; i < 2; i += 0.2) {
+        std::cout << "Parameter value: " << i << ", time taken: " << TestParameters(i, 500) << " seconds." << std::endl;
+    }
     return 0;
 }
