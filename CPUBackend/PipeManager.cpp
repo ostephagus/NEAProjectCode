@@ -1,20 +1,8 @@
 #include "PipeManager.h"
 #include <iostream>
 
-void PipeManager::PipeConnect(LPCWSTR pipeFullName) {
-	const int ATTEMPT_LIMIT = 10;
-	int attempts = 0;
-	
-	do {
-		if (attempts > ATTEMPT_LIMIT) {
-			break;
-		}
-		pipeHandle = CreateFile(pipeFullName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-		if (pipeHandle == INVALID_HANDLE_VALUE) {
-			std::cerr << "Failed to connect to the named pipe, error code " << GetLastError() << ". Trying again." << std::endl;
-			attempts++;
-		}
-	} while (pipeHandle == INVALID_HANDLE_VALUE);
+std::wstring PipeManager::WidenString(std::string input) {
+	return std::wstring(input.begin(), input.end());
 }
 
 void PipeManager::PipeReceive(BYTE* outBuffer) {
@@ -25,14 +13,8 @@ void PipeManager::PipeReceive(BYTE* outBuffer) {
 			std::cerr << "Failed to read from the named pipe, error code " << GetLastError() << std::endl;
 			break;
 		}
+		index++;
 	} while (outBuffer[index - 1] != 0); // Stop if the most recent byte was null-termination.
-}
-
-void PipeManager::PipeSend(BYTE* buffer, int bufferLength)
-{
-	if (!WriteFile(pipeHandle, buffer, bufferLength, nullptr, NULL)) {
-		std::cerr << "Failed to write to the named pipe, error code " << GetLastError() << std::endl;
-	}
 }
 
 void PipeManager::PipeSend(const BYTE* buffer, int bufferLength)
@@ -43,20 +25,17 @@ void PipeManager::PipeSend(const BYTE* buffer, int bufferLength)
 }
 
 // Constructor for a named pipe, yet to be connected to
-PipeManager::PipeManager(std::string pipeName) {
-	std::string fullName = "\\\\.\\pipe\\" + pipeName;
-	PipeConnect(std::wstring(fullName.begin(), fullName.end()).c_str());
-}
+PipeManager::PipeManager(std::string pipeName) : pipeHandle(CreateFile(L"\\\\.\\pipe\\TestingPipe", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL)) {} // Create the handle as a const parameter (one-time initialisation).
 
 // Constructor for if the named pipe has already been connected to
-PipeManager::PipeManager(HANDLE pipeHandle) {
-	this->pipeHandle = pipeHandle; // Pass the parameter into the pipeHandle field
+PipeManager::PipeManager(HANDLE existingHandle) : pipeHandle(existingHandle) {} // Pass the handle into the local handle 
+
+PipeManager::~PipeManager() {
+	CloseHandle(pipeHandle);
 }
 
-
 void PipeManager::Testing() {
-	BYTE* buffer = new BYTE[100];
-	memset(buffer, 0, 100); //Set all the bytes to 0x00
+	BYTE* buffer = new BYTE[1024];
 	PipeReceive(buffer);
 	std::cout << "Received: " << buffer << std::endl;
 

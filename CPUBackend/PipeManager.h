@@ -6,16 +6,16 @@
 
 class PipeManager {
 private:
-	HANDLE pipeHandle;
-	void PipeConnect(LPCWSTR pipeFullName);
+	const HANDLE pipeHandle;
+	std::wstring WidenString(std::string input);
 	void PipeReceive(BYTE* outBuffer);
-	void PipeSend(BYTE* buffer, int bufferLength);
 	void PipeSend(const BYTE* buffer, int bufferLength);
 
 public:
 	PipeManager(std::string pipeName);
 	PipeManager(HANDLE pipeHandle);
+	~PipeManager();
 	void Testing();
 };
 
-#endif
+#endif // !PIPE_MANAGER_H

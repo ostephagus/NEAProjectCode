@@ -261,7 +261,7 @@ int main() {
     /*for (REAL i = 1; i < 2; i += 0.2) {
         std::cout << "Parameter value: " << i << ", time taken: " << TestParameters(i, 500) << " seconds." << std::endl;
     }*/
-    PipeManager pipeManager = new PipeManager((std::string)"TestingPipe");
+    PipeManager pipeManager = PipeManager((std::string)"TestingPipe");
     pipeManager.Testing();
     return 0;
 }
