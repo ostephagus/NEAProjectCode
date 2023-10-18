@@ -6,6 +6,7 @@
 #include "Init.h"
 #include <bitset>
 #include <chrono>
+#include "PipeManager.h"
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout.precision(3);
@@ -204,7 +205,7 @@ double TestParameters(REAL parameterValue, int iterations) {
     const REAL height = 1;
     const REAL timeStepSafetyFactor = 0.8;
     REAL relaxationParameter = 1.7;
-    REAL relaxationParameter = parameterValue;
+    relaxationParameter = parameterValue;
     const REAL pressureResidualTolerance = 1;
     const int pressureMaxIterations = 1000;
     const REAL reynoldsNo = 2000;
@@ -257,8 +258,10 @@ double TestParameters(REAL parameterValue, int iterations) {
 }
 
 int main() {
-    for (REAL i = 1; i < 2; i += 0.2) {
+    /*for (REAL i = 1; i < 2; i += 0.2) {
         std::cout << "Parameter value: " << i << ", time taken: " << TestParameters(i, 500) << " seconds." << std::endl;
-    }
+    }*/
+    PipeManager pipeManager = new PipeManager((std::string)"TestingPipe");
+    pipeManager.Testing();
     return 0;
 }

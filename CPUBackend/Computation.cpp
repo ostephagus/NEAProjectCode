@@ -1,15 +1,8 @@
-#include "Definitions.h"
 #include "Computation.h"
 #include "DiscreteDerivatives.h"
 #include "Init.h"
 #include "Boundary.h"
 #include <iostream>
-
-constexpr BYTE SELF  = 0b00010000;
-constexpr BYTE NORTH = 0b00001000;
-constexpr BYTE EAST  = 0b00000100;
-constexpr BYTE SOUTH = 0b00000010;
-constexpr BYTE WEST  = 0b00000001;
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;

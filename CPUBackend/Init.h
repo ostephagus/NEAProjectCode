@@ -2,6 +2,7 @@
 #define INIT_H
 
 #include "Definitions.h"
+
 REAL** MatrixMAlloc(int xLength, int yLength);
 
 BYTE** FlagMatrixMAlloc(int xLength, int yLength);

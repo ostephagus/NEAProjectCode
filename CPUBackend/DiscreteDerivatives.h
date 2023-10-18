@@ -1,6 +1,8 @@
 #ifndef DISCRETE_DERIVATIVES_H
 #define DISCRETE_DERIVATIVES_H
 
+#include "Definitions.h"
+
 REAL PuPx(REAL** hVel, int i, int j, REAL delx);
 
 REAL PvPy(REAL** vVel, int i, int j, REAL dely);

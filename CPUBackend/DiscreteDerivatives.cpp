@@ -1,4 +1,3 @@
-#include "Definitions.h"
 #include "DiscreteDerivatives.h"
 #include <cmath>
 

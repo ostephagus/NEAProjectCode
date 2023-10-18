@@ -1,6 +1,8 @@
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
+#include <utility>
+
 typedef double REAL;
 typedef unsigned __int8 BYTE;
 
