@@ -12,17 +12,19 @@ namespace UserInterface
     internal static class PipeConstants
     {
         public static readonly byte NULL = 0;
+        public static readonly byte CATEGORYMASK = 0b11000000;
 
         /// <summary>
         /// STATUS bytes, providing information to the client or commands to do with program state
         /// </summary>
         public static class Status
         {
-            public static readonly byte HELLO = 0b00001000;
-            public static readonly byte BUSY  = 0b00010000;
-            public static readonly byte OK    = 0b00011000;
-            public static readonly byte STOP  = 0b00100000;
-            public static readonly byte CLOSE = 0b00101000;
+            public static readonly byte GENERIC = 0b00000000;
+            public static readonly byte HELLO   = 0b00001000;
+            public static readonly byte BUSY    = 0b00010000;
+            public static readonly byte OK      = 0b00011000;
+            public static readonly byte STOP    = 0b00100000;
+            public static readonly byte CLOSE   = 0b00101000;
             
             public static readonly byte PARAMMASK = 0b00000111;
         }
@@ -32,6 +34,7 @@ namespace UserInterface
         /// </summary>
         public static class Request
         {
+            public static readonly byte GENERIC   = 0b01000000;
             public static readonly byte FIXLENREQ = 0b01000000;
             public static readonly byte CONTREQ   = 0b01100000;
 
@@ -48,6 +51,7 @@ namespace UserInterface
         /// </summary>
         public static class Marker
         {
+            public static readonly byte GENERIC   = 0b10000000;
             public static readonly byte ITERSTART = 0b10000000;
             public static readonly byte ITEREND   = 0b10001000;
             public static readonly byte FLDSTART  = 0b10010000;
@@ -61,6 +65,7 @@ namespace UserInterface
             public static readonly byte VVEL = 0b00000010;
             public static readonly byte PRES = 0b00000011;
             public static readonly byte STRM = 0b00000100;
+            public static readonly byte OBST = 0b00000101;
         }
 
         /// <summary>
@@ -68,6 +73,7 @@ namespace UserInterface
         /// </summary>
         public static class Error
         {
+            public static readonly byte GENERIC  = 0b11000000;
             public static readonly byte BADREQ   = 0b11000001;
             public static readonly byte BADPARAM = 0b11000010;
             public static readonly byte INTERNAL = 0b11000011;
