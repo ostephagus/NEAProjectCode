@@ -6,16 +6,23 @@
 
 class PipeManager {
 private:
-	const HANDLE pipeHandle;
+	HANDLE pipeHandle;
 	std::wstring WidenString(std::string input);
-	void PipeReceive(BYTE* outBuffer);
-	void PipeSend(const BYTE* buffer, int bufferLength);
+	void ReadToNull(BYTE* outBuffer);
+	bool Read(BYTE* outBuffer, int bytesToRead);
+	BYTE Read();
+	void Write(const BYTE* buffer, int bufferLength);
+	void Write(BYTE byte);
 
 public:
 	PipeManager(std::string pipeName);
 	PipeManager(HANDLE pipeHandle);
 	~PipeManager();
-	void Testing();
+	bool Handshake(int fieldSize);
+	int Handshake();
+	bool ReceiveObstacles(bool* obstacles, int fieldLength);
+	BYTE ReadByte();
+	void SendByte(BYTE byte);
 };
 
 #endif // !PIPE_MANAGER_H

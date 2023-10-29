@@ -130,7 +130,7 @@ namespace UserInterface
         /// </summary>
         /// <param name="fieldLength">The size of the simulation domain</param>
         /// <returns>true if successful, false if handshake failed</returns>
-        public bool Handshake(uint fieldLength)
+        public bool Handshake(int fieldLength)
         {
             byte[] buffer = new byte[5];
             buffer[0] = (byte)(PipeConstants.Status.HELLO | 4); // Send a HELLO bit with parameter 4 (next 4 bytes are relevant)
@@ -152,7 +152,7 @@ namespace UserInterface
         /// Performs a handshake with the client where the client dictates the field length
         /// </summary>
         /// <returns>The field length, or 0 if handshake failed</returns>
-        public uint Handshake()
+        public int Handshake()
         {
             pipeStream.WriteByte(PipeConstants.Status.HELLO); // Write a HELLO byte with no parameters, backend dictates the field length
             pipeStream.WaitForPipeDrain();
@@ -161,13 +161,13 @@ namespace UserInterface
             {
                 return 0;
             }
-            uint fieldLength = 0;
+            int fieldLength = 0;
             int followingBytes = readResults.data[0] & PipeConstants.Status.PARAMMASK;
             if (followingBytes > 0) // If the HELLO byte has parameter other than 0
             {
                 for (int i = 0; i < followingBytes; i++) // Read the next n bytes
                 {
-                    fieldLength += (uint)(readResults.data[i + 1] << (i * 8));
+                    fieldLength += readResults.data[i + 1] << (i * 8);
                 }
             }
             return fieldLength;
@@ -185,12 +185,14 @@ namespace UserInterface
             for (int i = 0; i < obstacles.Length; i++)
             {
                 buffer[index] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
-                if (i % 8 == 0) // Add one to the index if the byte is full
+                if (i % 8 == 7) // Add one to the index if the byte is full
                 {
                     index++;
                 }
             }
-            pipeStream.Write(new ReadOnlySpan<byte>(buffer)); // Write to the pipe
+            WriteByte((byte)(PipeConstants.Marker.FLDSTART | PipeConstants.Marker.OBST)); // Put a FLDSTART marker at the start
+            pipeStream.Write(new ReadOnlySpan<byte>(buffer)); // Write the data
+            WriteByte((byte)(PipeConstants.Marker.FLDEND | PipeConstants.Marker.OBST)); // And put a FLDEND at the end
             int readByte = -1;
             while (readByte == -1) // Wait until there is a response
             {

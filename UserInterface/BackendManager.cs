@@ -18,7 +18,9 @@ namespace UserInterface
         private Process? backendProcess;
         private string filePath;
         private PipeManager? pipeManager;
-        private uint fieldLength;
+        private int fieldLength;
+
+        public int FieldLength { get => fieldLength; set => fieldLength = value; }
 
         private bool StartBackend()
         {

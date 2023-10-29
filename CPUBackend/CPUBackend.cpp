@@ -7,6 +7,8 @@
 #include <bitset>
 #include <chrono>
 #include "PipeManager.h"
+#include "PipeConstants.h"
+#include "FrontendManager.h"
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout.precision(3);
@@ -27,6 +29,12 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
             std::cout << element << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
+    }
+}
+
+void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
+    for (int i = 0; i < length / divisions; i++) {
+        pointerArray[i] = flattenedArray + i * divisions;
     }
 }
 
@@ -258,10 +266,6 @@ double TestParameters(REAL parameterValue, int iterations) {
 }
 
 int main() {
-    /*for (REAL i = 1; i < 2; i += 0.2) {
-        std::cout << "Parameter value: " << i << ", time taken: " << TestParameters(i, 500) << " seconds." << std::endl;
-    }*/
-    PipeManager pipeManager = PipeManager((std::string)"TestingPipe");
-    pipeManager.Testing();
-    return 0;
+    FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+    return frontendManager.Run();
 }
