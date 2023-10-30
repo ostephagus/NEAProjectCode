@@ -99,11 +99,7 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int fieldLength) {
 	int bufferLength = fieldLength / 8 + (fieldLength % 8 == 0 ? 0 : 1);
 	BYTE* buffer = new BYTE[bufferLength]; // Have to use new keyword because length of array is not a constant expression
 
-	if (Read() != (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Ensure there is a FLDSTART before
-		std::cerr << "Cannot read obstacles - server sent malformed data";
-		Write(PipeConstants::Error::BADPARAM);
-		return false;
-	}
+	// Assume there has been a FLDSTART before
 
 	Read(buffer, (int)bufferLength); // Read the bool obstacle data
 

@@ -12,6 +12,9 @@ private:
 	const int fieldSize;
 	PipeManager pipeManager;
 
+	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
+	void SetupParameters(REAL** horizontalVelocity, REAL** verticalVelocity, REAL** pressure, SimulationParameters& parameters, DoubleReal stepSizes);
+	void TimeStep(DoubleField velocities, DoubleField FG, REAL** pressure, REAL** nextPressure, REAL** RHS, REAL** streamFunction, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, const SimulationParameters& parameters, DoubleReal stepSizes);
 	void HandleRequest(BYTE requestByte);
 	void ReceiveData(BYTE startMarker);
 

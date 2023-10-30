@@ -34,4 +34,18 @@ struct DoubleReal
 	REAL y;
 };
 
+struct SimulationParameters
+{
+	REAL width;
+	REAL height;
+	REAL timeStepSafetyFactor;
+	REAL relaxationParameter;
+	REAL pressureResidualTolerance;
+	int pressureMaxIterations;
+	REAL reynoldsNo;
+	REAL inflowVelocity;
+	REAL surfaceFrictionalPermissibility;
+	DoubleReal bodyForces;
+};
+
 #endif

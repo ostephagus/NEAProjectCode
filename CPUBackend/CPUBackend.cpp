@@ -32,11 +32,6 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
     }
 }
 
-void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
-    for (int i = 0; i < length / divisions; i++) {
-        pointerArray[i] = flattenedArray + i * divisions;
-    }
-}
 
 void SetObstacles(bool** obstacles) { // Input: a 2D array of bools all set to 1
     obstacles[16][25] = 0;
