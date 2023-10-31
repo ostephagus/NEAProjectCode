@@ -42,7 +42,17 @@ void FrontendManager::TimeStep(DoubleField velocities, DoubleField FG, REAL** pr
 }
 
 void FrontendManager::HandleRequest(BYTE requestByte) {
-    if ((requestByte & ~PipeConstants::Request::PARAMMASK) != PipeConstants::Request::CONTREQ) {
+    if ((requestByte & ~PipeConstants::Request::PARAMMASK) == PipeConstants::Request::CONTREQ) {
+        if (requestByte == PipeConstants::Request::CONTREQ) {
+            pipeManager.SendByte(PipeConstants::Error::BADPARAM);
+            std::cerr << "Server sent a blank request, exiting";
+            return;
+        }
+        bool hVelWanted = requestByte & PipeConstants::Request::HVEL;
+        bool vVelWanted = requestByte & PipeConstants::Request::VVEL;
+        bool pressureWanted = requestByte & PipeConstants::Request::PRES;
+        bool streamWanted = requestByte & PipeConstants::Request::STRM;
+
         DoubleField velocities;
         velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
         velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -76,6 +86,18 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
         bool stopRequested = false;
         while (!stopRequested) {
             TimeStep(velocities, FG, pressure, nextPressure, RHS, streamFunction, flags, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
+            if (hVelWanted) {
+                pipeManager.SendField(velocities.x, iMax, jMax, 1, 1); // Set the offsets to 1 and the length to iMax / jMax to exclude boundary cells at cells 0 and max
+            }
+            if (vVelWanted) {
+                pipeManager.SendField(velocities.y, iMax, jMax, 1, 1);
+            }
+            if (pressureWanted) {
+                pipeManager.SendField(pressure, iMax, jMax, 1, 1);
+            }
+            if (streamWanted) {
+                pipeManager.SendField(streamFunction, iMax, jMax, 0, 0);
+            }
         }
 
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,9 @@ namespace UserInterface
             public static readonly byte PRES = 0b00000011;
             public static readonly byte STRM = 0b00000100;
             public static readonly byte OBST = 0b00000101;
+
+            public static readonly byte IMAX = 0b00000001;
+            public static readonly byte JMAX = 0b00000010;
         }
 
         /// <summary>

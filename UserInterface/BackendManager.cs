@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,9 +19,12 @@ namespace UserInterface
         private Process? backendProcess;
         private string filePath;
         private PipeManager? pipeManager;
-        private int fieldLength;
+        private int iMax;
+        private int jMax;
 
-        public int FieldLength { get => fieldLength; set => fieldLength = value; }
+        public int FieldLength { get => iMax * jMax; }
+        public int IMax { get => iMax; set => iMax = value; }
+        public int JMax { get => jMax; set => jMax = value; }
 
         private bool StartBackend()
         {
@@ -42,8 +46,8 @@ namespace UserInterface
         {
             pipeManager = new PipeManager("NEAFluidDynamicsPipe");
             pipeManager.WaitForConnection();
-            fieldLength = pipeManager.Handshake();
-            return fieldLength > 0; // FieldLength == 0 is the error condition for Handshake()
+            (iMax, jMax) = pipeManager.Handshake();
+            return iMax > 0 && jMax > 0; // (0,0) is the error condition
         }
 
         private bool SendControlByte(byte controlByte)
@@ -75,7 +79,7 @@ namespace UserInterface
 
             if (horizontalVelocity != null)
             {
-                if (horizontalVelocity.Length < fieldLength)
+                if (horizontalVelocity.Length < FieldLength)
                 {
                     throw new InvalidOperationException("Field array is too small");
                 }
@@ -86,7 +90,7 @@ namespace UserInterface
             }
             if (verticalVelocity != null)
             {
-                if (verticalVelocity.Length < fieldLength)
+                if (verticalVelocity.Length < FieldLength)
                 {
                     throw new InvalidOperationException("Field array is too small");
                 }
@@ -97,7 +101,7 @@ namespace UserInterface
             }
             if (pressure != null)
             {
-                if (pressure.Length < fieldLength)
+                if (pressure.Length < FieldLength)
                 {
                     throw new InvalidOperationException("Field array is too small");
                 }
@@ -108,7 +112,7 @@ namespace UserInterface
             }
             if (streamFunction != null)
             {
-                if (pressure.Length < fieldLength)
+                if (pressure.Length < FieldLength)
                 {
                     throw new InvalidOperationException("Field array is too small");
                 }
@@ -164,7 +168,7 @@ namespace UserInterface
                 throw new IOException("Result from backend not understood"); // Throw a generic error if it was not understood at all
             }
             
-            byte[] tmpByteBuffer = new byte[fieldLength * 8]; // Temporary buffer for pipe output
+            byte[] tmpByteBuffer = new byte[FieldLength * 8]; // Temporary buffer for pipe output
 
             while (!token.IsCancellationRequested) // Repeat until the task is cancelled
             {
@@ -175,8 +179,8 @@ namespace UserInterface
                     byte fieldBits = (byte)namedFields[fieldNum];
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
                     
-                    await pipeManager.ReadAsync(tmpByteBuffer, (int)(fieldLength * 8)); // Read the stream of bytes into the temporary buffer
-                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, (int)(fieldLength * 8)); // Copy the bytes from the temporary buffer into the double array
+                    await pipeManager.ReadAsync(tmpByteBuffer, (int)(FieldLength * 8)); // Read the stream of bytes into the temporary buffer
+                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, (int)(FieldLength * 8)); // Copy the bytes from the temporary buffer into the double array
                     
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
                 }

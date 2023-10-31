@@ -136,3 +136,11 @@ BYTE PipeManager::ReadByte() {
 void PipeManager::SendByte(BYTE byte) {
 	Write(byte);
 }
+
+void PipeManager::SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset)
+{
+	for (int i = xOffset; i < xLength; i++) {
+		BYTE* buffer = reinterpret_cast<BYTE*>(field[i] + yOffset); // Get a byte pointer to field[i][yOffset] (start of ith row)
+		Write(buffer, (yLength - yOffset) * 8); // yLength - yOffset is the number of doubles in the array, *8 to get number of bytes
+	}
+}

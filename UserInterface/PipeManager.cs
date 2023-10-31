@@ -130,47 +130,67 @@ namespace UserInterface
         /// </summary>
         /// <param name="fieldLength">The size of the simulation domain</param>
         /// <returns>true if successful, false if handshake failed</returns>
-        public bool Handshake(int fieldLength)
+        public bool Handshake(int iMax, int jMax)
         {
-            byte[] buffer = new byte[5];
-            buffer[0] = (byte)(PipeConstants.Status.HELLO | 4); // Send a HELLO bit with parameter 4 (next 4 bytes are relevant)
-            for (int i = 0; i < sizeof(uint); i++)
-            {
-                buffer[i+1] = (byte)(fieldLength >> (i * 8));
-            }
-            pipeStream.Write(new ReadOnlySpan<byte>(buffer));
-            pipeStream.WaitForPipeDrain();
-            ReadResults readResults = AttemptRead();
-            if (readResults.anythingRead == false || readResults.data[0] != PipeConstants.Status.HELLO) // If nothing was read, handshake not completed properly
+            byte[] buffer = new byte[12];
+            WriteByte(PipeConstants.Status.HELLO); // Send a HELLO byte
+            if (AttemptRead().data[0] != PipeConstants.Status.HELLO) // Handshake not completed
             {
                 return false;
             }
-            return true; // If a HELLO byte is read, as expected, handshake was successful
+
+            pipeStream.WaitForPipeDrain();
+
+            buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.IMAX); // Send PRMSTART with iMax
+            for (int i = 0; i < 4; i++)
+            {
+                buffer[i+1] = (byte)(iMax >> (i * 8));
+            }
+            buffer[5] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send corresponding PRMEND
+
+            buffer[6] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.JMAX); // Send PRMSTART with jMax
+            for (int i = 0; i < 4; i++)
+            {
+                buffer[i + 7] = (byte)(jMax >> (i * 8));
+            }
+            buffer[11] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send PRMEND
+
+            pipeStream.Write(new ReadOnlySpan<byte>(buffer));
+
+            pipeStream.WaitForPipeDrain();
+
+            ReadResults readResults = AttemptRead();
+            if (readResults.anythingRead == false || readResults.data[0] != PipeConstants.Status.OK) // If nothing was read or no OK byte, param read was unsuccessful
+            {
+                return false;
+            }
+            return true;
 
         }
         /// <summary>
         /// Performs a handshake with the client where the client dictates the field length
         /// </summary>
         /// <returns>The field length, or 0 if handshake failed</returns>
-        public int Handshake()
+        public (int, int) Handshake()
         {
-            pipeStream.WriteByte(PipeConstants.Status.HELLO); // Write a HELLO byte with no parameters, backend dictates the field length
+            pipeStream.WriteByte(PipeConstants.Status.HELLO); // Write a HELLO byte, backend dictates field dimensions
             pipeStream.WaitForPipeDrain();
-            ReadResults readResults = AttemptRead(); // First byte should be HELLO with parameter 4, should be 4 more bytes with the uint
-            if (!readResults.anythingRead)
+
+            ReadResults readResults = AttemptRead();
+
+            if (!readResults.anythingRead || readResults.data[0] != PipeConstants.Status.HELLO)
             {
-                return 0;
+                return (0, 0); // Error case
             }
-            int fieldLength = 0;
-            int followingBytes = readResults.data[0] & PipeConstants.Status.PARAMMASK;
-            if (followingBytes > 0) // If the HELLO byte has parameter other than 0
-            {
-                for (int i = 0; i < followingBytes; i++) // Read the next n bytes
-                {
-                    fieldLength += readResults.data[i + 1] << (i * 8);
-                }
-            }
-            return fieldLength;
+
+            if (readResults.data[1] != (PipeConstants.Marker.PRMSTART | PipeConstants.Marker.IMAX)) { return (0, 0); } // Should start with PRMSTART
+            int iMax = BitConverter.ToInt32(readResults.data, 2);
+            if (readResults.data[6] != (PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX)) { return (0, 0); } // Should end with PRMEND
+
+            if (readResults.data[7] != (PipeConstants.Marker.PRMSTART | PipeConstants.Marker.JMAX)) { return (0, 0); }
+            int jMax = BitConverter.ToInt32(readResults.data, 8);
+            if (readResults.data[1] != (PipeConstants.Marker.PRMEND | PipeConstants.Marker.JMAX)) { return (0, 0); }
+            return (iMax, jMax);
         }
 
         public void WaitForConnection()

@@ -1,6 +1,7 @@
 #ifndef PIPE_MANAGER_H
 #define PIPE_MANAGER_H
 
+#include "Definitions.h"
 #include <windows.h>
 #include <string>
 
@@ -23,6 +24,7 @@ public:
 	bool ReceiveObstacles(bool* obstacles, int fieldLength);
 	BYTE ReadByte();
 	void SendByte(BYTE byte);
+	void SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset);
 };
 
 #endif // !PIPE_MANAGER_H
