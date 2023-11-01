@@ -46,6 +46,9 @@ namespace PipeConstants {
         constexpr BYTE PRES = 0b00000011;
         constexpr BYTE STRM = 0b00000100;
         constexpr BYTE OBST = 0b00000101;
+
+        constexpr BYTE IMAX = 0b00000001;
+        constexpr BYTE JMAX = 0b00000010;
     }
     namespace Error
     {

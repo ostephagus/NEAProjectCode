@@ -4,6 +4,7 @@
 #include "Definitions.h"
 #include <windows.h>
 #include <string>
+#include <utility>
 
 class PipeManager {
 private:
@@ -19,8 +20,8 @@ public:
 	PipeManager(std::string pipeName);
 	PipeManager(HANDLE pipeHandle);
 	~PipeManager();
-	bool Handshake(int fieldSize);
-	int Handshake();
+	bool Handshake(int iMax, int jMax);
+	std::pair<int, int> Handshake();
 	bool ReceiveObstacles(bool* obstacles, int fieldLength);
 	BYTE ReadByte();
 	void SendByte(BYTE byte);

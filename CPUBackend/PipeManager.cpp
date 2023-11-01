@@ -56,43 +56,53 @@ PipeManager::~PipeManager() {
 	CloseHandle(pipeHandle);
 }
 
-bool PipeManager::Handshake(int fieldSize) {
+bool PipeManager::Handshake(int iMax, int jMax) {
 	BYTE receivedByte = Read();
-	if ((receivedByte & PipeConstants::Status::GENERIC) != PipeConstants::Status::HELLO) { // We need a HELLO byte
+	if (receivedByte != PipeConstants::Status::HELLO) { // We need a HELLO byte
 		std::cerr << "Handshake not completed - server sent malformed request";
 		Write(PipeConstants::Error::BADREQ);
-		return false;
-	}
-	if ((receivedByte & PipeConstants::Status::PARAMMASK) != 0) { // With no parameter (0 for x bits)
-		std::cerr << "Handshake not completed - server sent malformed request";
-		Write(PipeConstants::Error::BADPARAM);
 		return false;
 	}
 	
-	BYTE buffer[5];
-	buffer[0] = PipeConstants::Status::HELLO | 4; // HELLO byte with next 4 bytes as parameter
-	buffer[1] = *reinterpret_cast<BYTE*>(&fieldSize); // Reinterpret the uint into bytes and add it to the buffer (strange intentional buffer overflow) -- NEEDS TESTING
-	Write(buffer, 5);
-	return true;
+	BYTE buffer[13];
+	buffer[0] = PipeConstants::Status::HELLO; // Reply with HELLO byte
+
+	buffer[2] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX; // Send iMax, demarked with PRMSTART and PRMEND
+	for (int i = 0; i < 4; i++) {
+		buffer[i + 2] = iMax >> i;
+	}
+	buffer[6] = PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX;
+
+	buffer[7] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX; // Send jMax, demarked with PRMSTART and PRMEND
+	for (int i = 0; i < 4; i++) {
+		buffer[i + 8] = jMax >> i;
+	}
+	buffer[12] = PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX;
+
+	Write(buffer, 12);
+
+	return Read() == PipeConstants::Status::OK; // Success if an OK byte is received
 }
 
-int PipeManager::Handshake() {
+std::pair<int,int> PipeManager::Handshake() {
 	BYTE receivedByte = Read();
 
-	if ((receivedByte & PipeConstants::Status::GENERIC) != PipeConstants::Status::HELLO) { // We need a HELLO byte
-		std::cerr << "Handshake not completed - server sent malformed request";
-		Write(PipeConstants::Error::BADREQ);
-		return false;
-	}
-	if ((receivedByte & PipeConstants::Status::PARAMMASK) != 4) { // With a parameter of length 4
-		std::cerr << "Handshake not completed - server sent malformed request";
-		Write(PipeConstants::Error::BADPARAM);
-		return false;
-	}
+	if (receivedByte != PipeConstants::Status::HELLO) { return std::pair<int, int>(0, 0); } // We need a HELLO byte, (0,0) is the error case
 
-	BYTE buffer[4];
-	Read(buffer, 4);
-	return *reinterpret_cast<int*>(buffer); // Reinterpret the received bytes into an int
+	BYTE buffer[13];
+	Read(buffer, 12);
+
+	if (buffer[1] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should start with PRMSTART
+	int iMax = *reinterpret_cast<int*>(buffer + 2);
+	if (buffer[6] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should end with PRMEND
+
+	if (buffer[7] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
+	int jMax = *reinterpret_cast<int*>(buffer + 8);
+	if (buffer[12] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
+
+	Write(PipeConstants::Status::OK); // Send an OK byte to show the transmission was successful
+
+	return std::pair<int, int>(iMax, jMax);
 }
 
 bool PipeManager::ReceiveObstacles(bool* obstacles, int fieldLength) {
