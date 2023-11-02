@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -50,6 +52,7 @@ namespace UserInterface
             InitializeComponent();
             DataContext = this;
             currentButton = null;
+            StartComputation();
         }
 
         private void panelButton_Click(object sender, RoutedEventArgs e)
@@ -62,6 +65,28 @@ namespace UserInterface
             else
             {
                 CurrentButton = name; //If any other panel is open, or no panel is open, open the one corresponding to the button.
+            }
+        }
+
+        private void StartComputation()
+        {
+            try
+            {
+                BackendManager backendManager = new BackendManager();
+                backendManager.ConnectBackend();
+                // Start the visualisation also
+                double[] pressure = new double[backendManager.FieldLength];
+
+                CancellationToken token = new CancellationToken();
+
+                backendManager.GetFieldStreamsAsync(null, null, pressure, null, token);
+
+            } catch (IOException e)
+            {
+                MessageBox.Show(e.Message);
+            } catch
+            {
+                MessageBox.Show("Generic error");
             }
         }
 
