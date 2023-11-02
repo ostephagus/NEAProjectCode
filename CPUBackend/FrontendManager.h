@@ -19,6 +19,12 @@ private:
 	void ReceiveData(BYTE startMarker);
 
 public:
+	/// <summary>
+	/// Constructor - sets up field dimensions and pipe name.
+	/// </summary>
+	/// <param name="iMax">The width, in cells, of the simulation domain excluding boundary cells.</param>
+	/// <param name="jMax">The height, in cells, of the simulation domain excloding boundary cells.</param>
+	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
 	FrontendManager(int iMax, int jMax, std::string pipeName);
 	int Run();
 };

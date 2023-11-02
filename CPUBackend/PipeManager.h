@@ -16,9 +16,24 @@ private:
 	void Write(BYTE byte);
 
 public:
+	/// <summary>
+	/// Constructor to connect to the named pipe
+	/// </summary>
+	/// <param name="pipeName">The name of the named pipe for communication with the frontend</param>
 	PipeManager(std::string pipeName);
+	/// <summary>
+	/// Constructor accepting an already connected pipe's handle
+	/// </summary>
+	/// <param name="pipeHandle">The handle of a connected pipe</param>
 	PipeManager(HANDLE pipeHandle);
+	/// <summary>
+	/// Pipe manager destructor - disconnects from the named pipe then closes
+	/// </summary>
 	~PipeManager();
+	/// <summary>
+	/// Performs a handshake with the frontend.
+	/// </summary>
+	/// <returns>
 	bool Handshake(int fieldSize);
 	int Handshake();
 	bool ReceiveObstacles(bool* obstacles, int fieldLength);
