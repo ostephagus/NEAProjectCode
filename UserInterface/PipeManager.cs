@@ -189,7 +189,10 @@ namespace UserInterface
 
             if (readResults.data[7] != (PipeConstants.Marker.PRMSTART | PipeConstants.Marker.JMAX)) { return (0, 0); }
             int jMax = BitConverter.ToInt32(readResults.data, 8);
-            if (readResults.data[1] != (PipeConstants.Marker.PRMEND | PipeConstants.Marker.JMAX)) { return (0, 0); }
+            if (readResults.data[12] != (PipeConstants.Marker.PRMEND | PipeConstants.Marker.JMAX)) { return (0, 0); }
+
+            WriteByte(PipeConstants.Status.OK); // Send an OK byte to show the transmission was successful
+
             return (iMax, jMax);
         }
 

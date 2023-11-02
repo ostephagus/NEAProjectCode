@@ -84,6 +84,9 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
         SetupParameters(velocities.x, velocities.y, pressure, parameters, stepSizes);
 
         bool stopRequested = false;
+
+        pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
+
         while (!stopRequested) {
             TimeStep(velocities, FG, pressure, nextPressure, RHS, streamFunction, flags, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
             if (hVelWanted) {
@@ -98,8 +101,13 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
             if (streamWanted) {
                 pipeManager.SendField(streamFunction, iMax, jMax, 0, 0);
             }
+
+            BYTE receivedByte = pipeManager.ReadByte(); // This may require duplex communication
+
+            stopRequested = receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL; // Stop if requested or the frontend fatally errors
         }
 
+        pipeManager.SendByte(PipeConstants::Status::OK); // Send OK then stop executing
 
     }
     else { // Only continuous requests are supported
@@ -125,14 +133,14 @@ FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
 {}
 
 int FrontendManager::Run() {
-    pipeManager.Handshake(fieldSize);
+    pipeManager.Handshake(iMax, jMax);
 
 
     bool closeRequested = false;
 
     while (!closeRequested) {
         BYTE receivedByte = pipeManager.ReadByte();
-        switch (receivedByte & PipeConstants::CATEGORYMASK) {
+        switch (receivedByte & PipeConstants::CATEGORYMASK) { // Gets the category of control byte
         case PipeConstants::Status::GENERIC: // Status bytes
             switch (receivedByte & ~PipeConstants::Status::PARAMMASK) {
             case PipeConstants::Status::HELLO:
@@ -157,7 +165,7 @@ int FrontendManager::Run() {
         case PipeConstants::Marker::GENERIC: // So do marker bytes
             ReceiveData(receivedByte);
             break;
-        default:
+        default: // Error bytes
             break;
         }
     }

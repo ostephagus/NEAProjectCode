@@ -189,6 +189,9 @@ namespace UserInterface
             }
 
             SendControlByte(PipeConstants.Status.STOP); // Send a request to stop the backend, and make sure its stops ok
+
+            // May need to have logic to read the last field transmission before OK byte received
+
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
             {
                 throw new IOException("Backend did not stop correctly");
