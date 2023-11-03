@@ -26,6 +26,10 @@ public:
 	/// <param name="jMax">The height, in cells, of the simulation domain excloding boundary cells.</param>
 	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
 	FrontendManager(int iMax, int jMax, std::string pipeName);
+	/// <summary>
+	/// Main method for FrontendManager class, which handles all the data flow and computation.
+	/// </summary>
+	/// <returns>An exit code to be directly returned by the program</returns>
 	int Run();
 };
 
