@@ -24,4 +24,6 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 
 void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes);
 
+void ComputeStream(DoubleField velocities, REAL** streamFunction, BYTE** flags, int iMax, int jMax, DoubleReal stepSizes);
+
 #endif

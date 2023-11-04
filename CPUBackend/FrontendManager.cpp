@@ -45,6 +45,7 @@ void FrontendManager::TimeStep(DoubleField velocities, DoubleField FG, REAL** pr
     ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
     Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
     ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+    ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
     std::cerr << "Timestep" << std::endl;
 }
 
@@ -67,7 +68,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
         REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
         REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
         REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
-        REAL** streamFunction = MatrixMAlloc(iMax, jMax);
+        REAL** streamFunction = MatrixMAlloc(iMax + 1, jMax + 1);
 
         BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
         bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);

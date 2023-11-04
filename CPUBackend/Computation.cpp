@@ -154,3 +154,13 @@ void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, 
 		}
 	}
 }
+
+void ComputeStream(DoubleField velocities, REAL** streamFunction, BYTE** flags, int iMax, int jMax, DoubleReal stepSizes) {
+	for (int i = 0; i <= iMax; i++) {
+		streamFunction[i][0] = 0; // Stream function boundary condition
+		for (int j = 1; j <= jMax; j++) {
+			streamFunction[i][j] = streamFunction[i][j - 1] + velocities.x[i][j] * stepSizes.y; // Obstacle boundary conditions are taken care of by the fact that u = 0 inside obstacle cells.
+		}
+	}
+}
+
