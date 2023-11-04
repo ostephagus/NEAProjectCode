@@ -26,6 +26,12 @@ void FrontendManager::SetupParameters(REAL** horizontalVelocity, REAL** vertical
     parameters.bodyForces.y = 0;
     stepSizes.x = parameters.width / iMax;
     stepSizes.y = parameters.height / jMax;
+
+    for (int i = 0; i < iMax; i++) {
+        for (int j = 0; j < jMax; j++) {
+            pressure[i][j] = 100;
+        }
+    }
 }
 
 void FrontendManager::TimeStep(DoubleField velocities, DoubleField FG, REAL** pressure, REAL** nextPressure, REAL** RHS, REAL** streamFunction, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, const SimulationParameters& parameters, DoubleReal stepSizes) {

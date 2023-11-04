@@ -16,6 +16,17 @@ private:
 	void Write(const BYTE* buffer, int bufferLength);
 	void Write(BYTE byte);
 
+	/// <summary>
+	/// A method to convert a 2D array of REALs (field) into a flat array of BYTEs for transmission over the pipe.
+	/// </summary>
+	/// <param name="buffer">An array of BYTEs, with length 8 * fieldSize.</param>
+	/// <param name="field">The 2D array of REALs to serialise.</param>
+	/// <param name="xLength">The number of REALs to serialise in the x direction.</param>
+	/// <param name="yLength">The number of REALs to serialise in the y direction.</param>
+	/// <param name="xOffset">The x-index of the first REAL to be serialised.</param>
+	/// <param name="yOffset">The y-index of the first REAL to be serialised.</param>
+	void SerialiseField(BYTE* buffer, REAL** field, int xLength, int yLength, int xOffset, int yOffset);
+
 public:
 	/// <summary>
 	/// Constructor to connect to the named pipe

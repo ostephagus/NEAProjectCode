@@ -33,6 +33,7 @@ namespace UserInterface
             {
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
+                backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 return true;
             }
@@ -191,6 +192,8 @@ namespace UserInterface
                 }
 
                 if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITEREND) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should end with an ITEREND
+                Trace.WriteLine($"Pressure (25,25): {pressure[25 * jMax + 25]}");
+                SendControlByte(PipeConstants.Status.OK);
             }
 
             SendControlByte(PipeConstants.Status.STOP); // Send a request to stop the backend, and make sure its stops ok

@@ -1,7 +1,9 @@
 #include "PipeManager.h"
 #include <iostream>
 #include "PipeConstants.h"
+#include <algorithm>
 
+#pragma region Private Methods
 std::wstring PipeManager::WidenString(std::string input) {
 	return std::wstring(input.begin(), input.end());
 }
@@ -44,6 +46,25 @@ void PipeManager::Write(BYTE byte) {
 	}
 }
 
+void PipeManager::SerialiseField(BYTE* buffer, REAL** field, int xLength, int yLength, int xOffset, int yOffset) {
+	/*
+	* The thinking is thus:
+	* Each "row" of the field will be stored contiguously
+	* The relevant part of these rows will span from (yOffset) to (yOffset + yLength)
+	* Therefore each row can be copied directly into the buffer
+	* The location in the buffer will have to increment by yLength * sizeof(REAL) each time.
+	*/
+	for (int i = 0; i < xLength; i++) { // Copy one row at a time (rows are not guaranteed to be contiguously stored)
+		std::memcpy(
+			buffer + i * yLength * sizeof(REAL), // Start index of destination, buffer + i * column length * 8
+			field[i + xOffset] + yOffset, // Start index of source, start index of the column + y offset
+			yLength * sizeof(REAL) // Number of bytes to copy, column size * 8
+		);
+	}
+}
+#pragma endregion
+
+#pragma region Constructors/Destructors
 // Constructor for a named pipe, yet to be connected to
 PipeManager::PipeManager(std::string pipeName) {
 	pipeHandle = CreateFile(WidenString("\\\\.\\pipe\\" + pipeName).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -56,7 +77,9 @@ PipeManager::PipeManager(HANDLE existingHandle) : pipeHandle(existingHandle) {} 
 PipeManager::~PipeManager() {
 	CloseHandle(pipeHandle);
 }
+#pragma endregion
 
+#pragma region Public Methods
 bool PipeManager::Handshake(int iMax, int jMax) {
 	BYTE receivedByte = Read();
 	if (receivedByte != PipeConstants::Status::HELLO) { // We need a HELLO byte
@@ -153,13 +176,10 @@ void PipeManager::SendField(REAL** field, int xLength, int yLength, int xOffset,
 {
 	BYTE* buffer = new BYTE[xLength * yLength * sizeof(REAL)];
 
-	for (int i = xOffset; i < xLength + xOffset; i++) {
-		for (int j = yOffset; j < yLength + yOffset; j++) {
-			BYTE serialised[8];
-			serialised[0] = *reinterpret_cast<BYTE*>(&field[i][j]) // Create 8 byte array
-			buffer[i * yLength + j] = 
-		}
-	}
+	SerialiseField(buffer, field, xLength, yLength, xOffset, yOffset);
+
+	Write(buffer, xLength * yLength * sizeof(REAL));
 
 	delete[] buffer;
 }
+#pragma endregion
