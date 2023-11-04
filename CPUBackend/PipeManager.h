@@ -22,24 +22,48 @@ public:
 	/// </summary>
 	/// <param name="pipeName">The name of the named pipe for communication with the frontend</param>
 	PipeManager(std::string pipeName);
+
 	/// <summary>
 	/// Constructor accepting an already connected pipe's handle
 	/// </summary>
 	/// <param name="pipeHandle">The handle of a connected pipe</param>
 	PipeManager(HANDLE pipeHandle);
+
 	/// <summary>
 	/// Pipe manager destructor - disconnects from the named pipe then closes
 	/// </summary>
 	~PipeManager();
+
 	/// <summary>
 	/// Performs a handshake with the frontend.
 	/// </summary>
-	/// <returns>
+	/// <returns>A boolean indicating whether the handshake completed successfully.</returns>
 	bool Handshake(int iMax, int jMax);
+
+	/// <summary>
+	/// Performs a handshake with the frontend.
+	/// </summary>
+	/// <returns>A std::pair, with the values of iMax and jMax (the simulation domain's dimensions).</returns>
 	std::pair<int, int> Handshake();
+
+	/// <summary>
+	/// A subroutine to receive obstacles through the pipe, and convert them to a bool array.
+	/// </summary>
+	/// <param name="obstacles">The obstacles array to output to.</param>
+	/// <param name="fieldLength">The size of the field.</param>
+	/// <returns>A boolean indicating whether the action was successful.</returns>
 	bool ReceiveObstacles(bool* obstacles, int fieldLength);
 	BYTE ReadByte();
 	void SendByte(BYTE byte);
+
+	/// <summary>
+	/// Sends the contents of a field through the pipe.
+	/// </summary>
+	/// <param name="field">An array of pointers to the rows of the field.</param>
+	/// <param name="xLength">The length in the x direction that will be transmitted.</param>
+	/// <param name="yLength">The length in the y direction that will be transmitted.</param>
+	/// <param name="xOffset">The x-index of the first value to be transmitted.</param>
+	/// <param name="yOffset">The y-index of the first value to be transmitted.</param>
 	void SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset);
 };
 

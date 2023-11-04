@@ -24,8 +24,12 @@ namespace UserInterface
     public partial class SimulationScreen : UserControl, INotifyPropertyChanged
     {
         private SidePanelButton? currentButton;
+        private CancellationTokenSource backendCancellationTokenSource;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+        public static event CancelEventHandler? StopBackendExecuting;
+
+        public ICommand Command_StopBackendExecuting { get; } = new Commands.StopBackend();
 
         public string? CurrentButton //Conversion between string and internal enum value done in property
         {
@@ -52,7 +56,9 @@ namespace UserInterface
             InitializeComponent();
             DataContext = this;
             currentButton = null;
-            StartComputation();
+            backendCancellationTokenSource = new CancellationTokenSource();
+            StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
+            Task t = Task.Run(StartComputation); // Asynchronously run the computation
         }
 
         private void panelButton_Click(object sender, RoutedEventArgs e)
@@ -77,9 +83,7 @@ namespace UserInterface
                 // Start the visualisation also
                 double[] pressure = new double[backendManager.FieldLength];
 
-                CancellationToken token = new CancellationToken();
-
-                backendManager.GetFieldStreamsAsync(null, null, pressure, null, token);
+                backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
 
             } catch (IOException e)
             {
@@ -88,6 +92,11 @@ namespace UserInterface
             {
                 MessageBox.Show("Generic error");
             }
+        }
+
+        public static void RaiseStopBackendExecuting()
+        {
+            StopBackendExecuting.Invoke(null, new CancelEventArgs());
         }
 
         public enum SidePanelButton //Different side panels on SimluationScreen

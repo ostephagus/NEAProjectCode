@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Linq;
 using System.Numerics;
@@ -65,28 +66,49 @@ namespace UserInterface
         /// Attempts a read operation of the pipe stream
         /// </summary>
         /// <returns>A ReadResults struct, including whether any data was read and the data (if applicable)</returns>
+        //public ReadResults AttemptRead()
+        //{
+        //    int currentByte = pipeStream.ReadByte();
+        //    if (currentByte == -1) // Nothing to read - return nothing read
+        //    {
+        //        return new ReadResults { anythingRead = false, data = new byte[1] };
+        //    }
+        //    Trace.WriteLine("Something was read");
+        //    byte[] buffer = new byte[1024]; // Create a new buffer 1kiB
+        //    int index = 0;
+        //    Trace.WriteLine($"Byte read: {currentByte}");
+        //    do
+        //    {
+        //        buffer[index] = (byte)currentByte; // Put the current byte in the buffer
+        //        index++;
+        //        if (index == buffer.Length) // Double the size of the array if it becomes inadequate
+        //        {
+        //            Array.Resize(ref buffer, 2 * index);
+        //        }
+        //        currentByte = pipeStream.ReadByte();
+        //        Trace.WriteLine($"Byte read: {currentByte}");
+        //    } while (currentByte != -1);
+
+        //    Array.Resize(ref buffer, index); // Resize the array to be only as long as is needed
+        //    return new ReadResults { anythingRead = true, data = buffer };
+        //}
+
         public ReadResults AttemptRead()
         {
-            int currentByte = pipeStream.ReadByte();
-            if (currentByte == -1) // Nothing to read - return nothing read
-            {
-                return new ReadResults { anythingRead = false, data = new byte[1] };
+            byte[] buffer = new byte[1024]; // Start by reading 1kiB of the pipe
+            int bytesRead = pipeStream.Read(buffer, 0, buffer.Length);
+            if (bytesRead == 0) { 
+                return new ReadResults { anythingRead = false, data = new byte[1] }; 
             }
-            byte[] buffer = new byte[1024]; // Create a new buffer 1kiB
-            int index = 0;
-            do
+            int offset = 1;
+            while (bytesRead == 1024) // While the buffer gets filled
             {
-                buffer[index] = (byte)currentByte; // Put the current byte in the buffer
-                index++;
-                if (index == buffer.Length) // Double the size of the array if it becomes inadequate
-                {
-                    Array.Resize(ref buffer, 2 * index);
-                }
-                currentByte = pipeStream.ReadByte();
-            } while (currentByte != -1);
-
-            Array.Resize(ref buffer, index); // Resize the array to be only as long as is needed
-            return new ReadResults { anythingRead = true, data = buffer };
+                Array.Resize(ref buffer, 1024 * (offset + 1)); // Resize the buffer by 1kiB
+                bytesRead = pipeStream.Read(buffer, offset * 1024, 1024); // Read the next 1k bytes
+                offset++;
+            }
+            Array.Resize(ref buffer, (offset - 1) * 1024 + bytesRead); // Resize the buffer to the actual length of data
+            return new ReadResults { anythingRead = true, data = buffer };            
         }
 
         public async Task<ReadResults> ReadFieldAsync(FieldType field, int fieldLength)
@@ -177,7 +199,6 @@ namespace UserInterface
             pipeStream.WaitForPipeDrain();
 
             ReadResults readResults = AttemptRead();
-
             if (!readResults.anythingRead || readResults.data[0] != PipeConstants.Status.HELLO)
             {
                 return (0, 0); // Error case

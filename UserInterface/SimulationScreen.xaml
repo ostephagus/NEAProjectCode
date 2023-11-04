@@ -148,6 +148,7 @@
             <Button>Advanced parameters</Button>
             <Button>Save as image</Button>
             <Button>Save as video</Button>
+            <Button Command="{Binding Command_StopBackendExecuting}">Stop simulating</Button>
         </StackPanel>
     </Grid>
 </UserControl>

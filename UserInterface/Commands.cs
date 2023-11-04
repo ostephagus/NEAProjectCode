@@ -22,6 +22,17 @@ namespace UserInterface
                 App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((WindowChangeParameter)parameter));
             }
         }
+        public class StopBackend : ICommand
+        {
+            public event EventHandler? CanExecuteChanged;
+
+            public bool CanExecute(object? parameter) { return true; } //Unless app logic changes, this command can always execute.
+
+            public void Execute(object? parameter)
+            {
+                SimulationScreen.RaiseStopBackendExecuting();
+            }
+        }
     }
     public struct WindowChangeParameter
     {

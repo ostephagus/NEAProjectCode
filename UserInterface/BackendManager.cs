@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace UserInterface
 {
@@ -47,6 +48,7 @@ namespace UserInterface
             pipeManager = new PipeManager("NEAFluidDynamicsPipe");
             pipeManager.WaitForConnection();
             (iMax, jMax) = pipeManager.Handshake();
+            Trace.WriteLine($"iMax: {iMax}, jMax: {jMax}");
             return iMax > 0 && jMax > 0; // (0,0) is the error condition
         }
 
@@ -179,9 +181,12 @@ namespace UserInterface
                     byte fieldBits = (byte)namedFields[fieldNum];
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
                     
-                    await pipeManager.ReadAsync(tmpByteBuffer, (int)(FieldLength * 8)); // Read the stream of bytes into the temporary buffer
-                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, (int)(FieldLength * 8)); // Copy the bytes from the temporary buffer into the double array
-                    
+                    await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * 8); // Read the stream of bytes into the temporary buffer
+                    for (int i = 0; i < tmpByteBuffer.Length; i++)
+                    {
+                        Console.WriteLine($"{i}: {tmpByteBuffer[i]}");
+                    }
+                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * 8); // Copy the bytes from the temporary buffer into the double array
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
                 }
 

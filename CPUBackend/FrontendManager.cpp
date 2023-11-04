@@ -39,6 +39,7 @@ void FrontendManager::TimeStep(DoubleField velocities, DoubleField FG, REAL** pr
     ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
     Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
     ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+    std::cerr << "Timestep" << std::endl;
 }
 
 void FrontendManager::HandleRequest(BYTE requestByte) {
@@ -88,19 +89,30 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
         pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
         while (!stopRequested) {
+            pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
             TimeStep(velocities, FG, pressure, nextPressure, RHS, streamFunction, flags, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
             if (hVelWanted) {
+                pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::HVEL);
                 pipeManager.SendField(velocities.x, iMax, jMax, 1, 1); // Set the offsets to 1 and the length to iMax / jMax to exclude boundary cells at cells 0 and max
+                pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::HVEL);
             }
             if (vVelWanted) {
+                pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::VVEL);
                 pipeManager.SendField(velocities.y, iMax, jMax, 1, 1);
+                pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::VVEL);
             }
             if (pressureWanted) {
+                pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::PRES);
                 pipeManager.SendField(pressure, iMax, jMax, 1, 1);
+                pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::PRES);
             }
             if (streamWanted) {
+                pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::STRM);
                 pipeManager.SendField(streamFunction, iMax, jMax, 0, 0);
+                pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::STRM);
             }
+
+            pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
             BYTE receivedByte = pipeManager.ReadByte(); // This may require duplex communication
 
@@ -134,7 +146,7 @@ FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
 
 int FrontendManager::Run() {
     pipeManager.Handshake(iMax, jMax);
-
+    std::cerr << "Handshake completed ok" << std::endl;
 
     bool closeRequested = false;
 

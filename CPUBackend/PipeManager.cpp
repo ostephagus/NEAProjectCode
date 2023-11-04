@@ -47,6 +47,7 @@ void PipeManager::Write(BYTE byte) {
 // Constructor for a named pipe, yet to be connected to
 PipeManager::PipeManager(std::string pipeName) {
 	pipeHandle = CreateFile(WidenString("\\\\.\\pipe\\" + pipeName).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	std::cout << "File opened" << std::endl;
 }
 
 // Constructor for if the named pipe has already been connected to
@@ -63,23 +64,24 @@ bool PipeManager::Handshake(int iMax, int jMax) {
 		Write(PipeConstants::Error::BADREQ);
 		return false;
 	}
+
 	
 	BYTE buffer[13];
 	buffer[0] = PipeConstants::Status::HELLO; // Reply with HELLO byte
 
-	buffer[2] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX; // Send iMax, demarked with PRMSTART and PRMEND
+	buffer[1] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX; // Send iMax, demarked with PRMSTART and PRMEND
 	for (int i = 0; i < 4; i++) {
-		buffer[i + 2] = iMax >> i;
+		buffer[i + 2] = iMax >> (i * 8);
 	}
 	buffer[6] = PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX;
 
-	buffer[7] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX; // Send jMax, demarked with PRMSTART and PRMEND
+	buffer[7] = PipeConstants::Marker::PRMSTART | PipeConstants::Marker::JMAX; // Send jMax, demarked with PRMSTART and PRMEND
 	for (int i = 0; i < 4; i++) {
-		buffer[i + 8] = jMax >> i;
+		buffer[i + 8] = jMax >> (i * 8);
 	}
-	buffer[12] = PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX;
+	buffer[12] = PipeConstants::Marker::PRMEND | PipeConstants::Marker::JMAX;
 
-	Write(buffer, 12);
+	Write(buffer, 13);
 
 	return Read() == PipeConstants::Status::OK; // Success if an OK byte is received
 }
@@ -149,8 +151,15 @@ void PipeManager::SendByte(BYTE byte) {
 
 void PipeManager::SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset)
 {
-	for (int i = xOffset; i < xLength; i++) {
-		BYTE* buffer = reinterpret_cast<BYTE*>(field[i] + yOffset); // Get a byte pointer to field[i][yOffset] (start of ith row)
-		Write(buffer, (yLength - yOffset) * 8); // yLength - yOffset is the number of doubles in the array, *8 to get number of bytes
+	BYTE* buffer = new BYTE[xLength * yLength * sizeof(REAL)];
+
+	for (int i = xOffset; i < xLength + xOffset; i++) {
+		for (int j = yOffset; j < yLength + yOffset; j++) {
+			BYTE serialised[8];
+			serialised[0] = *reinterpret_cast<BYTE*>(&field[i][j]) // Create 8 byte array
+			buffer[i * yLength + j] = 
+		}
 	}
+
+	delete[] buffer;
 }
