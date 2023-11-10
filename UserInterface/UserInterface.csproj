@@ -27,6 +27,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="OpenTK" Version="4.8.1" />
+    <PackageReference Include="OpenTK.GLWpfControl" Version="4.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Visualisation\Visualisation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Images\ParametersIcon.png" />
     <Resource Include="Images\RecordingIcon.png" />
     <Resource Include="Images\UnitsIcon.png" />
