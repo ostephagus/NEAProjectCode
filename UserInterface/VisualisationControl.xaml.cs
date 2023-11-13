@@ -11,6 +11,8 @@ namespace UserInterface
     /// </summary>
     public partial class VisualisationControl : UserControl
     {
+        Random rng = new Random(); // Testing
+
         ShaderManager shaderManager;
 
         float[] fieldValues;
@@ -27,6 +29,17 @@ namespace UserInterface
         {
             InitializeComponent();
             DataContext = this;
+
+            width = 5;
+            height = 5;
+            fieldValues = new float[width * height];
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    fieldValues[i * width + j] = 1f;
+                }
+            }
 
             GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 3 };
             GLControl.Start(settings);
@@ -46,7 +59,7 @@ namespace UserInterface
             OpenGLHelper.CreateAttribPointer(0, 2, 3, 0);
             OpenGLHelper.CreateAttribPointer(1, 1, 3, 1);
 
-            OpenGLHelper.FillIndices(width, height);
+            indices = OpenGLHelper.FillIndices(width, height);
             hElementBuffer = OpenGLHelper.CreateEBO(indices);
 
             shaderManager.Use();
