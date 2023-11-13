@@ -11,8 +11,6 @@ namespace UserInterface
     /// </summary>
     public partial class VisualisationControl : UserControl
     {
-        Random rng = new Random(); // Testing
-
         ShaderManager shaderManager;
 
         float[] fieldValues;
@@ -30,14 +28,14 @@ namespace UserInterface
             InitializeComponent();
             DataContext = this;
 
-            width = 5;
-            height = 5;
+            width = 10;
+            height = 10;
             fieldValues = new float[width * height];
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    fieldValues[i * width + j] = 1f;
+                    fieldValues[i * width + j] = (float)i / width;
                 }
             }
 
@@ -57,7 +55,7 @@ namespace UserInterface
             hVertexArrayObject = OpenGLHelper.CreateVAO();
 
             OpenGLHelper.CreateAttribPointer(0, 2, 3, 0);
-            OpenGLHelper.CreateAttribPointer(1, 1, 3, 1);
+            OpenGLHelper.CreateAttribPointer(1, 1, 3, 2);
 
             indices = OpenGLHelper.FillIndices(width, height);
             hElementBuffer = OpenGLHelper.CreateEBO(indices);
