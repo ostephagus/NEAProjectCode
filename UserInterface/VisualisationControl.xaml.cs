@@ -72,7 +72,11 @@ namespace UserInterface
 
             OpenGLHelper.Draw(hVertexArrayObject, indices);
 
-            Trace.WriteLine(GL.GetError().ToString());
+            ErrorCode errorCode = GL.GetError();
+            if (errorCode != ErrorCode.NoError)
+            {
+                Trace.WriteLine(errorCode.ToString());
+            }
         }
     }
 }

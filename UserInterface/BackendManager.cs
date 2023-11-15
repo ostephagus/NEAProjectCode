@@ -49,7 +49,6 @@ namespace UserInterface
             pipeManager = new PipeManager("NEAFluidDynamicsPipe");
             pipeManager.WaitForConnection();
             (iMax, jMax) = pipeManager.Handshake();
-            Trace.WriteLine($"iMax: {iMax}, jMax: {jMax}");
             return iMax > 0 && jMax > 0; // (0,0) is the error condition
         }
 
@@ -192,7 +191,6 @@ namespace UserInterface
                 }
 
                 if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITEREND) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should end with an ITEREND
-                Trace.WriteLine($"Pressure (25,25): {pressure[25 * jMax + 25]}");
                 SendControlByte(PipeConstants.Status.OK);
             }
 
