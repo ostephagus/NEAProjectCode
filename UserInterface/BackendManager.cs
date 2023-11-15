@@ -206,5 +206,25 @@ namespace UserInterface
             }
             // Backend stopped correctly, so exit.
         }
+
+        public async Task<bool> StopBackend()
+        {
+            SendControlByte(PipeConstants.Status.CLOSE);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
+            {
+                return false;
+            }
+            if (!backendProcess.HasExited)
+            {
+                return false;
+            }
+            backendProcess.Close();
+            return true;
+        }
+
+        public void ForceClose()
+        {
+            backendProcess.Close();
+        }
     }
 }
