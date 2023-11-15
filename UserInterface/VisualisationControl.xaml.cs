@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Wpf;
 using System;
+using System.Diagnostics;
 using System.Windows.Controls;
 using Visualisation;
 
@@ -39,7 +40,7 @@ namespace UserInterface
                 }
             }
 
-            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 3 };
+            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 6 };
             GLControl.Start(settings);
 
             shaderManager = new("shader.vert", "shader.frag");
@@ -70,6 +71,8 @@ namespace UserInterface
             shaderManager.Use();
 
             OpenGLHelper.Draw(hVertexArrayObject, indices);
+
+            Trace.WriteLine(GL.GetError().ToString());
         }
     }
 }
