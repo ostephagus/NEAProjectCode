@@ -50,13 +50,14 @@ namespace UserInterface
         private void SetUpGL()
         {
             GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
-
             vertices = GLHelper.FillVertices(width, height);
             hVertexBuffer = GLHelper.CreateVBO();
             hVertexArrayObject = GLHelper.CreateVAO();
 
             GLHelper.BufferSubData(vertices, 0);
+            Trace.WriteLine(GL.GetError().ToString());
             GLHelper.BufferSubData(fieldValues, vertices.Length);
+            Trace.WriteLine(GL.GetError().ToString());
 
             GLHelper.CreateAttribPointer(0, 2, 2, 0);
             GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
