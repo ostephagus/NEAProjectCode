@@ -40,7 +40,7 @@ namespace UserInterface
                 }
             }
 
-            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 6 };
+            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
             shaderManager = new("shader.vert", "shader.frag");
