@@ -66,6 +66,13 @@ namespace UserInterface
 
             UserControlChanged += ChangeUserControl;
         }
+
+        public void StartVisualisationDebugging(object sender, StartupEventArgs e)
+        {
+            fullScreenWindowContainer = new MainWindow();
+            fullScreenWindowContainer.Content = new VisualisationControl();
+            fullScreenWindowContainer.Show();
+        }
     }
 
     public class UserControlChangeEventArgs : EventArgs //EventArgs child containing parameters for changing UserControl
