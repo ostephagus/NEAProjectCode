@@ -2,7 +2,7 @@
 
 namespace Visualisation
 {
-    public static class OpenGLHelper
+    public static class GLHelper
     {
         /// <summary>
         /// Creates an array of vertices, with values for each coordinate in the field.
@@ -11,9 +11,9 @@ namespace Visualisation
         /// <param name="width">The number of vertices in the x direction.</param>
         /// <param name="height">The number of vertices in the y direction</param>
         /// <returns>An array of floats to be passed to the vertex shader.s</returns>
-        public static float[] FillVertices(float[] fieldValues, int width, int height)
+        public static float[] FillVertices(int width, int height)
         {
-            float[] vertices = new float[3 * width * height];
+            float[] vertices = new float[2 * width * height];
 
             float horizontalStep = 2f / (width - 1);
             float verticalStep = 2f / (height - 1);
@@ -23,9 +23,8 @@ namespace Visualisation
                 for (int j = 0; j < height; j++)
                 {
                     // Need to start at bottom left (-1, -1) and go horizontally then vertically to top right (1, 1)
-                    vertices[i * height * 3 + j * 3 + 0] = j * horizontalStep - 1; // Starting at -1, increase x coordinate each time
-                    vertices[i * height * 3 + j * 3 + 1] = i * verticalStep - 1;  // Starting at -1, increase y coordinate after each rows
-                    vertices[i * height * 3 + j * 3 + 2] = fieldValues[i * height + j];
+                    vertices[i * height * 2 + j * 2 + 0] = j * horizontalStep - 1; // Starting at -1, increase x coordinate each iteration of inner loop
+                    vertices[i * height * 2 + j * 2 + 1] = i * verticalStep - 1;  // Starting at -1, increase y coordinate after each iteration of outer loop
                 }
             }
             return vertices;
@@ -56,7 +55,7 @@ namespace Visualisation
             return indices;
         }
         /// <summary>
-        /// Creates an element buffer object, inclulding the indices of the triangles that are to be drawn.
+        /// Creates an element buffer object, and buffers the indices array
         /// </summary>
         /// <param name="indices">An array representing the indices of the triangles that are to be drawn.</param>
         /// <returns>A handle to the created EBO</returns>
@@ -93,16 +92,24 @@ namespace Visualisation
         }
 
         /// <summary>
-        /// Creates a buffer and binds the vertex array to it.
+        /// Creates a buffer and binds it.
         /// </summary>
-        /// <param name="vertices">The vertex array to be copied into the buffer.</param>
         /// <returns>A handle to the created VBO.</returns>
-        public static int CreateVBO(float[] vertices)
+        public static int CreateVBO()
         {
             int VBOHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
             return VBOHandle;
+        }
+
+        /// <summary>
+        /// Copies a <c>float[]</c> into part of a buffer, starting at <paramref name="offset"/>
+        /// </summary>
+        /// <param name="data">The <c>float[]</c> to be copied into the buffer</param>
+        /// <param name="offset">The desired index of the first float to be copied</param>
+        public static void BufferSubData(float[] data, int offset)
+        {
+            GL.BufferSubData(BufferTarget.ArrayBuffer, offset * sizeof(float), data.Length * sizeof(float), data);
         }
         
         /// <summary>

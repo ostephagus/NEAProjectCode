@@ -51,15 +51,18 @@ namespace UserInterface
         {
             GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
 
-            vertices = OpenGLHelper.FillVertices(fieldValues, width, height);
-            hVertexBuffer = OpenGLHelper.CreateVBO(vertices);
-            hVertexArrayObject = OpenGLHelper.CreateVAO();
+            vertices = GLHelper.FillVertices(width, height);
+            hVertexBuffer = GLHelper.CreateVBO();
+            hVertexArrayObject = GLHelper.CreateVAO();
 
-            OpenGLHelper.CreateAttribPointer(0, 2, 3, 0);
-            OpenGLHelper.CreateAttribPointer(1, 1, 3, 2);
+            GLHelper.BufferSubData(vertices, 0);
+            GLHelper.BufferSubData(fieldValues, vertices.Length);
 
-            indices = OpenGLHelper.FillIndices(width, height);
-            hElementBuffer = OpenGLHelper.CreateEBO(indices);
+            GLHelper.CreateAttribPointer(0, 2, 2, 0);
+            GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
+
+            indices = GLHelper.FillIndices(width, height);
+            hElementBuffer = GLHelper.CreateEBO(indices);
 
             shaderManager.Use();
         }
@@ -70,12 +73,12 @@ namespace UserInterface
 
             shaderManager.Use();
 
-            OpenGLHelper.Draw(hVertexArrayObject, indices);
+            GLHelper.Draw(hVertexArrayObject, indices);
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)
             {
-                Trace.WriteLine(errorCode.ToString());
+                Trace.WriteLine("\x1B[31m" + errorCode.ToString() + "\033[0m");
             }
         }
     }
