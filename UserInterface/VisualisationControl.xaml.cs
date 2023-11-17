@@ -51,7 +51,7 @@ namespace UserInterface
         {
             GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
             vertices = GLHelper.FillVertices(width, height);
-            hVertexBuffer = GLHelper.CreateVBO();
+            hVertexBuffer = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);
             hVertexArrayObject = GLHelper.CreateVAO();
 
             GLHelper.BufferSubData(vertices, 0);
@@ -71,6 +71,8 @@ namespace UserInterface
         public void GLControl_OnRender(TimeSpan delta)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
+
+            // Transfer field values to GPU
 
             shaderManager.Use();
 

@@ -103,6 +103,19 @@ namespace Visualisation
         }
 
         /// <summary>
+        /// Creates a buffer and binds it, filling it with blank data to ensure it is the correct size.
+        /// </summary>
+        /// <param name="size">The length, in number of floats, of the desired buffer.</param>
+        /// <returns>A handle to the created VBO.</returns>
+        public static int CreateVBO(int size)
+        {
+            int VBOHandle = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBOHandle);
+            GL.BufferData(BufferTarget.ArrayBuffer, size * sizeof(float), new float[size], BufferUsageHint.StreamDraw);
+            return VBOHandle;
+        }
+
+        /// <summary>
         /// Copies a <c>float[]</c> into part of a buffer, starting at <paramref name="offset"/>
         /// </summary>
         /// <param name="data">The <c>float[]</c> to be copied into the buffer</param>
