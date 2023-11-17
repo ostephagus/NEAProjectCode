@@ -2,6 +2,9 @@
 
 in float relativeStrength;
 
+uniform float subtrahend; // All strength values must have this subtracted from them for the range [0, max] ...
+uniform float scalar; // ... and then must be multiplied by this to be in the range [0, 1] for processing
+
 out vec4 FragColour;
 
 void CalculateColour(out vec4 colourVector, in float strength)
@@ -30,5 +33,6 @@ void CalculateColour(out vec4 colourVector, in float strength)
 
 void main()
 {
-    CalculateColour(FragColour, relativeStrength);
+    float normalisedStrength = (relativeStrength - subtrahend) * scalar;
+    CalculateColour(FragColour, normalisedStrength);
 }

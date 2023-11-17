@@ -56,9 +56,9 @@ void PipeManager::SerialiseField(BYTE* buffer, REAL** field, int xLength, int yL
 	*/
 	for (int i = 0; i < xLength; i++) { // Copy one row at a time (rows are not guaranteed to be contiguously stored)
 		std::memcpy(
-			buffer + i * yLength * sizeof(REAL), // Start index of destination, buffer + i * column length * 8
+			buffer + i * yLength * sizeof(REAL), // Start index of destination, buffer + i * column length * 4
 			field[i + xOffset] + yOffset, // Start index of source, start index of the column + y offset
-			yLength * sizeof(REAL) // Number of bytes to copy, column size * 8
+			yLength * sizeof(REAL) // Number of bytes to copy, column size * 4
 		);
 	}
 }

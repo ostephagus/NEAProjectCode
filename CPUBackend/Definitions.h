@@ -3,7 +3,7 @@
 
 #include <utility>
 
-typedef double REAL;
+typedef float REAL;
 typedef unsigned __int8 BYTE;
 
 // Definitions for boundary cells. For the last 5 bits, format is [self] [north] [east] [south] [west]

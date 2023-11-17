@@ -9,7 +9,7 @@ namespace Visualisation
 
         public int Handle { get => hProgram; set => hProgram = value; }
 
-        static void ExtractShaderSources(string vertexPath, string fragmentPath, out int hVertexShader, out int hFragmentShader)
+        private static void ExtractShaderSources(string vertexPath, string fragmentPath, out int hVertexShader, out int hFragmentShader)
         {
             string vertexShaderSourceCode = File.ReadAllText(vertexPath);
             string fragmentShaderSourceCode = File.ReadAllText(fragmentPath);
@@ -21,7 +21,7 @@ namespace Visualisation
             GL.ShaderSource(hFragmentShader, fragmentShaderSourceCode);
         }
 
-        static void CompileShaders(int hVertexShader, int hFragmentShader)
+        private static void CompileShaders(int hVertexShader, int hFragmentShader)
         {
             GL.CompileShader(hVertexShader);
             GL.GetShader(hVertexShader, ShaderParameter.CompileStatus, out int success);
@@ -56,9 +56,7 @@ namespace Visualisation
 
         private void BuildProgram(string vertexPath, string fragmentPath)
         {
-            int hVertexShader, hFragmentShader;
-
-            ExtractShaderSources(vertexPath, fragmentPath, out hVertexShader, out hFragmentShader);
+            ExtractShaderSources(vertexPath, fragmentPath, out int hVertexShader, out int hFragmentShader);
             CompileShaders(hVertexShader, hFragmentShader);
             LinkShaders(hVertexShader, hFragmentShader);
 
@@ -86,6 +84,16 @@ namespace Visualisation
         public void Use()
         {
             GL.UseProgram(hProgram);
+        }
+
+        public int GetUniformLocation(string uniformName)
+        {
+            return GL.GetUniformLocation(hProgram, uniformName);
+        }
+
+        public void SetUniform(int uniformLocation, float value)
+        {
+            GL.Uniform1(uniformLocation, value);
         }
 
         public void Dispose()

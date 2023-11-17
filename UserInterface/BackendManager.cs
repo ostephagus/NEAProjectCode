@@ -33,7 +33,7 @@ namespace UserInterface
             {
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
-                backendProcess.StartInfo.CreateNoWindow = true;
+                //backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 return true;
             }
@@ -57,7 +57,7 @@ namespace UserInterface
             return pipeManager.WriteByte(controlByte);
         }
 
-        private (byte, double[][], FieldType[]) CheckFieldParameters(double[]? horizontalVelocity, double[]? verticalVelocity, double[]? pressure, double[]? streamFunction)
+        private (byte, float[][], FieldType[]) CheckFieldParameters(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction)
         {
             if (pipeManager == null)
             {
@@ -75,7 +75,7 @@ namespace UserInterface
             }
 
             byte requestByte = PipeConstants.Request.CONTREQ;
-            double[][] fields = new double[requestedFields][]; // A container for references to all the different fields
+            float[][] fields = new float[requestedFields][]; // A container for references to all the different fields
             int fieldNumber = 0;
             List<FieldType> namedFields = new List<FieldType>();
 
@@ -155,9 +155,9 @@ namespace UserInterface
         /// <param name="token">A cancellation token to stop the method and backend</param>
         /// <exception cref="InvalidOperationException">Thrown when parameters are invalid</exception>
         /// <exception cref="IOException">Thrown when backend does not respond as expected</exception>
-        public async void GetFieldStreamsAsync(double[]? horizontalVelocity, double[]? verticalVelocity, double[]? pressure, double[]? streamFunction, CancellationToken token)
+        public async void GetFieldStreamsAsync(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction, CancellationToken token)
         {
-            (byte requestByte, double[][] fields, FieldType[] namedFields) = CheckFieldParameters(horizontalVelocity, verticalVelocity, pressure, streamFunction); // Abstract the parameter checking into its own function
+            (byte requestByte, float[][] fields, FieldType[] namedFields) = CheckFieldParameters(horizontalVelocity, verticalVelocity, pressure, streamFunction); // Abstract the parameter checking into its own function
 
             SendControlByte(requestByte); // Start the backend executing
             byte receivedByte = await pipeManager.ReadAsync();
@@ -170,7 +170,7 @@ namespace UserInterface
                 throw new IOException("Result from backend not understood"); // Throw a generic error if it was not understood at all
             }
             
-            byte[] tmpByteBuffer = new byte[FieldLength * 8]; // Temporary buffer for pipe output
+            byte[] tmpByteBuffer = new byte[FieldLength * sizeof(float)]; // Temporary buffer for pipe output
 
             while (!token.IsCancellationRequested) // Repeat until the task is cancelled
             {
@@ -181,12 +181,12 @@ namespace UserInterface
                     byte fieldBits = (byte)namedFields[fieldNum];
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
                     
-                    await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * 8); // Read the stream of bytes into the temporary buffer
+                    await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * sizeof(float)); // Read the stream of bytes into the temporary buffer
                     for (int i = 0; i < tmpByteBuffer.Length; i++)
                     {
                         Console.WriteLine($"{i}: {tmpByteBuffer[i]}");
                     }
-                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * 8); // Copy the bytes from the temporary buffer into the double array
+                    Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
                 }
 

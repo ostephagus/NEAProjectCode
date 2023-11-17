@@ -178,7 +178,7 @@ void StepTestSquare() {
     FreeMatrix(FG.y, iMax + 2);
 }
 
-double TestParameters(REAL parameterValue, int iterations) {
+float TestParameters(REAL parameterValue, int iterations) {
     int iMax = 50, jMax = 50;
 
     DoubleField velocities;

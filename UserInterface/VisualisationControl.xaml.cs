@@ -12,45 +12,77 @@ namespace UserInterface
     /// </summary>
     public partial class VisualisationControl : UserControl
     {
-        ShaderManager shaderManager;
+        private ShaderManager shaderManager;
 
-        float[] fieldValues;
-        int width;
-        int height;
+        private float[] vertices;
+        private uint[] indices;
 
-        float[] vertices;
-        uint[] indices;
+        private int hVertexBuffer;
+        private int hVertexArrayObject;
+        private int hElementBuffer;
+        private int hSubtrahend;
+        private int hScalar;
 
-        int hVertexBuffer;
-        int hVertexArrayObject;
-        int hElementBuffer;
+        private float[] fieldValues;
+        private int dataWidth;
+        private int dataHeight;
+
+        private float min;
+        private float max;
+
+        public float[] FieldValues { get => fieldValues; set => fieldValues = value; }
+        public int DataWidth { get => dataWidth; set => dataWidth = value; }
+        public int DataHeight { get => dataHeight; set => dataHeight = value; }
+        public float Min { get => min; set => min = value; }
+        public float Max { get => max; set => max = value; }
+
         public VisualisationControl()
         {
             InitializeComponent();
             DataContext = this;
 
-            width = 10;
-            height = 10;
-            fieldValues = new float[width * height];
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    fieldValues[i * width + j] = (float)i / width;
-                }
-            }
+            //width = 10;
+            //height = 10;
+            //fieldValues = new float[width * height];
+            //for (int i = 0; i < width; i++)
+            //{
+            //    for (int j = 0; j < height; j++)
+            //    {
+            //        fieldValues[i * width + j] = (float)i / width;
+            //    }
+            //}
 
-            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 3, MinorVersion = 1 };
-            GLControl.Start(settings);
+            //SetUpGL();
+        }
 
-            shaderManager = new("shader.vert", "shader.frag");
+        public VisualisationControl(float[] fieldValues, int dataWidth, int dataHeight, float min, float max)
+        {
+            FieldValues = fieldValues;
+            DataWidth = dataWidth;
+            DataHeight = dataHeight;
+            Min = min;
+            Max = max;
+
+            InitializeComponent();
+            DataContext = this;
+
+            SetUpGL();
+        }
+
+        public void Start()
+        {
             SetUpGL();
         }
 
         private void SetUpGL()
         {
+            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 3, MinorVersion = 1 };
+            GLControl.Start(settings);
+
+            shaderManager = new("shader.vert", "shader.frag");
+
             GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
-            vertices = GLHelper.FillVertices(width, height);
+            vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             hVertexBuffer = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);
             hVertexArrayObject = GLHelper.CreateVAO();
 
@@ -62,17 +94,21 @@ namespace UserInterface
             GLHelper.CreateAttribPointer(0, 2, 2, 0);
             GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
 
-            indices = GLHelper.FillIndices(width, height);
+            indices = GLHelper.FillIndices(dataWidth, dataHeight);
             hElementBuffer = GLHelper.CreateEBO(indices);
 
+            hSubtrahend = shaderManager.GetUniformLocation("subtrahend");
+            hScalar = shaderManager.GetUniformLocation("scalar");
             shaderManager.Use();
+            shaderManager.SetUniform(hSubtrahend, min);
+            shaderManager.SetUniform(hScalar, 1 / (max - min));
         }
 
         public void GLControl_OnRender(TimeSpan delta)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            // Transfer field values to GPU
+            GLHelper.BufferSubData(fieldValues, vertices.Length); // Update the field values
 
             shaderManager.Use();
 

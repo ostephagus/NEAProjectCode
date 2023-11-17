@@ -96,7 +96,7 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, int
 			pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
 		}
 		else { // These are boundary cells with 2 edges
-			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / 2.0; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
+			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / (REAL)2; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
 		}
 	}
 }

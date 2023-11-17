@@ -26,6 +26,15 @@ namespace UserInterface
         private SidePanelButton? currentButton;
         private CancellationTokenSource backendCancellationTokenSource;
 
+        private BackendManager backendManager;
+
+        private float[] pressure;
+        private int dataWidth;
+        private int dataHeight;
+
+        private int min = 50;
+        private int max = 1000;
+
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
 
@@ -58,7 +67,9 @@ namespace UserInterface
             currentButton = null;
             backendCancellationTokenSource = new CancellationTokenSource();
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
-            Task t = Task.Run(StartComputation); // Asynchronously run the computation
+            StartComponents();
+            Task.Run(StartComputation); // Asynchronously run the computation
+
         }
 
         private void panelButton_Click(object sender, RoutedEventArgs e)
@@ -74,23 +85,29 @@ namespace UserInterface
             }
         }
 
+        private void StartComponents()
+        {
+            backendManager = new BackendManager();
+            backendManager.ConnectBackend();
+
+            pressure = new float[backendManager.FieldLength];
+            dataWidth = backendManager.IMax;
+            dataHeight = backendManager.JMax;
+
+            VisualisationControlHolder.Content = new VisualisationControl(pressure, dataWidth, dataHeight, min, max);
+        }
+
         private void StartComputation()
         {
             try
             {
-                BackendManager backendManager = new BackendManager();
-                backendManager.ConnectBackend();
-                // Start the visualisation also
-                double[] pressure = new double[backendManager.FieldLength];
-
                 backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
-
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
-            } catch
+            } catch (Exception e)
             {
-                MessageBox.Show("Generic error");
+                MessageBox.Show($"Generic error: {e.Message}");
             }
         }
 
