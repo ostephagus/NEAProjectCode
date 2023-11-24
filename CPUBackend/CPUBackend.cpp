@@ -76,8 +76,8 @@ void SetObstacles(bool** obstacles) { // Input: a 2D array of bools all set to 1
     obstacles[36][24] = 0;
 }
 
-void StepTestSquare() {
-    int iMax = 50, jMax = 50;
+void StepTestSquare(int squareLength) {
+    int iMax = squareLength, jMax = squareLength;
 
     DoubleField velocities;
     velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -126,7 +126,7 @@ void StepTestSquare() {
 
     for (int i = 0; i <= iMax+1; i++) {
         for (int j = 0; j <= jMax+1; j++) {
-            pressure[i][j] = 10;
+            pressure[i][j] = 1000;
         }
     }
     //PrintField(pressure, iMax+2, jMax+2, "Pressure");
@@ -260,7 +260,21 @@ float TestParameters(REAL parameterValue, int iterations) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0; // Time taken for n iterations, seconds
 }
 
-int main() {
-    FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
-    return frontendManager.Run();
+int main(int argc, char** argv) {
+    
+    if (argc < 2) {
+        std::cout << "Command-line arguments in incorrect format. There must be one argument. Arguments are pipe or compute" << std::endl;
+        return -1;
+    }
+    if (std::string(argv[1]) == std::string("pipe")) {
+        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+        return frontendManager.Run();
+    }
+    else {
+        std::cout << "Enter domain size" << std::endl;
+        int squareLength;
+        std::cin >> squareLength;
+        StepTestSquare(squareLength);
+        return 0;
+    }
 }

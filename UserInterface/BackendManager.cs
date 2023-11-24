@@ -33,6 +33,7 @@ namespace UserInterface
             {
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
+                backendProcess.StartInfo.ArgumentList.Add("pipe");
                 //backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 return true;

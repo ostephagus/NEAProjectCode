@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Graphics.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -29,6 +30,7 @@ namespace UserInterface
         private BackendManager backendManager;
 
         private float[] pressure;
+        private float[] streamFunction;
         private int dataWidth;
         private int dataHeight;
 
@@ -91,6 +93,7 @@ namespace UserInterface
             backendManager.ConnectBackend();
 
             pressure = new float[backendManager.FieldLength];
+            streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
 
@@ -101,7 +104,7 @@ namespace UserInterface
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(null, null, pressure, streamFunction, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
