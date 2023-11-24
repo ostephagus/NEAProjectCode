@@ -109,6 +109,7 @@ void StepTestSquare(int squareLength) {
     const REAL timeStepSafetyFactor = 0.8;
     const REAL relaxationParameter = 1.2;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
+    const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; //Needs experimentation
     const REAL reynoldsNo = 2000;
     const REAL inflowVelocity = 5;
@@ -158,7 +159,7 @@ void StepTestSquare(int squareLength) {
         //PrintField(FG.y, iMax + 2, jMax + 2, "G");
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
         //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         //std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
@@ -210,6 +211,7 @@ float TestParameters(REAL parameterValue, int iterations) {
     REAL relaxationParameter = 1.7;
     relaxationParameter = parameterValue;
     const REAL pressureResidualTolerance = 1;
+    const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000;
     const REAL reynoldsNo = 2000;
     const REAL inflowVelocity = 5;
@@ -244,7 +246,7 @@ float TestParameters(REAL parameterValue, int iterations) {
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-        Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
         iteration++;
     }
@@ -267,7 +269,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
-        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+        FrontendManager frontendManager(50, 50, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
     else {

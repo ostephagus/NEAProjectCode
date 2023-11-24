@@ -41,6 +41,7 @@ struct SimulationParameters
 	REAL timeStepSafetyFactor;
 	REAL relaxationParameter;
 	REAL pressureResidualTolerance;
+	int pressureMinIterations;
 	int pressureMaxIterations;
 	REAL reynoldsNo;
 	REAL inflowVelocity;

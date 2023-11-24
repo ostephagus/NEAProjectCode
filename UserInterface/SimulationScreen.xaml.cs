@@ -34,8 +34,8 @@ namespace UserInterface
         private int dataWidth;
         private int dataHeight;
 
-        private int min = 50;
-        private int max = 120;
+        private int min = 1000;
+        private int max = 1500;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
@@ -104,7 +104,7 @@ namespace UserInterface
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(null, null, pressure, streamFunction, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
