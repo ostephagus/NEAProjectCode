@@ -12,48 +12,15 @@ void FrontendManager::UnflattenArray(bool** pointerArray, bool* flattenedArray, 
 	}
 }
 
-void FrontendManager::SetupParameters(REAL** horizontalVelocity, REAL** verticalVelocity, REAL** pressure, SimulationParameters& parameters, DoubleReal stepSizes) {
-	parameters.width = 1;
-	parameters.height = 1;
-	parameters.timeStepSafetyFactor = 0.8;
-	parameters.relaxationParameter = 1.2;
-	parameters.pressureResidualTolerance = 1;
-	parameters.pressureMaxIterations = 1000;
-	parameters.reynoldsNo = 2000;
-	parameters.inflowVelocity = 5;
-	parameters.surfaceFrictionalPermissibility = 0;
-	parameters.bodyForces.x = 0;
-	parameters.bodyForces.y = 0;
-	stepSizes.x = parameters.width / iMax;
-	stepSizes.y = parameters.height / jMax;
-
-	for (int i = 0; i <= iMax + 1; i++) {
-		for (int j = 0; j <= jMax + 1; j++) {
-			pressure[i][j] = 10;
-		}
-	}
-
-	for (int i = 1; i <= iMax; i++) {
-		for (int j = 1; j <= jMax; j++) {
-			horizontalVelocity[i][j] = 4;
-			verticalVelocity[i][j] = 0;
-		}
-	}
-}
-
-void FrontendManager::TimeStep(DoubleField velocities, DoubleField FG, REAL** pressure, REAL** nextPressure, REAL** RHS, REAL** streamFunction, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, const SimulationParameters& parameters, DoubleReal stepSizes) {
-	
-	REAL timestep = 0;
-	REAL pressureResidualNorm = 0;
+void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** nextPressure, int numFluidCells, REAL& pressureResidualNorm)
+{
 	ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
 	SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 	REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
 	ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, parameters.bodyForces, gamma, parameters.reynoldsNo);
 	ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-	Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMaxIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
+	Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
 	ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-	ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
-	std::cerr << "Timestep" << std::endl;
 }
 
 void FrontendManager::HandleRequest(BYTE requestByte) {
@@ -68,78 +35,31 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		bool pressureWanted = requestByte & PipeConstants::Request::PRES;
 		bool streamWanted = requestByte & PipeConstants::Request::STRM;
 
+		SimulationParameters parameters;
 		DoubleField velocities;
-		velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
-		velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
-
-		REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
-		REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
-		REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
-
+		REAL** pressure;
+		REAL** nextPressure;
+		REAL** RHS;
 		DoubleField FG;
-		FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
-		FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
-
-		BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
-		bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-		//SetObstacles(obstacles);
-		SetFlags(obstacles, flags, iMax + 2, jMax + 2);
-		//PrintField(flags, iMax + 2, jMax + 2, "flags");
-
-		std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
-		std::pair<int, int>* coordinates = coordinatesWithLength.first;
-		int coordinatesLength = coordinatesWithLength.second;
-
-		int numFluidCells = CountFluidCells(flags, iMax, jMax);
-
-		const REAL width = 1;
-		const REAL height = 1;
-		const REAL timeStepSafetyFactor = 0.8;
-		const REAL relaxationParameter = 1.2;
-		const REAL pressureResidualTolerance = 5; //Needs experimentation
-		const int pressureMinIterations = 10;
-		const int pressureMaxIterations = 1000; //Needs experimentation
-		const REAL reynoldsNo = 2000;
-		const REAL inflowVelocity = 5;
-		const REAL surfaceFrictionalPermissibility = 0;
-		REAL pressureResidualNorm = 0;
-
-		DoubleReal bodyForces;
-		bodyForces.x = 0;
-		bodyForces.y = 0;
-
+		BYTE** flags;
+		bool** obstacles;
+		std::pair<int, int>* coordinates;
+		int coordinatesLength;
+		int numFluidCells;
 		REAL timestep;
 		DoubleReal stepSizes;
-		stepSizes.x = width / iMax;
-		stepSizes.y = height / jMax;
 
-		for (int i = 0; i <= iMax + 1; i++) {
-			for (int j = 0; j <= jMax + 1; j++) {
-				pressure[i][j] = 1000;
-			}
-		}
-		//PrintField(pressure, iMax+2, jMax+2, "Pressure");
-		for (int i = 1; i <= iMax; i++) {
-			for (int j = 1; j <= jMax; j++) {
-				velocities.x[i][j] = 4;
-				velocities.y[i][j] = 0;
-			}
-		}
+		SetParameters(velocities, pressure, nextPressure, RHS, FG, flags, obstacles, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
 
+		REAL pressureResidualNorm = 0;
 		bool stopRequested = false;
 
 		pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
 		while (!stopRequested) {
 			pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
-			ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
-			SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
-			REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
-			ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
-			ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-			Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-			ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+
+			Timestep(timestep, stepSizes, velocities, parameters, flags, coordinates, coordinatesLength, FG, RHS, pressure, nextPressure, numFluidCells, pressureResidualNorm);
 
 			if (hVelWanted) {
 				pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::HVEL);
@@ -165,11 +85,8 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 			pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
 			BYTE receivedByte = pipeManager.ReadByte(); // This may require duplex communication
-
 			stopRequested = receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL; // Stop if requested or the frontend fatally errors
 		}
-
-		std::cout << "Stopping..." << std::endl;
 
 		FreeMatrix(velocities.x, iMax + 2);
 		FreeMatrix(velocities.y, iMax + 2);
@@ -179,7 +96,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		FreeMatrix(FG.x, iMax + 2);
 		FreeMatrix(FG.y, iMax + 2);
 
-		std::cout << "Stopped." << std::endl;
+		std::cout << "Backend stopped." << std::endl;
 
 		pipeManager.SendByte(PipeConstants::Status::OK); // Send OK then stop executing
 
@@ -187,6 +104,60 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 	else { // Only continuous requests are supported
 		std::cerr << "Server sent an unsupported request" << std::endl;
 		pipeManager.SendByte(PipeConstants::Error::BADREQ);
+	}
+}
+
+void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& nextPressure, REAL**& RHS, DoubleField& FG, BYTE**& flags, bool**& obstacles, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes)
+{
+	velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
+	velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+	pressure = MatrixMAlloc(iMax + 2, jMax + 2);
+	nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
+	RHS = MatrixMAlloc(iMax + 2, jMax + 2);
+
+	FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
+	FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+	obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+	for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+	//SetObstacles(obstacles);
+	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+
+	std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
+	coordinates = coordinatesWithLength.first;
+	coordinatesLength = coordinatesWithLength.second;
+
+	numFluidCells = CountFluidCells(flags, iMax, jMax);
+
+	parameters.width = 1;
+	parameters.height = 1;
+	parameters.timeStepSafetyFactor = 0.8;
+	parameters.relaxationParameter = 1.2;
+	parameters.pressureResidualTolerance = 5;
+	parameters.pressureMinIterations = 10;
+	parameters.pressureMaxIterations = 1000;
+	parameters.reynoldsNo = 2000;
+	parameters.inflowVelocity = 5;
+	parameters.surfaceFrictionalPermissibility = 0;
+	parameters.bodyForces.x = 0;
+	parameters.bodyForces.y = 0;
+
+	stepSizes.x = parameters.width / iMax;
+	stepSizes.y = parameters.height / jMax;
+
+	for (int i = 0; i <= iMax + 1; i++) {
+		for (int j = 0; j <= jMax + 1; j++) {
+			pressure[i][j] = 1000;
+		}
+	}
+	//PrintField(pressure, iMax+2, jMax+2, "Pressure");
+	for (int i = 1; i <= iMax; i++) {
+		for (int j = 1; j <= jMax; j++) {
+			velocities.x[i][j] = 4;
+			velocities.y[i][j] = 0;
+		}
 	}
 }
 

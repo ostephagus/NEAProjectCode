@@ -259,7 +259,7 @@ float TestParameters(REAL parameterValue, int iterations) {
     FreeMatrix(RHS, iMax + 2);
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
-    return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0; // Time taken for n iterations, seconds
+    return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / (REAL)1000.0; // Time taken for n iterations, seconds
 }
 
 int main(int argc, char** argv) {
@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
-        FrontendManager frontendManager(50, 50, "NEAFluidDynamicsPipe");
+        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
     else {

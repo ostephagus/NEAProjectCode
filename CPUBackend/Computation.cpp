@@ -86,7 +86,7 @@ void ComputeRHS(DoubleField FG, REAL** RHS, BYTE** flags, int iMax, int jMax, RE
 }
 
 void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, DoubleField velocities, REAL reynoldsNo, REAL safetyFactor) {
-	REAL inverseSquareRestriction = 0.5 * reynoldsNo * (1 / (stepSizes.x * stepSizes.x) + 1 / (stepSizes.y * stepSizes.y));
+	REAL inverseSquareRestriction = (REAL)0.5 * reynoldsNo * (1 / (stepSizes.x * stepSizes.x) + 1 / (stepSizes.y * stepSizes.y));
 	REAL xTravelRestriction = stepSizes.x / fieldMax(velocities.x, iMax, jMax);
 	REAL yTravelRestriction = stepSizes.y / fieldMax(velocities.y, iMax, jMax);
 

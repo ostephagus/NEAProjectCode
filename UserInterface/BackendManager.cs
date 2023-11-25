@@ -173,7 +173,9 @@ namespace UserInterface
             
             byte[] tmpByteBuffer = new byte[FieldLength * sizeof(float)]; // Temporary buffer for pipe output
 
-            while (!token.IsCancellationRequested) // Repeat until the task is cancelled
+            bool cancellationRequested = token.IsCancellationRequested;
+
+            while (!cancellationRequested) // Repeat until the task is cancelled
             {
                 if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITERSTART) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should start with an ITERSTART
 
@@ -189,16 +191,21 @@ namespace UserInterface
                     }
                     Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
-                    Trace.WriteLine($"pressure (25, 25): {pressure[100]}");
                 }
 
                 if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITEREND) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should end with an ITEREND
-                SendControlByte(PipeConstants.Status.OK);
+
+                if (token.IsCancellationRequested)
+                {
+                    cancellationRequested = true;
+                }
+                else
+                {
+                    SendControlByte(PipeConstants.Status.OK);
+                }
             }
 
             SendControlByte(PipeConstants.Status.STOP); // Send a request to stop the backend, and make sure its stops ok
-
-            // May need to have logic to read the last field transmission before OK byte received
 
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
             {
