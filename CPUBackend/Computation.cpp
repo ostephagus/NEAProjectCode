@@ -86,7 +86,7 @@ void ComputeRHS(DoubleField FG, REAL** RHS, BYTE** flags, int iMax, int jMax, RE
 }
 
 void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, DoubleField velocities, REAL reynoldsNo, REAL safetyFactor) {
-	REAL inverseSquareRestriction = 0.5 * reynoldsNo * (1 / (stepSizes.x * stepSizes.x) + 1 / (stepSizes.y * stepSizes.y));
+	REAL inverseSquareRestriction = (REAL)0.5 * reynoldsNo * (1 / (stepSizes.x * stepSizes.x) + 1 / (stepSizes.y * stepSizes.y));
 	REAL xTravelRestriction = stepSizes.x / fieldMax(velocities.x, iMax, jMax);
 	REAL yTravelRestriction = stepSizes.y / fieldMax(velocities.y, iMax, jMax);
 
@@ -100,7 +100,7 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 	timestep = safetyFactor * smallestRestriction;
 }
 
-int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int maxIterations, REAL omega, REAL &residualNorm) {
+int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL &residualNorm) {
 	int currentIteration = 0;
 	do {
 		residualNorm = 0;
@@ -132,7 +132,7 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
 		}
 		currentIteration++;
-	} while (currentIteration < maxIterations && residualNorm > residualTolerance);
+	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
 	std::cout << "pressure[25,25]: " << currentPressure[25][25] << std::endl;
 	return currentIteration;
 }

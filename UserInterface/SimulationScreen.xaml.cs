@@ -1,21 +1,11 @@
-﻿using OpenTK.Graphics.OpenGL;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace UserInterface
 {
@@ -34,8 +24,8 @@ namespace UserInterface
         private int dataWidth;
         private int dataHeight;
 
-        private int min = 50;
-        private int max = 120;
+        private int min = 1000;
+        private int max = 2000;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
@@ -104,7 +94,7 @@ namespace UserInterface
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(null, null, pressure, streamFunction, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
