@@ -32,50 +32,6 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
     }
 }
 
-
-void SetObstacles(bool** obstacles) { // Input: a 2D array of bools all set to 1
-    obstacles[16][25] = 0;
-    obstacles[16][24] = 0;
-
-    obstacles[17][23] = 0;
-    obstacles[17][24] = 0;
-    obstacles[17][25] = 0;
-    obstacles[17][26] = 0;
-
-    obstacles[18][22] = 0;
-    obstacles[18][23] = 0;
-    obstacles[18][24] = 0;
-    obstacles[18][25] = 0;
-    obstacles[18][26] = 0;
-    obstacles[18][27] = 0;
-
-    for (int i = 19; i < 34; i++) { // body of the obstacle
-        obstacles[i][21] = 0;
-        obstacles[i][22] = 0;
-        obstacles[i][23] = 0;
-        obstacles[i][24] = 0;
-        obstacles[i][25] = 0;
-        obstacles[i][26] = 0;
-        obstacles[i][27] = 0;
-        obstacles[i][28] = 0;
-    }
-
-    obstacles[34][22] = 0;
-    obstacles[34][23] = 0;
-    obstacles[34][24] = 0;
-    obstacles[34][25] = 0;
-    obstacles[34][26] = 0;
-    obstacles[34][27] = 0;
-
-    obstacles[35][23] = 0;
-    obstacles[35][24] = 0;
-    obstacles[35][25] = 0;
-    obstacles[35][26] = 0;
-
-    obstacles[36][25] = 0;
-    obstacles[36][24] = 0;
-}
-
 void StepTestSquare(int squareLength) {
     int iMax = squareLength, jMax = squareLength;
 
@@ -94,7 +50,11 @@ void StepTestSquare(int squareLength) {
     BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-    //SetObstacles(obstacles);
+    for (int i = 0.45 * iMax; i < 0.55 * iMax; i++) {
+        for (int j = 0.45 * jMax; j < 0.55 * jMax; j++) {
+            obstacles[i][j] = 0;
+        }
+    }
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
     //PrintField(flags, iMax + 2, jMax + 2, "flags");
 
@@ -106,8 +66,8 @@ void StepTestSquare(int squareLength) {
 
     const REAL width = 1;
     const REAL height = 1;
-    const REAL timeStepSafetyFactor = 0.8;
-    const REAL relaxationParameter = 1.2;
+    const REAL timeStepSafetyFactor = 0.5;
+    const REAL relaxationParameter = 1.8;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
     const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; //Needs experimentation
@@ -163,7 +123,7 @@ void StepTestSquare(int squareLength) {
         //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         //std::cout << pressureResidualNorm << std::endl;
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-        std::cout << "Iteration " << iteration << ": velocity before " << velocities.x[14][25] << ", velocity after " << velocities.x[37][25] << ", pressure before " << pressure[14][25] << ", pressure after " << pressure[37][25] << ", residual norm " << pressureResidualNorm << std::endl;
+        //std::cout << "Iteration " << iteration << ": velocity before " << velocities.x[14][25] << ", velocity after " << velocities.x[37][25] << ", pressure before " << pressure[14][25] << ", pressure after " << pressure[37][25] << ", residual norm " << pressureResidualNorm << std::endl;
         iteration++;
     }
     //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
@@ -179,7 +139,7 @@ void StepTestSquare(int squareLength) {
     FreeMatrix(FG.y, iMax + 2);
 }
 
-float TestParameters(REAL parameterValue, int iterations) {
+REAL TestParameters(REAL parameterValue, int iterations) {
     int iMax = 50, jMax = 50;
 
     DoubleField velocities;
