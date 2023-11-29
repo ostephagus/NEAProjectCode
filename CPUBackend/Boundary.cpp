@@ -27,10 +27,15 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 	}
 
 	for (int j = 1; j <= jMax; j++) {
-		// Left: inflow
-		velocities.x[0][j] = inflowVelocity; // Fluid flows in the x direction at a set velocity...
-		velocities.y[0][j] = 0; // ...and there should be no movement in the y direction
+		// Left: inflow for bottom quarter
+		if (j < jMax / 4) {
+			velocities.x[0][j] = inflowVelocity; // Fluid flows in the x direction at a set velocity for bottom quarter ...
+		}
+		else {
+			velocities.x[0][j] = 0; // ... but has no flow across the boundary in the other 75%
+		}
 
+		velocities.y[0][j] = 0; // There should be no movement in the y direction	
 		// Right: outflow
 		velocities.x[iMax][j] = velocities.x[iMax - 1][j]; // Copy the velocity values from the previous cell (mass flows out at the boundary)
 		velocities.y[iMax + 1][j] = velocities.y[iMax][j];
