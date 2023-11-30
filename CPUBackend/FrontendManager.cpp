@@ -84,7 +84,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 
 			pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
-			BYTE receivedByte = pipeManager.ReadByte(); // This may require duplex communication
+			BYTE receivedByte = pipeManager.ReadByte();
 			stopRequested = receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL; // Stop if requested or the frontend fatally errors
 		}
 
