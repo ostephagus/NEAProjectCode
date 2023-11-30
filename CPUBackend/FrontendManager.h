@@ -13,9 +13,9 @@ private:
 	PipeManager pipeManager;
 
 	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
-	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** nextPressure, int numFluidCells, REAL& pressureResidualNorm);
+	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** nextPressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm);
 	void HandleRequest(BYTE requestByte);
-	void SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& nextPressure, REAL**& RHS, DoubleField& FG, BYTE**& flags, bool**& obstacles, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes);
+	void SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& nextPressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, bool**& obstacles, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes);
 	void ReceiveData(BYTE startMarker);
 
 public:
