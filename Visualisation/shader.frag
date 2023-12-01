@@ -7,7 +7,11 @@ uniform float scalar; // ... and then must be multiplied by this to be in the ra
 
 out vec4 FragColour;
 
-void CalculateColour(out vec4 colourVector, in float strength)
+void BluePurpleScale(out vec4 colourVector, in float strength) {
+    colourVector = vec4(strength, 0.15625, 0.96875, 1.0);
+}
+
+void GreenRedScale(out vec4 colourVector, in float strength)
 {
     // Red: 0 for strength < 0.5 then linear increase on [0.5, 0.75] then 1 for strength > 0.75
     // Green: 0 for strength < 0.25, then linear increase on [0.25, 0.5] to 1 then linear decrease on [0.5, 0.75], then 0 for strength > 0.75
@@ -34,5 +38,5 @@ void CalculateColour(out vec4 colourVector, in float strength)
 void main()
 {
     float normalisedStrength = (relativeStrength - subtrahend) * scalar;
-    CalculateColour(FragColour, normalisedStrength);
+    BluePurpleScale(FragColour, normalisedStrength);
 }
