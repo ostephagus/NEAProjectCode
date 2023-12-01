@@ -24,6 +24,8 @@ namespace UserInterface
         private int hScalar;
 
         private float[] fieldValues;
+        private float[] streamFunction;
+
         private int dataWidth;
         private int dataHeight;
 
@@ -35,6 +37,7 @@ namespace UserInterface
         public int DataHeight { get => dataHeight; set => dataHeight = value; }
         public float Min { get => min; set => min = value; }
         public float Max { get => max; set => max = value; }
+        public float[] StreamFunction { get => streamFunction; set => streamFunction = value; }
 
         public VisualisationControl()
         {
@@ -55,9 +58,10 @@ namespace UserInterface
             //SetUpGL();
         }
 
-        public VisualisationControl(float[] fieldValues, int dataWidth, int dataHeight, float min, float max)
+        public VisualisationControl(float[] fieldValues, float[] streamFunction, int dataWidth, int dataHeight, float min, float max)
         {
             FieldValues = fieldValues;
+            StreamFunction = streamFunction;
             DataWidth = dataWidth;
             DataHeight = dataHeight;
             Min = min;
@@ -76,12 +80,12 @@ namespace UserInterface
 
         private void SetUpGL()
         {
-            GLWpfControlSettings settings = new GLWpfControlSettings { MajorVersion = 3, MinorVersion = 1 };
+            GLWpfControlSettings settings = new() { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
             shaderManager = new("shader.vert", "shader.frag");
 
-            GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
+            //GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             hVertexBuffer = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);
             hVertexArrayObject = GLHelper.CreateVAO();

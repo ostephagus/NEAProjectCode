@@ -106,7 +106,7 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 		residualNorm = 0;
 		if (currentIteration % 100 == 0)
 		{
-			//std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
+			std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
 		}
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
@@ -127,11 +127,11 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 		CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
 		residualNorm = sqrt(residualNorm) / (numFluidCells);
-		//if (currentIteration % 100 == 0)
-		//{
-		//	std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
-		//}
-		std::cout << residualNorm << ",";
+		if (currentIteration % 100 == 0)
+		{
+			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
+		}
+		//std::cout << residualNorm << ",";
 		currentIteration++;
 	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
 	return currentIteration;

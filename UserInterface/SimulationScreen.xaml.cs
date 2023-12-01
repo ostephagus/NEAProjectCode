@@ -87,14 +87,14 @@ namespace UserInterface
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
 
-            VisualisationControlHolder.Content = new VisualisationControl(pressure, dataWidth, dataHeight, min, max);
+            VisualisationControlHolder.Content = new VisualisationControl(pressure, streamFunction, dataWidth, dataHeight, min, max);
         }
 
         private void StartComputation()
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(null, null, pressure, null, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(null, null, pressure, streamFunction, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);

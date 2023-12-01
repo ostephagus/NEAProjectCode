@@ -138,7 +138,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	parameters.height = 1;
 	parameters.timeStepSafetyFactor = 0.8;
 	parameters.relaxationParameter = 1.2;
-	parameters.pressureResidualTolerance = 5;
+	parameters.pressureResidualTolerance = 3;
 	parameters.pressureMinIterations = 10;
 	parameters.pressureMaxIterations = 1000;
 	parameters.reynoldsNo = 2000;
