@@ -19,7 +19,7 @@ private:
 	/// <summary>
 	/// A method to convert a 2D array of REALs (field) into a flat array of BYTEs for transmission over the pipe.
 	/// </summary>
-	/// <param name="buffer">An array of BYTEs, with length 8 * fieldSize.</param>
+	/// <param name="buffer">An array of BYTEs, with length <c>sizeof(REAL) * fieldSize</c>.</param>
 	/// <param name="field">The 2D array of REALs to serialise.</param>
 	/// <param name="xLength">The number of REALs to serialise in the x direction.</param>
 	/// <param name="yLength">The number of REALs to serialise in the y direction.</param>
