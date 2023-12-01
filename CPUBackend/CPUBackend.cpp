@@ -11,12 +11,11 @@
 #include "FrontendManager.h"
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
-    std::cout.precision(3);
     std::cout << name << ": " << std::endl;
     for (int i = xLength-1; i >= 0; i--) {
         for (int j = 0; j < yLength; j++) {
 
-            std::cout << field[j][i] << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
+            printf("%-8.3f", field[j][i]); //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
     }
@@ -29,6 +28,55 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
             std::cout << element << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
+    }
+}
+
+void PrintFlagsArrows(BYTE** flags, int xLength, int yLength) {
+    for (int i = xLength - 1; i >= 0; i--) {
+        for (int j = 0; j < yLength; j++) {
+            switch (flags[j][i]) {
+            case B_N:
+                std::cout << "^^";
+                break;
+            case B_NE:
+                std::cout << "^>";
+                break;
+            case B_E:
+                std::cout << ">>";
+                break;
+            case B_SE:
+                std::cout << "v>";
+                break;
+            case B_S:
+                std::cout << "vv";
+                break;
+            case B_SW:
+                std::cout << "<v";
+                break;
+            case B_W:
+                std::cout << "<<";
+                break;
+            case B_NW:
+                std::cout << "<^";
+                break;
+            case OBS:
+                std::cout << "()";
+                break;
+            case FLUID:
+                std::cout << "  ";
+                break;
+            default:
+                std::cout << "  ";
+                break;
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
+    for (int i = 0; i < length / divisions; i++) {
+        pointerArray[i] = flattenedArray + i * divisions;
     }
 }
 
@@ -113,6 +161,51 @@ REAL TestParameters(REAL parameterValue, int iterations) {
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
     return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / (REAL)1000.0; // Time taken for n iterations, seconds
+}
+
+void TestBoundaryHandling() {
+    int iMax = 13, jMax = 13;
+    bool obstaclesFlattened[225] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 
+    };
+    bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    UnflattenArray(obstacles, obstaclesFlattened, 255, 15);
+    BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+
+    std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
+    std::pair<int, int>* coordinates = coordinatesWithLength.first;
+    int coordinatesLength = coordinatesWithLength.second;
+
+    int numFluidCells = CountFluidCells(flags, iMax, jMax);
+    
+    //PrintFlagsArrows(flags, iMax + 2, jMax + 2);
+
+    REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
+    for (int i = 1; i <= iMax; i++) {
+        for (int j = 1; j <= jMax; j++) {
+            if (flags[i][j] & SELF) {
+                pressure[i][j] = i * jMax + j;
+            }
+        }
+    }
+    PrintField(pressure, iMax + 2, jMax + 2, "Pressure before");
+    CopyBoundaryPressures(pressure, coordinates, coordinatesLength, flags, iMax, jMax);
+    PrintField(pressure, iMax + 2, jMax + 2, "Pressure after");
 }
 
 void StepTestSquare(int squareLength) {
@@ -232,11 +325,14 @@ int main(int argc, char** argv) {
         FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
-    else {
+    else if (std::string(argv[1]) == std::string("test")) {
         std::cout << "Enter domain size" << std::endl;
         int squareLength;
         std::cin >> squareLength;
         StepTestSquare(squareLength);
         return 0;
+    }
+    else {
+        TestBoundaryHandling();
     }
 }
