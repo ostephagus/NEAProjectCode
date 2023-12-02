@@ -112,7 +112,7 @@ int CountFluidCells(BYTE** flags, int iMax, int jMax) {
 	return count;
 }
 
-std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { //Returns size of array rather than actual array
+std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { //Returns size of array and actual array
 	std::vector<std::pair<int, int>> coordinates;
 	for (int i = 1; i <= iMax; i++) {
 		for (int j = 1; j <= jMax; j++) {

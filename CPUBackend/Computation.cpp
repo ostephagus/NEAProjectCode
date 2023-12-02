@@ -102,7 +102,10 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 
 int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL &residualNorm) {
 	int currentIteration = 0;
+	REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
 	do {
+		CopyBoundaryPressures(currentPressure, coordinates, coordinatesLength, flags, iMax, jMax);
+
 		residualNorm = 0;
 		if (currentIteration % 100 == 0)
 		{
@@ -114,7 +117,6 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 					continue; // Skip if the cell is not a fluid cell
 				}
 				REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
-				REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
 				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
 
 				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
@@ -124,7 +126,7 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 			}
 		}
 		
-		CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
+		//CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
 		std::swap(currentPressure, nextPressure);
 		residualNorm = sqrt(residualNorm) / (numFluidCells);
 		if (currentIteration % 100 == 0)

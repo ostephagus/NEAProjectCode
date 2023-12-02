@@ -9,6 +9,7 @@
 #include "PipeManager.h"
 #include "PipeConstants.h"
 #include "FrontendManager.h"
+//#define DEBUG
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
@@ -199,13 +200,13 @@ void TestBoundaryHandling() {
     for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
             if (flags[i][j] & SELF) {
-                pressure[i][j] = i * jMax + j;
+                pressure[i][j] = 1;
             }
         }
     }
     PrintField(pressure, iMax + 2, jMax + 2, "Pressure before");
-    CopyBoundaryPressures(pressure, coordinates, coordinatesLength, flags, iMax, jMax);
-    PrintField(pressure, iMax + 2, jMax + 2, "Pressure after");
+
+
 }
 
 void StepTestSquare(int squareLength) {
@@ -226,13 +227,21 @@ void StepTestSquare(int squareLength) {
     BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-    for (int i = 0.45 * iMax; i < 0.55 * iMax; i++) {
-        for (int j = 0.45 * jMax; j < 0.55 * jMax; j++) {
+
+    int boundaryLeft = (int)(0.45 * iMax);
+    int boundaryRight = (int)(0.55 * iMax);
+    int boundaryBottom = (int)(0.45 * jMax);
+    int boundaryTop = (int)(0.55 * jMax);
+    for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
+        for (int j = boundaryBottom; j < boundaryTop; j++) {
             obstacles[i][j] = 0;
         }
     }
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
-    //PrintField(flags, iMax + 2, jMax + 2, "flags");
+#ifdef DEBUG
+    PrintFlagsArrows(flags, iMax + 2, jMax + 2);
+#endif // DEBUG
+
 
     std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
     std::pair<int, int>* coordinates = coordinatesWithLength.first;
@@ -248,7 +257,7 @@ void StepTestSquare(int squareLength) {
     const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; //Needs experimentation
     const REAL reynoldsNo = 2000;
-    const REAL inflowVelocity = 5;
+    const REAL inflowVelocity = 1;
     const REAL surfaceFrictionalPermissibility = 0;
     REAL pressureResidualNorm = 0;
 
@@ -267,12 +276,12 @@ void StepTestSquare(int squareLength) {
         }
     }
     //PrintField(pressure, iMax+2, jMax+2, "Pressure");
-    for (int i = 1; i <= iMax; i++) {
+    /*for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
             velocities.x[i][j] = 4;
             velocities.y[i][j] = 0;
         }
-    }
+    }*/
     //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
     //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
 
@@ -284,22 +293,30 @@ void StepTestSquare(int squareLength) {
     int pressureIterations;
     //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
     while (iteration < iterMax) {
-        ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
-        //std::cout << timestep << std::endl;
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
-        //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
-        //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+        ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
+#ifdef DEBUG
+        std::cout << timestep << std::endl;
+        PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
+        PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
+#endif // DEBUG
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
-        ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo); 
-        //PrintField(FG.x, iMax + 2, jMax + 2, "F");
-        //PrintField(FG.y, iMax + 2, jMax + 2, "G");
+        ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
+#ifdef DEBUG
+        PrintField(FG.x, iMax + 2, jMax + 2, "F");
+        PrintField(FG.y, iMax + 2, jMax + 2, "G");
+#endif // DEBUG
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-        //PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
+#ifdef DEBUG
+        PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
+#endif // DEBUG
         pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-        //PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
-        //std::cout << pressureResidualNorm << std::endl;
+#ifdef DEBUG
+        PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
+        std::cout << pressureResidualNorm << std::endl;
+#endif // DEBUG
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-        //std::cout << "Iteration " << iteration << ": velocity before " << velocities.x[14][25] << ", velocity after " << velocities.x[37][25] << ", pressure before " << pressure[14][25] << ", pressure after " << pressure[37][25] << ", residual norm " << pressureResidualNorm << std::endl;
+        std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
         iteration++;
     }
     //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
@@ -318,14 +335,14 @@ void StepTestSquare(int squareLength) {
 int main(int argc, char** argv) {
     
     if (argc < 2) {
-        std::cout << "Command-line arguments in incorrect format. There must be one argument. Arguments are pipe or compute" << std::endl;
+        std::cout << "Command-line arguments in incorrect format. There must be one argument." << std::endl;
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
         FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
-    else if (std::string(argv[1]) == std::string("test")) {
+    else if (std::string(argv[1]) == std::string("compute")) {
         std::cout << "Enter domain size" << std::endl;
         int squareLength;
         std::cin >> squareLength;
