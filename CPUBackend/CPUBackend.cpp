@@ -252,11 +252,11 @@ void StepTestSquare(int squareLength) {
     const REAL width = 1;
     const REAL height = 1;
     const REAL timeStepSafetyFactor = 0.5;
-    const REAL relaxationParameter = 1.8;
+    const REAL relaxationParameter = 1.7;
     const REAL pressureResidualTolerance = 1; //Needs experimentation
     const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; //Needs experimentation
-    const REAL reynoldsNo = 2000;
+    const REAL reynoldsNo = 1;
     const REAL inflowVelocity = 1;
     const REAL surfaceFrictionalPermissibility = 0;
     REAL pressureResidualNorm = 0;
