@@ -185,10 +185,6 @@ namespace UserInterface
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
                     
                     await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * sizeof(float)); // Read the stream of bytes into the temporary buffer
-                    for (int i = 0; i < tmpByteBuffer.Length; i++)
-                    {
-                        Console.WriteLine($"{i}: {tmpByteBuffer[i]}");
-                    }
                     Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
                 }
@@ -202,6 +198,7 @@ namespace UserInterface
                 else
                 {
                     SendControlByte(PipeConstants.Status.OK);
+                    Trace.WriteLine("Data received");
                 }
             }
 

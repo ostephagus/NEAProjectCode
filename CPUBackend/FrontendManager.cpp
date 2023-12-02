@@ -14,8 +14,8 @@ void FrontendManager::UnflattenArray(bool** pointerArray, bool* flattenedArray, 
 
 void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** nextPressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm)
 {
-	ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
 	SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
+	ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
 	REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
 	ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, parameters.bodyForces, gamma, parameters.reynoldsNo);
 	ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
@@ -125,6 +125,17 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
 	obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 	for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+
+	int boundaryLeft = (int)(0.45 * iMax);
+	int boundaryRight = (int)(0.55 * iMax);
+	int boundaryBottom = (int)(0.45 * jMax);
+	int boundaryTop = (int)(0.55 * jMax);
+	for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
+		for (int j = boundaryBottom; j < boundaryTop; j++) {
+			obstacles[i][j] = 0;
+		}
+	}
+
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
 
@@ -136,13 +147,13 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	parameters.width = 1;
 	parameters.height = 1;
-	parameters.timeStepSafetyFactor = 0.8;
-	parameters.relaxationParameter = 1.2;
-	parameters.pressureResidualTolerance = 3;
+	parameters.timeStepSafetyFactor = 0.5;
+	parameters.relaxationParameter = 1.7;
+	parameters.pressureResidualTolerance = 1;
 	parameters.pressureMinIterations = 10;
 	parameters.pressureMaxIterations = 1000;
-	parameters.reynoldsNo = 2000;
-	parameters.inflowVelocity = 5;
+	parameters.reynoldsNo = 1;
+	parameters.inflowVelocity = 1;
 	parameters.surfaceFrictionalPermissibility = 0;
 	parameters.bodyForces.x = 0;
 	parameters.bodyForces.y = 0;
@@ -153,13 +164,6 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	for (int i = 0; i <= iMax + 1; i++) {
 		for (int j = 0; j <= jMax + 1; j++) {
 			pressure[i][j] = 1000;
-		}
-	}
-	//PrintField(pressure, iMax+2, jMax+2, "Pressure");
-	for (int i = 1; i <= iMax; i++) {
-		for (int j = 1; j <= jMax; j++) {
-			velocities.x[i][j] = 4;
-			velocities.y[i][j] = 0;
 		}
 	}
 }

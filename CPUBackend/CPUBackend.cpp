@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
-        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+        FrontendManager frontendManager(500, 500, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
     else if (std::string(argv[1]) == std::string("compute")) {
