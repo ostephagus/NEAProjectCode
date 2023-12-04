@@ -22,9 +22,9 @@ namespace Visualisation
             {
                 for (int j = 0; j < height; j++)
                 {
-                    // Need to start at bottom left (-1, -1) and go horizontally then vertically to top right (1, 1)
-                    vertices[i * height * 2 + j * 2 + 0] = j * horizontalStep - 1; // Starting at -1, increase x coordinate each iteration of inner loop
-                    vertices[i * height * 2 + j * 2 + 1] = i * verticalStep - 1;  // Starting at -1, increase y coordinate after each iteration of outer loop
+                    // Need to start at bottom left (-1, -1) and go vertically then horizontally to top right (1, 1)
+                    vertices[i * height * 2 + j * 2 + 0] = i * horizontalStep - 1; // Starting at -1, increase x coordinate each iteration of outer loop
+                    vertices[i * height * 2 + j * 2 + 1] = j * verticalStep - 1;  // Starting at -1, increase y coordinate after each iteration of inner loop
                 }
             }
             return vertices;
@@ -38,6 +38,7 @@ namespace Visualisation
         /// <returns>An array of unsigned integers representing the indices of each triangle, flattened</returns>
         public static uint[] FillIndices(int width, int height)
         {
+            // Note that the given data has first data point bottom left, then moving upwards (in the positive y direction) then moving left (positive x direction)
             uint[] indices = new uint[(height - 1) * (width - 1) * 6];
             // For each 2x2 square of vertices, we need 2 triangles with the hypotenuses on the leading diagonal.
             for (int i = 0; i < width - 1; i++)

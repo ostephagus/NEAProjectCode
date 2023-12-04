@@ -58,7 +58,9 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 
 		pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
+		int iteration = 0;
 		while (!stopRequested) {
+			std::cout << "Iteration " << iteration << std::endl;
 			pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
 			Timestep(timestep, stepSizes, velocities, parameters, flags, coordinates, coordinatesLength, FG, RHS, pressure, nextPressure, streamFunction, numFluidCells, pressureResidualNorm);
@@ -151,7 +153,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	parameters.relaxationParameter = 1.7;
 	parameters.pressureResidualTolerance = 1;
 	parameters.pressureMinIterations = 10;
-	parameters.pressureMaxIterations = 1000;
+	parameters.pressureMaxIterations = 300;
 	parameters.reynoldsNo = 1;
 	parameters.inflowVelocity = 1;
 	parameters.surfaceFrictionalPermissibility = 0;
@@ -191,6 +193,7 @@ int FrontendManager::Run() {
 	bool closeRequested = false;
 
 	while (!closeRequested) {
+		std::cout << "In read loop" << std::endl;
 		BYTE receivedByte = pipeManager.ReadByte();
 		switch (receivedByte & PipeConstants::CATEGORYMASK) { // Gets the category of control byte
 		case PipeConstants::Status::GENERIC: // Status bytes
@@ -204,6 +207,8 @@ int FrontendManager::Run() {
 				break;
 			case PipeConstants::Status::CLOSE:
 				closeRequested = true;
+				pipeManager.SendByte(PipeConstants::Status::OK);
+				std::cout << "Backend closing..." << std::endl;
 				break;
 			default:
 				std::cerr << "Server sent a malformed status byte, request not understood" << std::endl;

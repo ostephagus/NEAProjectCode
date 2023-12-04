@@ -115,7 +115,7 @@ namespace UserInterface
             }
             if (streamFunction != null)
             {
-                if (pressure.Length < FieldLength)
+                if (streamFunction.Length < FieldLength)
                 {
                     throw new InvalidOperationException("Field array is too small");
                 }
@@ -208,10 +208,15 @@ namespace UserInterface
             {
                 throw new IOException("Backend did not stop correctly");
             }
+
+            if (!await CloseBackend())
+            {
+                ForceCloseBackend();
+            }
             // Backend stopped correctly, so exit.
         }
 
-        public async Task<bool> StopBackend()
+        public async Task<bool> CloseBackend()
         {
             SendControlByte(PipeConstants.Status.CLOSE);
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
@@ -226,7 +231,7 @@ namespace UserInterface
             return true;
         }
 
-        public void ForceClose()
+        public void ForceCloseBackend()
         {
             backendProcess.Close();
         }

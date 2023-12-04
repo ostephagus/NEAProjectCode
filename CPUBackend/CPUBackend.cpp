@@ -9,7 +9,7 @@
 #include "PipeManager.h"
 #include "PipeConstants.h"
 #include "FrontendManager.h"
-//#define DEBUG
+//#define DEBUGOUT
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
@@ -238,9 +238,9 @@ void StepTestSquare(int squareLength) {
         }
     }
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
-#ifdef DEBUG
+#ifdef DEBUGOUT
     PrintFlagsArrows(flags, iMax + 2, jMax + 2);
-#endif // DEBUG
+#endif // DEBUGOUT
 
 
     std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
@@ -293,28 +293,29 @@ void StepTestSquare(int squareLength) {
     int pressureIterations;
     //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
     while (iteration < iterMax) {
+        std::cout << "Iteration " << iteration << std::endl;
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
-#ifdef DEBUG
+#ifdef DEBUGOUT
         std::cout << timestep << std::endl;
         PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
-#endif // DEBUG
+#endif // DEBUGOUT
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
-#ifdef DEBUG
+#ifdef DEBUGOUT
         PrintField(FG.x, iMax + 2, jMax + 2, "F");
         PrintField(FG.y, iMax + 2, jMax + 2, "G");
-#endif // DEBUG
+#endif // DEBUGOUT
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-#ifdef DEBUG
+#ifdef DEBUGOUT
         PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-#endif // DEBUG
+#endif // DEBUGOUT
         pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-#ifdef DEBUG
+#ifdef DEBUGOUT
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         std::cout << pressureResidualNorm << std::endl;
-#endif // DEBUG
+#endif // DEBUGOUT
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
         std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
         iteration++;

@@ -19,13 +19,14 @@ namespace UserInterface
 
         private BackendManager backendManager;
 
+        private float[] horizontalVelocity;
         private float[] pressure;
         private float[] streamFunction;
         private int dataWidth;
         private int dataHeight;
 
-        private int min = 1000;
-        private int max = 2000;
+        private int min = 0;
+        private int max = 2;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
@@ -82,19 +83,20 @@ namespace UserInterface
             backendManager = new BackendManager();
             backendManager.ConnectBackend();
 
+            horizontalVelocity = new float[backendManager.FieldLength];
             pressure = new float[backendManager.FieldLength];
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
 
-            VisualisationControlHolder.Content = new VisualisationControl(pressure, streamFunction, dataWidth, dataHeight, min, max);
+            VisualisationControlHolder.Content = new VisualisationControl(horizontalVelocity, streamFunction, dataWidth, dataHeight, min, max);
         }
 
         private void StartComputation()
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(null, null, pressure, streamFunction, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(horizontalVelocity, null, null, streamFunction, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
