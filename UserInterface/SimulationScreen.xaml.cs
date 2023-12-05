@@ -26,7 +26,7 @@ namespace UserInterface
         private int dataHeight;
 
         private int min = 0;
-        private int max = 2;
+        private int max = 1;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;

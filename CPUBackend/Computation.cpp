@@ -109,7 +109,7 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 		residualNorm = 0;
 		if (currentIteration % 100 == 0)
 		{
-			std::cout << "Iteration " << currentIteration << std::endl; //DEBUGGING
+			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
 		}
 		for (int i = 1; i <= iMax; i++) {
 			for (int j = 1; j <= jMax; j++) {
