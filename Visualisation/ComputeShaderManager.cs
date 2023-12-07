@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Visualisation
 {
-    public class ComputeShaderManager : ShaderManager
+    public class ComputeShaderManager
     {
 
     }

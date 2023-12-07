@@ -83,7 +83,7 @@ namespace UserInterface
             GLWpfControlSettings settings = new() { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
-            shaderManager = new("shader.vert", "shader.frag");
+            shaderManager = new ShaderManager(new (string, ShaderType)[] {("shader.frag", ShaderType.FragmentShader), ("shader.vert", ShaderType.VertexShader)});
 
             //GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
