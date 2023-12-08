@@ -20,6 +20,9 @@ namespace UserInterface
         private uint[] fieldIndices;
         private uint[] contourIndices;
 
+        private const float contourTolerance = 0.001f;
+        private const float contourSpacingMultiplier = 0.1f;
+
         private int hVBO;
         private int hFieldVAO;
         private int hFieldEBO;
@@ -110,7 +113,7 @@ namespace UserInterface
 
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             fieldIndices = GLHelper.FillIndices(dataWidth, dataHeight);
-            contourIndices = GLHelper.FindContourIndices(streamFunction, 0.001f, 1, dataWidth, dataHeight);
+            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, dataWidth, dataHeight);
 
             // Setting up data for field visualisation
             hFieldVAO = GLHelper.CreateVAO();
@@ -121,8 +124,8 @@ namespace UserInterface
             GLHelper.BufferSubData(fieldValues, vertices.Length);
             //Trace.WriteLine(GL.GetError().ToString());
 
-            GLHelper.CreateAttribPointer(0, 2, 2, 0);
-            GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
+            GLHelper.CreateAttribPointer(0, 2, 2, 0); // Vertex pointer
+            GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length); // Field value pointer
 
             hFieldEBO = GLHelper.CreateEBO(fieldIndices);
 
@@ -146,15 +149,27 @@ namespace UserInterface
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            GLHelper.BufferSubData(fieldValues, vertices.Length); // Update the field values
+            // For each draw command, need to bind the program, set uniforms, bind VAO, draw
 
+            // Drawing field value spectrum
             fieldShaderManager.Use();
+
             fieldShaderManager.SetUniform(hSubtrahend, min);
             fieldShaderManager.SetUniform(hScalar, 1 / (max - min));
 
-            GLHelper.Draw(hFieldVAO, fieldIndices);
+            GL.BindVertexArray(hFieldVAO);
+            GLHelper.BufferSubData(fieldValues, vertices.Length); // Update the field values
 
-            // For each draw command, need to bind the program, set uniforms, bind VAO, draw
+            GLHelper.Draw(fieldIndices, PrimitiveType.Triangles);
+
+            // Drawing contour lines over the top
+            // NOTE: may need to use line primitives, may need to increase z coordinate of points via vertex shader
+            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, dataWidth, dataHeight);
+            contourShaderManager.Use();
+
+            GL.BindVertexArray(hContourVAO);
+
+            GLHelper.Draw(contourIndices, PrimitiveType.Points);
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)

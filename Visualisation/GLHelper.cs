@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using System.Diagnostics;
 
 namespace Visualisation
 {
@@ -64,6 +65,10 @@ namespace Visualisation
                 for (int j = 0; j < height; j++)
                 {
                     float streamFunctionValue = streamFunction[i * width + j];
+                    if (streamFunctionValue == 0)
+                    {
+                        continue;
+                    }
                     if (streamFunctionValue % spacingMultiplier < contourTolerance) // If the stream function value is close to an integer multiple of the spacing multipliers
                     {
                         indices.Add((uint)(i * width + j));
@@ -147,12 +152,11 @@ namespace Visualisation
         /// <summary>
         /// Draws the grid, using triangles with indices specified in <paramref name="indices"/>.
         /// </summary>
-        /// <param name="VAOHandle">The handle of the vertex array object for the shaders to use.</param>
-        /// <param name="indices">An array of unsigned integers specifying the indices of the </param>
-        public static void Draw(int VAOHandle, uint[] indices)
+        /// <param name="indices">An array of unsigned integers specifying the order in which to link vertices together.</param>
+        /// <param name="primitiveType">Which type of primitive type to use for drawing.</param>
+        public static void Draw(uint[] indices, PrimitiveType primitiveType)
         {
-            GL.BindVertexArray(VAOHandle);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(primitiveType, indices.Length, DrawElementsType.UnsignedInt, 0);
         }
     }
 }
