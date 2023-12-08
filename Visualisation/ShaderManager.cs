@@ -9,41 +9,12 @@ namespace Visualisation
 
         public int Handle { get => programHandle; set => programHandle = value; }
 
-        private static void ExtractShaderSources(string vertexPath, string fragmentPath, out int hVertexShader, out int hFragmentShader)
-        {
-            string vertexShaderSourceCode = File.ReadAllText(vertexPath);
-            string fragmentShaderSourceCode = File.ReadAllText(fragmentPath);
-
-            hVertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(hVertexShader, vertexShaderSourceCode);
-
-            hFragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(hFragmentShader, fragmentShaderSourceCode);
-        }
-
         private static void ExtractShaderSource(string path, ShaderType type, out int shaderHandle)
         {
             string shaderSource = File.ReadAllText(path);
 
             shaderHandle = GL.CreateShader(type);
             GL.ShaderSource(shaderHandle, shaderSource);
-        }
-
-        private static void CompileShaders(int hVertexShader, int hFragmentShader)
-        {
-            GL.CompileShader(hVertexShader);
-            GL.GetShader(hVertexShader, ShaderParameter.CompileStatus, out int success);
-            if (success == 0)
-            {
-                Console.WriteLine(GL.GetShaderInfoLog(hVertexShader));
-            }
-
-            GL.CompileShader(hFragmentShader);
-            GL.GetShader(hFragmentShader, ShaderParameter.CompileStatus, out success);
-            if (success == 0)
-            {
-                Console.WriteLine(GL.GetShaderInfoLog(hFragmentShader));
-            }
         }
 
         private static void CompileShader(int shaderHandle)
@@ -53,22 +24,6 @@ namespace Visualisation
             if (success == 0) // Error in compilation
             {
                 Console.WriteLine(GL.GetShaderInfoLog(shaderHandle));
-            }
-        }
-
-        private void LinkShaders(int hVertexShader, int hFragmentShader)
-        {
-            programHandle = GL.CreateProgram();
-
-            GL.AttachShader(programHandle, hVertexShader);
-            GL.AttachShader(programHandle, hFragmentShader);
-
-            GL.LinkProgram(programHandle);
-
-            GL.GetProgram(programHandle, GetProgramParameterName.LinkStatus, out int success);
-            if (success == 0)
-            {
-                Console.WriteLine(GL.GetProgramInfoLog(programHandle));
             }
         }
 
@@ -99,6 +54,7 @@ namespace Visualisation
                 ExtractShaderSource(shadersWithPaths[i].Item1, shadersWithPaths[i].Item2, out handles[i]);
                 CompileShader(handles[i]);
             }
+
             LinkShaders(handles);
 
             foreach(int shaderHandle in handles)

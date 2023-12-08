@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OpenTK.Graphics.OpenGL4;
 
 namespace Visualisation
 {
-    public class ComputeShaderManager
+    public class ComputeShaderManager : ShaderManager
     {
-
+        public ComputeShaderManager(string path) : base(new (string, ShaderType)[] { (path, ShaderType.ComputeShader) }) { }
     }
 }
