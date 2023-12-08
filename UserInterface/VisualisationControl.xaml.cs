@@ -13,6 +13,7 @@ namespace UserInterface
     public partial class VisualisationControl : UserControl
     {
         private ShaderManager shaderManager;
+        private ComputeShaderManager computeShaderManager;
 
         private float[] vertices;
         private uint[] indices;
@@ -73,18 +74,31 @@ namespace UserInterface
             SetUpGL();
         }
 
+        ~VisualisationControl()
+        {
+            shaderManager.Dispose();
+        }
+
         public void Start()
         {
             SetUpGL();
         }
+
+        // Compute shader plan:
+        // Take the coordinates of a point, take the field value at that point, if the field value is a multiple of some spacing multiplier then add the coordinate to an EBO to be drawn using GL_LINE_STRIP
 
         private void SetUpGL()
         {
             GLWpfControlSettings settings = new() { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
-            shaderManager = new ShaderManager(new (string, ShaderType)[] {("shader.frag", ShaderType.FragmentShader), ("shader.vert", ShaderType.VertexShader)});
+            shaderManager = new ShaderManager(new (string, ShaderType)[] { ("shader.frag", ShaderType.FragmentShader), ("shader.vert", ShaderType.VertexShader) });
+            //computeShaderManager = new ComputeShaderManager("shader.comp");
+            HandleData();
+        }
 
+        private void HandleData()
+        {
             //GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             hVertexBuffer = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);

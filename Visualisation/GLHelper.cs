@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
 namespace Visualisation
 {
@@ -55,6 +56,24 @@ namespace Visualisation
             }
             return indices;
         }
+
+        public static uint[] FindContourIndices(float[] streamFunction, float contourTolerance, float spacingMultiplier, int width, int height)
+        {
+            List<uint> indices = new List<uint>();
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    float streamFunctionValue = streamFunction[i * width + j];
+                    if (streamFunctionValue % spacingMultiplier < contourTolerance) // If the stream function value is close to an integer multiple of the spacing multipliers
+                    {
+                        indices.Add((uint)(i * width + j));
+                    }
+                }
+            }
+            return indices.ToArray();
+        }
+
         /// <summary>
         /// Creates an element buffer object, and buffers the indices array
         /// </summary>
