@@ -12,15 +12,21 @@ namespace UserInterface
     /// </summary>
     public partial class VisualisationControl : UserControl
     {
-        private ShaderManager shaderManager;
+        private ShaderManager fieldShaderManager;
+        private ShaderManager contourShaderManager;
         private ComputeShaderManager computeShaderManager;
 
         private float[] vertices;
-        private uint[] indices;
+        private uint[] fieldIndices;
+        private uint[] contourIndices;
 
-        private int hVertexBuffer;
-        private int hVertexArrayObject;
-        private int hElementBuffer;
+        private int hVBO;
+        private int hFieldVAO;
+        private int hFieldEBO;
+
+        private int hContourVAO;
+        private int hContourEBO;
+
         private int hSubtrahend;
         private int hScalar;
 
@@ -76,7 +82,7 @@ namespace UserInterface
 
         ~VisualisationControl()
         {
-            shaderManager.Dispose();
+            fieldShaderManager.Dispose();
         }
 
         public void Start()
@@ -92,7 +98,8 @@ namespace UserInterface
             GLWpfControlSettings settings = new() { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
-            shaderManager = new ShaderManager(new (string, ShaderType)[] { ("shader.frag", ShaderType.FragmentShader), ("shader.vert", ShaderType.VertexShader) });
+            fieldShaderManager = new ShaderManager(new (string, ShaderType)[] { ("fieldShader.frag", ShaderType.FragmentShader), ("fieldShader.vert", ShaderType.VertexShader) });
+            contourShaderManager = new ShaderManager(new (string, ShaderType)[] { ("contourShader.frag", ShaderType.FragmentShader), ("contourShader.vert", ShaderType.VertexShader) });
             //computeShaderManager = new ComputeShaderManager("shader.comp");
             HandleData();
         }
@@ -100,9 +107,14 @@ namespace UserInterface
         private void HandleData()
         {
             //GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
+
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
-            hVertexBuffer = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);
-            hVertexArrayObject = GLHelper.CreateVAO();
+            fieldIndices = GLHelper.FillIndices(dataWidth, dataHeight);
+            contourIndices = GLHelper.FindContourIndices(streamFunction, 0.001f, 1, dataWidth, dataHeight);
+
+            // Setting up data for field visualisation
+            hFieldVAO = GLHelper.CreateVAO();
+            hVBO = GLHelper.CreateVBO(vertices.Length + fieldValues.Length);
 
             GLHelper.BufferSubData(vertices, 0);
             //Trace.WriteLine(GL.GetError().ToString());
@@ -112,14 +124,22 @@ namespace UserInterface
             GLHelper.CreateAttribPointer(0, 2, 2, 0);
             GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
 
-            indices = GLHelper.FillIndices(dataWidth, dataHeight);
-            hElementBuffer = GLHelper.CreateEBO(indices);
+            hFieldEBO = GLHelper.CreateEBO(fieldIndices);
 
-            hSubtrahend = shaderManager.GetUniformLocation("subtrahend");
-            hScalar = shaderManager.GetUniformLocation("scalar");
-            shaderManager.Use();
-            shaderManager.SetUniform(hSubtrahend, min);
-            shaderManager.SetUniform(hScalar, 1 / (max - min));
+            // Setting up data for contour line plotting
+            hContourVAO = GLHelper.CreateVAO();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, hVBO); // Bind the same VBO
+
+            GLHelper.CreateAttribPointer(0, 2, 2, 0); // And the same for attribute pointers
+            GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
+
+            hContourEBO = GLHelper.CreateEBO(fieldIndices);
+
+            // Return to field context
+            GL.BindVertexArray(hFieldVAO);
+
+            hSubtrahend = fieldShaderManager.GetUniformLocation("subtrahend");
+            hScalar = fieldShaderManager.GetUniformLocation("scalar");
         }
 
         public void GLControl_OnRender(TimeSpan delta)
@@ -128,9 +148,13 @@ namespace UserInterface
 
             GLHelper.BufferSubData(fieldValues, vertices.Length); // Update the field values
 
-            shaderManager.Use();
+            fieldShaderManager.Use();
+            fieldShaderManager.SetUniform(hSubtrahend, min);
+            fieldShaderManager.SetUniform(hScalar, 1 / (max - min));
 
-            GLHelper.Draw(hVertexArrayObject, indices);
+            GLHelper.Draw(hFieldVAO, fieldIndices);
+
+            // For each draw command, need to bind the program, set uniforms, bind VAO, draw
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)
