@@ -57,38 +57,125 @@ namespace Visualisation
             return indices;
         }
 
-        public static uint[] FindContourIndices(float[] streamFunction, float contourTolerance, float spacingMultiplier, int width, int height)
+        /// <summary>
+        /// Creates an array of <c>uint</c>s, representing the indices of where contour vertices should be, with each level set separated by <paramref name="primitiveRestartSentinel"/>.
+        /// </summary>
+        /// <param name="streamFunction">The values of the stream function for the simulation domain.</param>
+        /// <param name="contourTolerance">The tolerance for accepting a vertex into the level set.</param>
+        /// <param name="spacingMultiplier">A multiplier, such that vertices that have a stream function value that is an integer multiple of this multiplier will be included into the level set</param>
+        /// <param name="primitiveRestartSentinel">The sentinel value, such as <c>uint.MaxValue</c></param>
+        /// <param name="width">The width of the simulation space</param>
+        /// <param name="height">The height of the simulation space</param>
+        /// <returns>An array of <c>uint</c>s, to be passed to the EBO</returns>
+        public static uint[] FindContourIndices(float[] streamFunction, float contourTolerance, float spacingMultiplier, uint primitiveRestartSentinel, int width, int height)
         {
-            List<uint> indices = new List<uint>();
-            for (int i = 0; i < width; i++)
+            List<List<uint>> levelSets = new();
+            for (int j = 0; j < height; j++) // Find level sets 
             {
-                for (int j = 0; j < height; j++)
+                float streamFunctionValue = streamFunction[j];
+                if (streamFunctionValue == 0)
                 {
-                    float streamFunctionValue = streamFunction[i * width + j];
-                    if (streamFunctionValue == 0)
+                    continue;
+                }
+                float distanceFromMultiple = streamFunctionValue % spacingMultiplier;
+                int levelSet;
+                if (distanceFromMultiple < contourTolerance || spacingMultiplier - distanceFromMultiple < contourTolerance)
+                {
+                    levelSet = (int)Math.Round(streamFunctionValue / spacingMultiplier); // Round the value to get the correct level set
+                }
+                else
+                {
+                    continue;
+                }
+
+                while (levelSet >= levelSets.Count) // Add level set lists until there is one for the current level set
+                {
+                    levelSets.Add(new List<uint>());
+                }
+
+                levelSets[levelSet].Add((uint)j); // Add the current index
+            }
+
+            List<uint> indices = new();
+
+            for (int levelSetNum = 1; levelSetNum < levelSets.Count; levelSetNum++) // Go through each level set, finding coordinates that belong to the level set. Start at 1 because the 0 level set is not drawn.
+            {
+                int currentHeight = (int)levelSets[levelSetNum][0]; // Get the starting height of the level set
+                float targetValue = levelSetNum * spacingMultiplier;
+                for (int i = 1; i < width; i++)
+                {
+                    if (!(streamFunction[i * width + currentHeight] - targetValue > contourTolerance) && !(targetValue - streamFunction[i * width + currentHeight] > contourTolerance)) // Add in another condition to avoid floating point error (which should be always less than contour tolerance)
                     {
+                        levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
                         continue;
                     }
-                    if (streamFunctionValue % spacingMultiplier < contourTolerance) // If the stream function value is close to an integer multiple of the spacing multipliers
+                    if (streamFunction[i * width + currentHeight] > targetValue) // Possibilities: current value is too big, need to move down; or current value is too small, need to move up. For both cases, either there exists a member of the level set or there does not.
+                    { // Stream function greater than target, need to move downwards
+                        while (currentHeight > 0 && streamFunction[i * width + currentHeight] - targetValue > contourTolerance) // While we are still too big, decrease height until 0
+                        {
+                            currentHeight--;
+                        }
+                        // Now, current height is either larger than target but within tolerance, below target but within tolerance, or neither
+                        if (streamFunction[i * width + currentHeight] > targetValue || targetValue - streamFunction[i * width + currentHeight] < contourTolerance) // Within tolerance either side of target
+                        {
+                            levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
+                        }
+                        // If it is not within the tolerance, there does not exist a stream function value at this x coordinate in the level set.
+                    }
+                    else // Current height's contour value is too small
                     {
-                        indices.Add((uint)(i * width + j));
+                        while (currentHeight < height - 1 && streamFunction[i * width + currentHeight] < targetValue) // While we are still too small, increase height until limit
+                        {
+                            currentHeight++;
+                        }
+                        // Now, current height is either smaller than target but within tolerance, above target but within tolerance, or neither
+                        if (targetValue > streamFunction[i * width + currentHeight] || streamFunction[i * width + currentHeight] - targetValue < contourTolerance)
+                        {
+                            levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
+                        }
                     }
                 }
+                indices.AddRange(levelSets[levelSetNum]);
+                indices.Add(primitiveRestartSentinel);
             }
             return indices.ToArray();
         }
 
         /// <summary>
-        /// Creates an element buffer object, and buffers the indices array
+        /// Creates an element buffer object, and buffers the indices array.
         /// </summary>
-        /// <param name="indices">An array representing the indices of the triangles that are to be drawn.</param>
-        /// <returns>A handle to the created EBO</returns>
+        /// <param name="indices">An array representing the indices of the primitives that are to be drawn.</param>
+        /// <returns>A handle to the created EBO.</returns>
         public static int CreateEBO(uint[] indices)
         {
             int EBOHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBOHandle);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
             return EBOHandle;
+        }
+
+        /// <summary>
+        /// Creates an element buffer object, and buffers the indices array.
+        /// </summary>
+        /// <param name="indices">An array representing the indices of the primitives that are to be drawn.</param>
+        /// <param name="bufferUsageHint">The enum value to tell the GPU which type of memory it should use.</param>
+        /// <returns>A handle to the created EBO.</returns>
+        public static int CreateEBO(uint[] indices, BufferUsageHint bufferUsageHint)
+        {
+            int EBOHandle = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBOHandle);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, bufferUsageHint);
+            return EBOHandle;
+        }
+
+        /// <summary>
+        /// Buffers new data into the currently bound EBO.
+        /// </summary>
+        /// <param name="indices">An array representing the indices of the primitives that are to be drawn.</param>
+        /// <param name="bufferUsageHint">The enum value to tell the GPU which type of memory it should use.</param>
+        public static void UpdateEBO(uint[] indices, BufferUsageHint bufferUsageHint)
+        {
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, bufferUsageHint);
         }
 
         /// <summary>
@@ -148,7 +235,7 @@ namespace Visualisation
         {
             GL.BufferSubData(BufferTarget.ArrayBuffer, offset * sizeof(float), data.Length * sizeof(float), data);
         }
-        
+
         /// <summary>
         /// Draws the grid, using triangles with indices specified in <paramref name="indices"/>.
         /// </summary>

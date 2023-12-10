@@ -20,8 +20,10 @@ namespace UserInterface
         private uint[] fieldIndices;
         private uint[] contourIndices;
 
-        private const float contourTolerance = 0.001f;
-        private const float contourSpacingMultiplier = 0.1f;
+        private float contourTolerance;
+        private float contourSpacingMultiplier;
+
+        private const uint primitiveRestartIndex = uint.MaxValue;
 
         private int hVBO;
         private int hFieldVAO;
@@ -48,6 +50,8 @@ namespace UserInterface
         public float Min { get => min; set => min = value; }
         public float Max { get => max; set => max = value; }
         public float[] StreamFunction { get => streamFunction; set => streamFunction = value; }
+        public float ContourTolerance { get => contourTolerance; set => contourTolerance = value; }
+        public float ContourSpacingMultiplier { get => contourSpacingMultiplier; set => contourSpacingMultiplier = value; }
 
         public VisualisationControl()
         {
@@ -68,7 +72,7 @@ namespace UserInterface
             //SetUpGL();
         }
 
-        public VisualisationControl(float[] fieldValues, float[] streamFunction, int dataWidth, int dataHeight, float min, float max)
+        public VisualisationControl(float[] fieldValues, float[] streamFunction, int dataWidth, int dataHeight, float min, float max, float contourTolerance, float contourSpacingMultiplier)
         {
             FieldValues = fieldValues;
             StreamFunction = streamFunction;
@@ -76,6 +80,8 @@ namespace UserInterface
             DataHeight = dataHeight;
             Min = min;
             Max = max;
+            ContourTolerance = contourTolerance;
+            ContourSpacingMultiplier = contourSpacingMultiplier;
 
             InitializeComponent();
             DataContext = this;
@@ -86,6 +92,7 @@ namespace UserInterface
         ~VisualisationControl()
         {
             fieldShaderManager.Dispose();
+            contourShaderManager.Dispose();
         }
 
         public void Start()
@@ -104,6 +111,10 @@ namespace UserInterface
             fieldShaderManager = new ShaderManager(new (string, ShaderType)[] { ("fieldShader.frag", ShaderType.FragmentShader), ("fieldShader.vert", ShaderType.VertexShader) });
             contourShaderManager = new ShaderManager(new (string, ShaderType)[] { ("contourShader.frag", ShaderType.FragmentShader), ("contourShader.vert", ShaderType.VertexShader) });
             //computeShaderManager = new ComputeShaderManager("shader.comp");
+
+            GL.Enable(EnableCap.PrimitiveRestart);
+            GL.PrimitiveRestartIndex(primitiveRestartIndex);
+
             HandleData();
         }
 
@@ -113,7 +124,8 @@ namespace UserInterface
 
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             fieldIndices = GLHelper.FillIndices(dataWidth, dataHeight);
-            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, dataWidth, dataHeight);
+            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, primitiveRestartIndex, dataWidth, dataHeight);
+
 
             // Setting up data for field visualisation
             hFieldVAO = GLHelper.CreateVAO();
@@ -136,7 +148,7 @@ namespace UserInterface
             GLHelper.CreateAttribPointer(0, 2, 2, 0); // And the same for attribute pointers
             GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length);
 
-            hContourEBO = GLHelper.CreateEBO(fieldIndices);
+            hContourEBO = GLHelper.CreateEBO(contourIndices);
 
             // Return to field context
             GL.BindVertexArray(hFieldVAO);
@@ -163,13 +175,14 @@ namespace UserInterface
             GLHelper.Draw(fieldIndices, PrimitiveType.Triangles);
 
             // Drawing contour lines over the top
-            // NOTE: may need to use line primitives, may need to increase z coordinate of points via vertex shader
-            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, dataWidth, dataHeight);
+            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, primitiveRestartIndex, dataWidth, dataHeight);
             contourShaderManager.Use();
 
             GL.BindVertexArray(hContourVAO);
 
-            GLHelper.Draw(contourIndices, PrimitiveType.Points);
+            GLHelper.UpdateEBO(contourIndices, BufferUsageHint.DynamicDraw);
+
+            GLHelper.Draw(contourIndices, PrimitiveType.LineStrip);
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)

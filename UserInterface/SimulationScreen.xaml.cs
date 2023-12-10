@@ -27,6 +27,8 @@ namespace UserInterface
 
         private int min = 0;
         private int max = 1;
+        private float contourTolerance = 0.01f;
+        private float contourSpacingMultiplier = 0.1f;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
@@ -89,7 +91,7 @@ namespace UserInterface
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
 
-            VisualisationControlHolder.Content = new VisualisationControl(horizontalVelocity, streamFunction, dataWidth, dataHeight, min, max);
+            VisualisationControlHolder.Content = new VisualisationControl(horizontalVelocity, streamFunction, dataWidth, dataHeight, min, max, contourTolerance, contourSpacingMultiplier);
         }
 
         private void StartComputation()
