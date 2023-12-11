@@ -5,6 +5,7 @@
 #include "Computation.h"
 #include "Init.h"
 #include "Boundary.h"
+//#define OBSTACLES
 
 void FrontendManager::UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
 	for (int i = 0; i < length / divisions; i++) {
@@ -132,11 +133,14 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	int boundaryRight = (int)(0.55 * iMax);
 	int boundaryBottom = (int)(0.45 * jMax);
 	int boundaryTop = (int)(0.55 * jMax);
+
+#ifdef OBSTACLES
 	for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
 		for (int j = boundaryBottom; j < boundaryTop; j++) {
 			obstacles[i][j] = 0;
 		}
 	}
+#endif // OBSTACLES
 
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
