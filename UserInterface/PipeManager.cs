@@ -66,33 +66,6 @@ namespace UserInterface
         /// Attempts a read operation of the pipe stream
         /// </summary>
         /// <returns>A ReadResults struct, including whether any data was read and the data (if applicable)</returns>
-        //public ReadResults AttemptRead()
-        //{
-        //    int currentByte = pipeStream.ReadByte();
-        //    if (currentByte == -1) // Nothing to read - return nothing read
-        //    {
-        //        return new ReadResults { anythingRead = false, data = new byte[1] };
-        //    }
-        //    Trace.WriteLine("Something was read");
-        //    byte[] buffer = new byte[1024]; // Create a new buffer 1kiB
-        //    int index = 0;
-        //    Trace.WriteLine($"Byte read: {currentByte}");
-        //    do
-        //    {
-        //        buffer[index] = (byte)currentByte; // Put the current byte in the buffer
-        //        index++;
-        //        if (index == buffer.Length) // Double the size of the array if it becomes inadequate
-        //        {
-        //            Array.Resize(ref buffer, 2 * index);
-        //        }
-        //        currentByte = pipeStream.ReadByte();
-        //        Trace.WriteLine($"Byte read: {currentByte}");
-        //    } while (currentByte != -1);
-
-        //    Array.Resize(ref buffer, index); // Resize the array to be only as long as is needed
-        //    return new ReadResults { anythingRead = true, data = buffer };
-        //}
-
         public ReadResults AttemptRead()
         {
             byte[] buffer = new byte[1024]; // Start by reading 1kiB of the pipe
@@ -217,11 +190,19 @@ namespace UserInterface
             return (iMax, jMax);
         }
 
+        /// <summary>
+        /// Wrapper method that waits for the backend to connect to the pipe.
+        /// </summary>
         public void WaitForConnection()
         {
             pipeStream.WaitForConnection();
         }
 
+        /// <summary>
+        /// Serialises and sends obstacle data through the pipe.
+        /// </summary>
+        /// <param name="obstacles">A boolean array indicating whether each cell is an obstacle cell or fluid cell.</param>
+        /// <returns>A boolean indicating whether the transmission was successful.</returns>
         public bool SendObstacles(bool[] obstacles)
         {
             byte[] buffer = new byte[obstacles.Length / 8 + (obstacles.Length % 8 == 0 ? 0 : 1)]; // Divide the length by 8 and add one if the length does not divide evenly
@@ -242,6 +223,7 @@ namespace UserInterface
             {
                 readByte = pipeStream.ReadByte();
             }
+            Trace.WriteLine("SendObstacles finished executing");
             return (byte)readByte == PipeConstants.Status.OK;
         }
 

@@ -85,6 +85,8 @@ void SetFlags(bool** obstacles, BYTE** flags, int xLength, int yLength) {
 		for (int j = 1; j < yLength - 1; j++) {
 			flags[i][j] = ((BYTE)obstacles[i][j] << 4) + ((BYTE)obstacles[i][j + 1] << 3) + ((BYTE)obstacles[i + 1][j] << 2) + ((BYTE)obstacles[i][j - 1] << 1) + (BYTE)obstacles[i - 1][j]; //5 bits in the format: self, north, east, south, west.
 		}
+		std::cout << i << " ";
 	}
+	std::cout << std::endl;
 }
 

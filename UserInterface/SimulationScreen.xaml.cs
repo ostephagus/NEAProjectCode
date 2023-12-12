@@ -84,6 +84,21 @@ namespace UserInterface
         {
             backendManager = new BackendManager();
             backendManager.ConnectBackend();
+            bool[] obstacles = new bool[backendManager.FieldLength];
+            for (int i = 1; i < obstacles.Length; i++) { obstacles[i] = true; } //Set all the cells to fluid
+            int boundaryLeft = (int)(0.45 * backendManager.IMax);
+            int boundaryRight = (int)(0.55 * backendManager.IMax);
+            int boundaryBottom = (int)(0.45 * backendManager.JMax);
+            int boundaryTop = (int)(0.55 * backendManager.JMax);
+
+            for (int i = boundaryLeft; i < boundaryRight; i++)
+            { // Create a square of boundary cells
+                for (int j = boundaryBottom; j < boundaryTop; j++)
+                {
+                    obstacles[i * backendManager.JMax + j] = false;
+                }
+            }
+            backendManager.SendObstacles(obstacles);
 
             horizontalVelocity = new float[backendManager.FieldLength];
             pressure = new float[backendManager.FieldLength];

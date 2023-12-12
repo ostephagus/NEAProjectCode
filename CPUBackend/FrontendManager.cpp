@@ -26,6 +26,7 @@ void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, cons
 }
 
 void FrontendManager::HandleRequest(BYTE requestByte) {
+	std::cout << "Starting execution of timestepping loop" << std::endl;
 	if ((requestByte & ~PipeConstants::Request::PARAMMASK) == PipeConstants::Request::CONTREQ) {
 		if (requestByte == PipeConstants::Request::CONTREQ) {
 			pipeManager.SendByte(PipeConstants::Error::BADPARAM);
@@ -45,7 +46,6 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		REAL** streamFunction;
 		DoubleField FG;
 		BYTE** flags;
-		bool** obstacles;
 		std::pair<int, int>* coordinates;
 		int coordinatesLength;
 		int numFluidCells;
@@ -56,7 +56,6 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 
 		REAL pressureResidualNorm = 0;
 		bool stopRequested = false;
-
 		pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
 		int iteration = 0;
@@ -129,9 +128,11 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
 	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
-	obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-	for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-
+	if (obstacles == 0) { // 0 is a sentinel value for uninitialised obstacles, perform default initialisation.
+		std::cout << "Setting obstacles to default iteration value" << std::endl;
+		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+	}
 	int boundaryLeft = (int)(0.45 * iMax);
 	int boundaryRight = (int)(0.55 * iMax);
 	int boundaryBottom = (int)(0.45 * jMax);
@@ -164,7 +165,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	parameters.reynoldsNo = 2000;
 	parameters.inflowVelocity = 5;
 	parameters.surfaceFrictionalPermissibility = 0;
-	parameters.bodyForces.x = 0;
+	parameters.bodyForces.x = 1;
 	parameters.bodyForces.y = 0;
 
 	stepSizes.x = parameters.width / iMax;
@@ -180,7 +181,9 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 void FrontendManager::ReceiveData(BYTE startMarker) {
 	if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Only supported use is obstacle send
 		bool* obstaclesFlattened = new bool[fieldSize];
-		bool** obstacles = ObstacleMatrixMAlloc(iMax, jMax);
+		pipeManager.ReceiveObstacles(obstaclesFlattened, fieldSize);
+
+		obstacles = ObstacleMatrixMAlloc(iMax, jMax);
 		UnflattenArray(obstacles, obstaclesFlattened, fieldSize, jMax);
 	}
 	else {
@@ -190,7 +193,7 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 }
 
 FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
-	: iMax(iMax), jMax(jMax), fieldSize(iMax * jMax), pipeManager(pipeName)
+	: iMax(iMax), jMax(jMax), fieldSize(iMax* jMax), pipeManager(pipeName), obstacles((bool**)0) // Set obstacles to 0 to represent unallcoated
 {}
 
 int FrontendManager::Run() {
@@ -233,7 +236,5 @@ int FrontendManager::Run() {
 			break;
 		}
 	}
-
-	//delete[] obstaclesFlattened;
 	return 0;
 }

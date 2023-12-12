@@ -216,6 +216,11 @@ namespace UserInterface
             // Backend stopped correctly, so exit.
         }
 
+        public bool SendObstacles(bool[] obstacles)
+        {
+            return pipeManager.SendObstacles(obstacles);
+        }
+
         public async Task<bool> CloseBackend()
         {
             SendControlByte(PipeConstants.Status.CLOSE);

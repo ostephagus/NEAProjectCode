@@ -136,7 +136,7 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int fieldLength) {
 
 	// Assume there has been a FLDSTART before
 
-	Read(buffer, (int)bufferLength); // Read the bool obstacle data
+	Read(buffer, bufferLength); // Read the bool obstacle data
 
 	int byteNumber = 0;
 	for (int i = 0; i < fieldLength; i++) {
@@ -152,6 +152,9 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int fieldLength) {
 			byteNumber++;
 		}
 	}
+	std::cout << std::endl;
+
+	delete[] buffer;
 
 	if (Read() != (PipeConstants::Marker::FLDEND | PipeConstants::Marker::OBST)) { // Ensure there is a FLDEND after
 		std::cerr << "Cannot read obstacles - server sent malformed data";
@@ -159,8 +162,8 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int fieldLength) {
 		return false;
 	}
 
-	delete[] buffer;
 	Write(PipeConstants::Status::OK); // Send an OK message to server to tell it the data was understood
+	std::cout << "Finished reading obstacle data" << std::endl;
 	return true;
 }
 
