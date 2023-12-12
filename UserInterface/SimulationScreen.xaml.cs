@@ -25,8 +25,8 @@ namespace UserInterface
         private int dataWidth;
         private int dataHeight;
 
-        private int min = 0;
-        private int max = 1;
+        private int min = -1;
+        private int max = 5;
         private float contourTolerance = 0.01f;
         private float contourSpacingMultiplier = 0.1f;
 

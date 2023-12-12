@@ -20,7 +20,7 @@ void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, cons
 	REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
 	ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, parameters.bodyForces, gamma, parameters.reynoldsNo);
 	ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-	Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
+	PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
 	ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
 	ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
 }
@@ -60,11 +60,13 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
 		int iteration = 0;
+		REAL cumulativeTimestep = 0;
 		while (!stopRequested) {
-			std::cout << "Iteration " << iteration << std::endl;
+			std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed" << std::endl;
 			pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
 			Timestep(timestep, stepSizes, velocities, parameters, flags, coordinates, coordinatesLength, FG, RHS, pressure, nextPressure, streamFunction, numFluidCells, pressureResidualNorm);
+			cumulativeTimestep += timestep;
 
 			if (hVelWanted) {
 				pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::HVEL);
@@ -91,6 +93,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 
 			BYTE receivedByte = pipeManager.ReadByte();
 			stopRequested = receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL; // Stop if requested or the frontend fatally errors
+			iteration++;
 		}
 
 		FreeMatrix(velocities.x, iMax + 2);
@@ -153,13 +156,13 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	parameters.width = 1;
 	parameters.height = 1;
-	parameters.timeStepSafetyFactor = 0.5;
+	parameters.timeStepSafetyFactor = 1;
 	parameters.relaxationParameter = 1.7;
-	parameters.pressureResidualTolerance = 1;
+	parameters.pressureResidualTolerance = 1.5f;
 	parameters.pressureMinIterations = 10;
-	parameters.pressureMaxIterations = 300;
-	parameters.reynoldsNo = 1;
-	parameters.inflowVelocity = 1;
+	parameters.pressureMaxIterations = 500;
+	parameters.reynoldsNo = 2000;
+	parameters.inflowVelocity = 5;
 	parameters.surfaceFrictionalPermissibility = 0;
 	parameters.bodyForces.x = 0;
 	parameters.bodyForces.y = 0;

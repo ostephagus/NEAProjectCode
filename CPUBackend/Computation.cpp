@@ -3,6 +3,9 @@
 #include "Init.h"
 #include "Boundary.h"
 #include <iostream>
+#include <thread>
+#include <cmath>
+#include <chrono>
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -98,6 +101,87 @@ void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, D
 		smallestRestriction = yTravelRestriction;
 	}
 	timestep = safetyFactor * smallestRestriction;
+}
+
+void PoissonSubset(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare) {
+	for (int i = xOffset + 1; i <= iMax; i++) {
+		for (int j = yOffset + 1; j <= jMax; j++) {
+			if (!(flags[i][j] & SELF)) { // Pressure is defined in the middle of cells, so only check the SELF bit
+				continue; // Skip if the cell is not a fluid cell
+			}
+			REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
+			REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
+
+			nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
+			//std::cout << nextPressure[i][j];
+			residualNormSquare += square(pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y));
+		}
+	}
+	//std::cout << "Thread with x values " << xOffset + 1 << " to " << iMax << ", y values " << yOffset + 1 << " to " << jMax << ": residual norm reference at " << &residualNormSquare << "and square of residual norm" << residualNormSquare << std::endl;
+}
+
+int PoissonMultiThreaded(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm) {
+	int currentIteration = 0;
+	REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
+	
+	int threadHint = std::thread::hardware_concurrency(); // Number of threads returned by hardware, may not be reliable and may be 0 in error case
+	int xBlocks, yBlocks; // Number of blocks in the x and y direction
+
+	if (threadHint % 4 == 0 && threadHint > 4) { // Encompasses most multi-threaded CPUs (even number of cores, 2 threads per core)
+		yBlocks = 4;
+		xBlocks = threadHint / 4;
+	}
+	else if (threadHint % 2 == 0 && threadHint > 2) { // Hopefully a catch-all case given all modern CPUs have even numbers of cores
+		yBlocks = 2;
+		xBlocks = threadHint / 2;
+	}
+	else { // threadHint is odd or 0
+		if (threadHint == 0) threadHint = 1;
+		yBlocks = 1;
+		xBlocks = 1;
+	}
+	//std::cout << xBlocks << " blocks in x direction, " << yBlocks << " blocks in y direction." << std::endl;
+
+	do {
+		CopyBoundaryPressures(currentPressure, coordinates, coordinatesLength, flags, iMax, jMax);
+
+		residualNorm = 0;
+		if (currentIteration % 100 == 0)
+		{
+			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
+		}
+
+		// Dispach threads and perform computation
+		std::thread* threads = new std::thread[xBlocks * yBlocks]; // Array of all running threads, heap allocated because size is runtime-determined
+		REAL* residualNorms = new REAL[xBlocks * yBlocks]();
+		int threadNum = 0;
+		for (int xBlock = 0; xBlock < xBlocks; xBlock++) {
+			for (int yBlock = 0; yBlock < yBlocks; yBlock++) {
+				threads[threadNum] = std::thread(PoissonSubset, currentPressure, nextPressure, RHS, flags, (iMax * xBlock) / xBlocks, (jMax * yBlock) / yBlocks, (iMax * (xBlock + 1)) / xBlocks, (jMax * (yBlock + 1)) / yBlocks, stepSizes, omega, boundaryFraction, std::ref(residualNorm));
+				threadNum++;
+			}
+		}
+		
+
+		// Wait for threads to finish exection
+		for (int threadNum = 0; threadNum < xBlocks * yBlocks; threadNum++) {
+			threads[threadNum].join();
+		}
+
+		delete[] threads;
+		delete[] residualNorms;
+
+		//CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
+		std::swap(currentPressure, nextPressure);
+		residualNorm = sqrt(residualNorm) / (numFluidCells);
+		if (currentIteration % 100 == 0)
+		{
+			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
+		}
+		//std::cout << residualNorm << ",";
+		currentIteration++;
+	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
+	return currentIteration;
 }
 
 int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL &residualNorm) {

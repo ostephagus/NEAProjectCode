@@ -10,6 +10,7 @@
 #include "PipeConstants.h"
 #include "FrontendManager.h"
 //#define DEBUGOUT
+#define MULTITHREADING
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
@@ -209,7 +210,7 @@ void TestBoundaryHandling() {
 
 }
 
-void StepTestSquare(int squareLength) {
+void StepTestSquare(int squareLength, bool multiThreading) {
     int iMax = squareLength, jMax = squareLength;
 
     DoubleField velocities;
@@ -291,9 +292,9 @@ void StepTestSquare(int squareLength) {
     std::cin >> iterMax;
     //int iterMax = 10; //TESTING
     int pressureIterations;
-    //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
     while (iteration < iterMax) {
         std::cout << "Iteration " << iteration << std::endl;
+        auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
 #ifdef DEBUGOUT
@@ -311,18 +312,24 @@ void StepTestSquare(int squareLength) {
 #ifdef DEBUGOUT
         PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
 #endif // DEBUGOUT
-        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        if (multiThreading) {
+            pressureIterations = PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        }
+        else {
+            pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        }
+
 #ifdef DEBUGOUT
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
         std::cout << pressureResidualNorm << std::endl;
 #endif // DEBUGOUT
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
+        auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
         std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
+        std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds." << std::endl;
         iteration++;
     }
-    //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
 
-    //std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds.";
 
     FreeMatrix(velocities.x, iMax + 2);
     FreeMatrix(velocities.y, iMax + 2);
@@ -347,7 +354,11 @@ int main(int argc, char** argv) {
         std::cout << "Enter domain size" << std::endl;
         int squareLength;
         std::cin >> squareLength;
-        StepTestSquare(squareLength);
+        bool multiThreading = false;
+        if (argc > 2) {
+            multiThreading = true;
+        }
+        StepTestSquare(squareLength, multiThreading);
         return 0;
     }
     else {

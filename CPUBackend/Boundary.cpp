@@ -1,7 +1,7 @@
 #include "Boundary.h"
 #include <bitset>
 #include <vector>
-#include <iterator>
+#include <iostream>
 
 #define XVEL velocities.x[coordinates[coord].first][coordinates[coord].second]
 #define YVEL velocities.y[coordinates[coord].first][coordinates[coord].second]
@@ -34,6 +34,9 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 		// Right: outflow
 		velocities.x[iMax][j] = velocities.x[iMax - 1][j]; // Copy the velocity values from the previous cell (mass flows out at the boundary)
 		velocities.y[iMax + 1][j] = velocities.y[iMax][j];
+
+		//velocities.x[iMax][j] = velocities.x[iMax - 1][j] * 0.5 + 0.5 * inflowVelocity; // Get some of the velocity value from the previous cell, some from inflow velocity (avoids pushback of fluid at the right boundary)
+		//velocities.y[iMax + 1][j] = velocities.y[iMax][j];
 	}
 
 	// Obstacle boundary cells: partial-slip
