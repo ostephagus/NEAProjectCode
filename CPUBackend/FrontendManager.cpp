@@ -181,10 +181,16 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 void FrontendManager::ReceiveData(BYTE startMarker) {
 	if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Only supported use is obstacle send
 		bool* obstaclesFlattened = new bool[fieldSize];
-		pipeManager.ReceiveObstacles(obstaclesFlattened, fieldSize);
-
-		obstacles = ObstacleMatrixMAlloc(iMax, jMax);
-		UnflattenArray(obstacles, obstaclesFlattened, fieldSize, jMax);
+		std::cout << "Receiving obstacles" << std::endl;
+		pipeManager.ReceiveObstacles(obstaclesFlattened, iMax + 2, jMax + 2);
+		std::cout << "Obstacles received" << std::endl;
+		try {
+			obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+		}
+		catch (...) {
+			std::cout << "Exception occurred allocating memory" << std::endl;
+		}
+		UnflattenArray(obstacles, obstaclesFlattened, fieldSize, jMax + 2);
 	}
 	else {
 		std::cerr << "Server sent unsupported data" << std::endl;

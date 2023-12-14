@@ -47,15 +47,17 @@ BYTE** FlagMatrixMAlloc(int xLength, int yLength) {
 }
 
 bool** ObstacleMatrixMAlloc(int xLength, int yLength) {
-
+	std::cout << "Started to allocate obstacle memory" << std::endl;
 	// Create array of pointers pointing to more arrays
 	bool** matrix = new bool* [xLength];
-
+	std::cout << "Array of pointers allocated" << std::endl;
 	//Create the arrays inside each outer array
 	for (int i = 0; i < xLength; ++i) {
 		matrix[i] = new bool[yLength]();
+		std::cout << i << " ";
 	}
 
+	std::cout << "Finished allocating obstacle memory" << std::endl;
 	return matrix;
 }
 

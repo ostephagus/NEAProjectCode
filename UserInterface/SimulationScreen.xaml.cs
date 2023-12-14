@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -84,8 +85,9 @@ namespace UserInterface
         {
             backendManager = new BackendManager();
             backendManager.ConnectBackend();
-            bool[] obstacles = new bool[backendManager.FieldLength];
-            for (int i = 1; i < obstacles.Length; i++) { obstacles[i] = true; } //Set all the cells to fluid
+
+            bool[] obstacles = new bool[(backendManager.IMax + 2) * (backendManager.JMax + 2)];
+            for (int i = 1; i <= (backendManager.IMax + 1) * backendManager.JMax; i++) { obstacles[i] = true; } //Set all the cells to fluid
             int boundaryLeft = (int)(0.45 * backendManager.IMax);
             int boundaryRight = (int)(0.55 * backendManager.IMax);
             int boundaryBottom = (int)(0.45 * backendManager.JMax);
@@ -98,7 +100,7 @@ namespace UserInterface
                     obstacles[i * backendManager.JMax + j] = false;
                 }
             }
-            backendManager.SendObstacles(obstacles);
+            Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
 
             horizontalVelocity = new float[backendManager.FieldLength];
             pressure = new float[backendManager.FieldLength];

@@ -215,9 +215,18 @@ namespace UserInterface
                     index++;
                 }
             }
+            Trace.WriteLine($"Sending {buffer.Length} bytes of data.");
             WriteByte((byte)(PipeConstants.Marker.FLDSTART | PipeConstants.Marker.OBST)); // Put a FLDSTART marker at the start
-            pipeStream.Write(new ReadOnlySpan<byte>(buffer)); // Write the data
+            bool writeOk = true;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                writeOk &= WriteByte(buffer[i]);
+            }
+            Trace.WriteLine(writeOk ? "Completed successfully" : "Completed unsuccessfully");
             WriteByte((byte)(PipeConstants.Marker.FLDEND | PipeConstants.Marker.OBST)); // And put a FLDEND at the end
+            Trace.WriteLine("Waiting for pipe drain");
+            pipeStream.WaitForPipeDrain();
+            Trace.WriteLine("Pipe drain, waiting for OK");
             int readByte = -1;
             while (readByte == -1) // Wait until there is a response
             {

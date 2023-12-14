@@ -61,9 +61,10 @@ public:
 	/// A subroutine to receive obstacles through the pipe, and convert them to a bool array.
 	/// </summary>
 	/// <param name="obstacles">The obstacles array to output to.</param>
-	/// <param name="fieldLength">The size of the field.</param>
+	/// <param name="xLength">The number of cells in the x direction</param>
+	/// <param name="yLength">The number of cells in the y direction</param>
 	/// <returns>A boolean indicating whether the action was successful.</returns>
-	bool ReceiveObstacles(bool* obstacles, int fieldLength);
+	bool ReceiveObstacles(bool* obstacles, int xLength, int yLength);
 	BYTE ReadByte();
 	void SendByte(BYTE byte);
 
