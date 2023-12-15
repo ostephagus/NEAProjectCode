@@ -205,35 +205,26 @@ namespace UserInterface
         /// <returns>A boolean indicating whether the transmission was successful.</returns>
         public bool SendObstacles(bool[] obstacles)
         {
-            byte[] buffer = new byte[obstacles.Length / 8 + (obstacles.Length % 8 == 0 ? 0 : 1)]; // Divide the length by 8 and add one if the length does not divide evenly
+            byte[] buffer = new byte[obstacles.Length / 8 + (obstacles.Length % 8 == 0 ? 0 : 1) + 1]; // Divide the length by 8 and add one if the length does not divide evenly. Also add 1 byte for FLDEND
+            WriteByte((byte)(PipeConstants.Marker.FLDSTART | PipeConstants.Marker.OBST)); // Put a FLDSTART marker at the start
             int index = 0;
             for (int i = 0; i < obstacles.Length; i++)
             {
-                buffer[index] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
+                buffer[index + 1] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
                 if (i % 8 == 7) // Add one to the index if the byte is full
                 {
                     index++;
                 }
             }
+            buffer[^1] = (byte)(PipeConstants.Marker.FLDEND | PipeConstants.Marker.OBST); // And put a FLDEND at the end (^1 gets the last element of the array)
             Trace.WriteLine($"Sending {buffer.Length} bytes of data.");
-            WriteByte((byte)(PipeConstants.Marker.FLDSTART | PipeConstants.Marker.OBST)); // Put a FLDSTART marker at the start
-            bool writeOk = true;
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                writeOk &= WriteByte(buffer[i]);
-            }
-            Trace.WriteLine(writeOk ? "Completed successfully" : "Completed unsuccessfully");
-            WriteByte((byte)(PipeConstants.Marker.FLDEND | PipeConstants.Marker.OBST)); // And put a FLDEND at the end
-            Trace.WriteLine("Waiting for pipe drain");
-            pipeStream.WaitForPipeDrain();
-            Trace.WriteLine("Pipe drain, waiting for OK");
-            int readByte = -1;
-            while (readByte == -1) // Wait until there is a response
-            {
-                readByte = pipeStream.ReadByte();
-            }
+
+            pipeStream.Write(buffer, 0, buffer.Length);
+
+            ReadResults readResults = AttemptRead();
+            
             Trace.WriteLine("SendObstacles finished executing");
-            return (byte)readByte == PipeConstants.Status.OK;
+            return readResults.anythingRead && readResults.data[0] == PipeConstants.Status.OK;
         }
 
     }

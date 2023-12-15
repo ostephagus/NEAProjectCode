@@ -95,6 +95,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 			iteration++;
 		}
 
+		FreeMatrix(obstacles, iMax + 2);
 		FreeMatrix(velocities.x, iMax + 2);
 		FreeMatrix(velocities.y, iMax + 2);
 		FreeMatrix(pressure, iMax + 2);
@@ -128,8 +129,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
 	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
-	if (obstacles == 0) { // 0 is a sentinel value for uninitialised obstacles, perform default initialisation.
-		std::cout << "Setting obstacles to default iteration value" << std::endl;
+	if (obstacles == nullptr) { // Perform default initialisation if not already initialised
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
 	}
@@ -180,17 +180,11 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 void FrontendManager::ReceiveData(BYTE startMarker) {
 	if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Only supported use is obstacle send
-		bool* obstaclesFlattened = new bool[fieldSize];
-		std::cout << "Receiving obstacles" << std::endl;
+		bool* obstaclesFlattened = new bool[(iMax + 2) * (jMax + 2)]();
 		pipeManager.ReceiveObstacles(obstaclesFlattened, iMax + 2, jMax + 2);
-		std::cout << "Obstacles received" << std::endl;
-		try {
-			obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-		}
-		catch (...) {
-			std::cout << "Exception occurred allocating memory" << std::endl;
-		}
+		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		UnflattenArray(obstacles, obstaclesFlattened, fieldSize, jMax + 2);
+		delete[] obstaclesFlattened;
 	}
 	else {
 		std::cerr << "Server sent unsupported data" << std::endl;
@@ -199,12 +193,12 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 }
 
 FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
-	: iMax(iMax), jMax(jMax), fieldSize(iMax* jMax), pipeManager(pipeName), obstacles((bool**)0) // Set obstacles to 0 to represent unallcoated
+	: iMax(iMax), jMax(jMax), fieldSize(iMax * jMax), pipeManager(pipeName), obstacles(nullptr) // Set obstacles to null pointer to represent unallcoated
 {}
 
 int FrontendManager::Run() {
 	pipeManager.Handshake(iMax, jMax);
-	std::cerr << "Handshake completed ok" << std::endl;
+	std::cout << "Handshake completed ok" << std::endl;
 
 	bool closeRequested = false;
 

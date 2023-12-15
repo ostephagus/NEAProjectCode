@@ -133,38 +133,36 @@ std::pair<int,int> PipeManager::Handshake() {
 bool PipeManager::ReceiveObstacles(bool* obstacles, int xLength, int yLength) {
 	int fieldLength = xLength * yLength;
 	int bufferLength = fieldLength / 8 + (fieldLength % 8 == 0 ? 0 : 1);
-	//BYTE* buffer = new BYTE[bufferLength](); // Have to use new keyword because length of array is not a constant expression
 
 	//Assume there has been a FLDSTART before
+	BYTE* buffer = new BYTE[bufferLength + 1]; // Have to use new keyword because length of array is not a constant expression
 
-	BYTE currentByte = Read();
+	Read(buffer, bufferLength + 1);
 
 	int byteNumber = 0;
 	for (int i = 0; i < fieldLength; i++) {
 		if (byteNumber <= fieldLength / 8) { // If there are more than a byte's worth of data to read, shift all 8 bits of the byte
-			obstacles[byteNumber * 8 + (i % 8)] = (((currentByte >> (i % 8)) & 1) == 0) ? false : true; // Due to the way bits are shifted into the bytes by the server, they must be shifted off in the opposite order hence the complicated expression for obstacles[...]. Right shift and AND with 1 takes that bit only
+			obstacles[byteNumber * 8 + (i % 8)] = (((buffer[byteNumber] >> (i % 8)) & 1) == 0) ? false : true; // Due to the way bits are shifted into the bytes by the server, they must be shifted off in the opposite order hence the complicated expression for obstacles[...]. Right shift and AND with 1 takes that bit only
 		}
 		else {
 			int remainingBits = fieldLength - byteNumber * 8;
-			obstacles[byteNumber * 8 + (remainingBits - 1) - (i % 8)] = ((currentByte >> i) == 0) ? false : true;
+			obstacles[byteNumber * 8 + (remainingBits - 1) - (i % 8)] = ((buffer[byteNumber] >> i) == 0) ? false : true;
 		}
 
 		if (i % 8 == 7) {
 			byteNumber++;
-			currentByte = Read();
+			//currentByte = Read();
 		}
 	}
 
-	//delete[] buffer;
-
-	if (Read() != (PipeConstants::Marker::FLDEND | PipeConstants::Marker::OBST)) { // Ensure there is a FLDEND after
-		std::cerr << "Cannot read obstacles - server sent malformed data";
+	if (buffer[bufferLength] != (PipeConstants::Marker::FLDEND | PipeConstants::Marker::OBST)) { // Ensure there is a FLDEND after
+		std::cerr << "Cannot read obstacles - server sent malformed data. ";
 		Write(PipeConstants::Error::BADPARAM);
 		return false;
 	}
+	delete[] buffer;
 
 	Write(PipeConstants::Status::OK); // Send an OK message to server to tell it the data was understood
-	std::cout << "Finished reading obstacle data" << std::endl;
 	return true;
 }
 
