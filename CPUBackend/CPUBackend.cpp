@@ -9,8 +9,9 @@
 #include "PipeManager.h"
 #include "PipeConstants.h"
 #include "FrontendManager.h"
-//#define DEBUGOUT
-#define MULTITHREADING
+#define DEBUGOUT
+//#define FIELDOUT
+//#define MULTITHREADING
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
@@ -239,9 +240,10 @@ void StepTestSquare(int squareLength, bool multiThreading) {
         }
     }
     SetFlags(obstacles, flags, iMax + 2, jMax + 2);
-#ifdef DEBUGOUT
+#ifdef FIELDSOUT
     PrintFlagsArrows(flags, iMax + 2, jMax + 2);
-#endif // DEBUGOUT
+#endif // FIELDSOUT
+
 
 
     std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
@@ -257,7 +259,7 @@ void StepTestSquare(int squareLength, bool multiThreading) {
     const REAL pressureResidualTolerance = 1; //Needs experimentation
     const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; //Needs experimentation
-    const REAL reynoldsNo = 1;
+    const REAL reynoldsNo = 1000;
     const REAL inflowVelocity = 1;
     const REAL surfaceFrictionalPermissibility = 0;
     REAL pressureResidualNorm = 0;
@@ -271,11 +273,11 @@ void StepTestSquare(int squareLength, bool multiThreading) {
     stepSizes.x = width / iMax;
     stepSizes.y = height / jMax;
 
-    for (int i = 0; i <= iMax+1; i++) {
+    /*for (int i = 0; i <= iMax+1; i++) {
         for (int j = 0; j <= jMax+1; j++) {
             pressure[i][j] = 1000;
         }
-    }
+    }*/
     //PrintField(pressure, iMax+2, jMax+2, "Pressure");
     /*for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
@@ -294,39 +296,40 @@ void StepTestSquare(int squareLength, bool multiThreading) {
     int pressureIterations;
     while (iteration < iterMax) {
         std::cout << "Iteration " << iteration << std::endl;
-        auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
+        //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
 #ifdef DEBUGOUT
-        std::cout << timestep << std::endl;
+        std::cout << "Timestep: " << timestep << std::endl;
+#endif // DEBUGOUT
+#ifdef FIELDOUT
         PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
         PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
-#endif // DEBUGOUT
+#endif // FIELDOUT
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
-#ifdef DEBUGOUT
+#ifdef FIELDOUT
         PrintField(FG.x, iMax + 2, jMax + 2, "F");
         PrintField(FG.y, iMax + 2, jMax + 2, "G");
-#endif // DEBUGOUT
+#endif // FIELDOUT
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-#ifdef DEBUGOUT
+#ifdef FIELDOUT
         PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
-#endif // DEBUGOUT
-        if (multiThreading) {
-            pressureIterations = PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-        }
-        else {
-            pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
-        }
-
-#ifdef DEBUGOUT
+#endif // FIELDOUT
+#ifdef MULTITHREADING
+        pressureIterations = PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+#else
+        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+#endif // MULTITHREADING
+#ifdef FIELDOUT
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
-        std::cout << pressureResidualNorm << std::endl;
-#endif // DEBUGOUT
+#endif // FIELDOUT
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-        auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
+        //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
+#ifdef DEBUGOUT
         std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
-        std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds." << std::endl;
+#endif // DEBUGOUT
+        //std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds." << std::endl;
         iteration++;
     }
 
@@ -347,7 +350,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
-        FrontendManager frontendManager(500, 500, "NEAFluidDynamicsPipe");
+        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
         return frontendManager.Run();
     }
     else if (std::string(argv[1]) == std::string("compute")) {

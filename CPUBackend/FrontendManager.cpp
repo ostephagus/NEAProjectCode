@@ -5,7 +5,7 @@
 #include "Computation.h"
 #include "Init.h"
 #include "Boundary.h"
-//#define OBSTACLES
+#define OBSTACLES
 
 void FrontendManager::UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
 	for (int i = 0; i < length / divisions; i++) {
@@ -20,7 +20,7 @@ void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, cons
 	REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
 	ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, parameters.bodyForces, gamma, parameters.reynoldsNo);
 	ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-	PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
+	Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
 	ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
 	ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
 }
@@ -132,19 +132,19 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	if (obstacles == nullptr) { // Perform default initialisation if not already initialised
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
-	}
-	int boundaryLeft = (int)(0.45 * iMax);
-	int boundaryRight = (int)(0.55 * iMax);
-	int boundaryBottom = (int)(0.45 * jMax);
-	int boundaryTop = (int)(0.55 * jMax);
-
 #ifdef OBSTACLES
-	for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
-		for (int j = boundaryBottom; j < boundaryTop; j++) {
-			obstacles[i][j] = 0;
+		int boundaryLeft = (int)(0.45 * iMax);
+		int boundaryRight = (int)(0.55 * iMax);
+		int boundaryBottom = (int)(0.45 * jMax);
+		int boundaryTop = (int)(0.55 * jMax);
+
+		for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
+			for (int j = boundaryBottom; j < boundaryTop; j++) {
+				obstacles[i][j] = 0;
+			}
 		}
-	}
 #endif // OBSTACLES
+	}
 
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
@@ -157,25 +157,25 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	parameters.width = 1;
 	parameters.height = 1;
-	parameters.timeStepSafetyFactor = 1;
+	parameters.timeStepSafetyFactor = 0.5;
 	parameters.relaxationParameter = 1.7;
-	parameters.pressureResidualTolerance = 1.5f;
+	parameters.pressureResidualTolerance = 1;
 	parameters.pressureMinIterations = 10;
-	parameters.pressureMaxIterations = 500;
-	parameters.reynoldsNo = 2000;
-	parameters.inflowVelocity = 5;
+	parameters.pressureMaxIterations = 1000;
+	parameters.reynoldsNo = 1000;
+	parameters.inflowVelocity = 1;
 	parameters.surfaceFrictionalPermissibility = 0;
-	parameters.bodyForces.x = 1;
+	parameters.bodyForces.x = 0;
 	parameters.bodyForces.y = 0;
 
 	stepSizes.x = parameters.width / iMax;
 	stepSizes.y = parameters.height / jMax;
 
-	for (int i = 0; i <= iMax + 1; i++) {
+	/*for (int i = 0; i <= iMax + 1; i++) {
 		for (int j = 0; j <= jMax + 1; j++) {
 			pressure[i][j] = 1000;
 		}
-	}
+	}*/
 }
 
 void FrontendManager::ReceiveData(BYTE startMarker) {

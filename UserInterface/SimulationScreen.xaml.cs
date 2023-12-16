@@ -27,7 +27,7 @@ namespace UserInterface
         private int dataHeight;
 
         private int min = -1;
-        private int max = 5;
+        private int max = 2;
         private float contourTolerance = 0.01f;
         private float contourSpacingMultiplier = 0.1f;
 
@@ -100,7 +100,7 @@ namespace UserInterface
             //        obstacles[i * backendManager.JMax + j] = false;
             //    }
             //}
-            Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
+            //Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
 
             horizontalVelocity = new float[backendManager.FieldLength];
             pressure = new float[backendManager.FieldLength];

@@ -21,8 +21,7 @@ REAL PvPy(REAL** vVel, int i, int j, REAL dely) {
 	return (vVel[i][j] - vVel[i][j - 1]) / dely;
 }
 
-REAL PuSquaredPx
-(REAL** hVel, int i, int j, REAL delx, REAL gamma) {
+REAL PuSquaredPx(REAL** hVel, int i, int j, REAL delx, REAL gamma) {
 	REAL forwardAverage = (hVel[i][j] + hVel[i + 1][j]) / 2;
 	REAL backwardAverage = (hVel[i - 1][j] + hVel[i][j]) / 2;
 

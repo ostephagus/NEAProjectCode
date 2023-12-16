@@ -188,7 +188,6 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 	int currentIteration = 0;
 	REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
 	do {
-		CopyBoundaryPressures(currentPressure, coordinates, coordinatesLength, flags, iMax, jMax);
 
 		residualNorm = 0;
 		if (currentIteration % 100 == 0)
@@ -196,23 +195,29 @@ int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flag
 			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
 		}
 		for (int i = 1; i <= iMax; i++) {
+			if (i == 224) {
+				int bp = 1;
+			}
 			for (int j = 1; j <= jMax; j++) {
+				if (j == 250) {
+					int bp2 = 1;
+				}
 				if (!(flags[i][j] & SELF)) { // Pressure is defined in the middle of cells, so only check the SELF bit
 					continue; // Skip if the cell is not a fluid cell
 				}
 				REAL relaxedPressure = (1 - omega) * currentPressure[i][j];
 				REAL pressureAverages = ((currentPressure[i + 1][j] + currentPressure[i - 1][j]) / square(stepSizes.x)) + ((currentPressure[i][j + 1] + currentPressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
 
-				nextPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
+				currentPressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
 				//std::cout << nextPressure[i][j];
 				REAL currentResidual = pressureAverages - (2 * currentPressure[i][j]) / square(stepSizes.x) - (2 * currentPressure[i][j]) / square(stepSizes.y);
 				residualNorm += square(currentResidual);
 			}
 		}
 		
-		//CopyBoundaryPressures(nextPressure, coordinates, coordinatesLength, flags, iMax, jMax);
-		std::swap(currentPressure, nextPressure);
-		residualNorm = sqrt(residualNorm) / (numFluidCells);
+		//std::swap(currentPressure, nextPressure);
+		residualNorm = sqrt(residualNorm / numFluidCells);
+		CopyBoundaryPressures(currentPressure, coordinates, coordinatesLength, flags, iMax, jMax);
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
