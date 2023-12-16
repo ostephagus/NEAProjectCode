@@ -20,11 +20,11 @@ void ComputeRHS(DoubleField FG, REAL** RHS, BYTE** flags, int iMax, int jMax, RE
 
 void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, DoubleField velocities, REAL reynoldsNo, REAL safetyFactor);
 
-void PoissonSubset(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare);
+void PoissonSubset(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare);
 
-int PoissonMultiThreaded(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm);
+int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm);
 
-int Poisson(REAL** currentPressure, REAL** nextPressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm);
+int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm);
 
 void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes);
 

@@ -91,7 +91,6 @@ REAL TestParameters(REAL parameterValue, int iterations) {
     velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
     REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
-    REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
     REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
 
     DoubleField FG;
@@ -150,7 +149,7 @@ REAL TestParameters(REAL parameterValue, int iterations) {
         REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
         ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, bodyForces, gamma, reynoldsNo);
         ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-        Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
         iteration++;
     }
@@ -159,7 +158,6 @@ REAL TestParameters(REAL parameterValue, int iterations) {
     FreeMatrix(velocities.x, iMax + 2);
     FreeMatrix(velocities.y, iMax + 2);
     FreeMatrix(pressure, iMax + 2);
-    FreeMatrix(nextPressure, iMax + 2);
     FreeMatrix(RHS, iMax + 2);
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
@@ -219,7 +217,6 @@ void StepTestSquare(int squareLength, bool multiThreading) {
     velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
     REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
-    REAL** nextPressure = MatrixMAlloc(iMax + 2, jMax + 2);
     REAL** RHS = MatrixMAlloc(iMax + 2, jMax + 2);
 
     DoubleField FG;
@@ -317,9 +314,9 @@ void StepTestSquare(int squareLength, bool multiThreading) {
         PrintField(RHS, iMax + 2, jMax + 2, "Pressure RHS");
 #endif // FIELDOUT
 #ifdef MULTITHREADING
-        pressureIterations = PoissonMultiThreaded(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        pressureIterations = PoissonMultiThreaded(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
 #else
-        pressureIterations = Poisson(pressure, nextPressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
+        pressureIterations = Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, pressureResidualTolerance, pressureMinIterations, pressureMaxIterations, relaxationParameter, pressureResidualNorm);
 #endif // MULTITHREADING
 #ifdef FIELDOUT
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
@@ -337,7 +334,6 @@ void StepTestSquare(int squareLength, bool multiThreading) {
     FreeMatrix(velocities.x, iMax + 2);
     FreeMatrix(velocities.y, iMax + 2);
     FreeMatrix(pressure, iMax + 2);
-    FreeMatrix(nextPressure, iMax + 2);
     FreeMatrix(RHS, iMax + 2);
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
