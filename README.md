@@ -15,7 +15,7 @@ The visualisation is written in C# using OpenGL to display a colour gradient of 
 
 ## Current status
 ### CPU Backend
-The CPU backend needs to be completed and, if the GPU backend will not be made, optimised so that it can run in close to real time. The inability to simulate obstacles needs to be sorted also, perhaps with some guard rails on the different quantities near boundaries.
+The CPU backend is now almost completly functional - the only thing that is left to do is fix obstacle send which is currently broken.
 
 ### GPU Backend
 The GPU backend is optional, and should be implemented if there is time.
@@ -29,7 +29,7 @@ The user interface is currently barebones, with few working features. Key areas 
 ## Plan for over christmas
 The work on the project will be split into backend and frontend.
 ### Backend
-The first priority is ensuring that obstacles can be simulated. This will likely need a long session of debugging to figure out precisely where the simulation is going wrong. I hope to be able to get this done in 1 week (done before Christmas day). Next will be optimisation - tweaking parameters to ensure greatest stability and processing efficiency. The slowest part of the solver at the moment is the iterative pressure solution. If the CPU backend is to be the main backend, more work could be done on optimising the multi-threading there (Griebels chapter 8). If the GPU backend is to be used, the CPU backend will not need to be optimised beyond finding parameter values. If the CPU backend debugging is not finished by Christmas, the GPU backend will not be made.
+Good progress was made on the CPU backend, such that it is now almost fully functional. The last thing to implement is obstacle sending, and possibly some optimisation. I plan not to start on the GPU backend until most of the UI is done, just to be totally sure that is finished in time.
 
 ### Frontend
 The frontend is made up of lots of smaller tasks, below is the order and how long approximately they should take. I will update this as I go.
