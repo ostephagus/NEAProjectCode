@@ -93,13 +93,13 @@ namespace UserInterface
             int boundaryBottom = (int)(0.45 * backendManager.JMax);
             int boundaryTop = (int)(0.55 * backendManager.JMax);
 
-            for (int i = boundaryLeft; i < boundaryRight; i++)
-            { // Create a square of boundary cells
-                for (int j = boundaryBottom; j < boundaryTop; j++)
-                {
-                    obstacles[i * backendManager.JMax + j] = false;
-                }
-            }
+            //for (int i = boundaryLeft; i < boundaryRight; i++)
+            //{ // Create a square of boundary cells
+            //    for (int j = boundaryBottom; j < boundaryTop; j++)
+            //    {
+            //        obstacles[i * backendManager.JMax + j] = false;
+            //    }
+            //}
             Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
 
             horizontalVelocity = new float[backendManager.FieldLength];
