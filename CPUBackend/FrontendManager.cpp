@@ -20,9 +20,10 @@ void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, cons
 	REAL gamma = ComputeGamma(velocities, iMax, jMax, timestep, stepSizes);
 	ComputeFG(velocities, FG, flags, iMax, jMax, timestep, stepSizes, parameters.bodyForces, gamma, parameters.reynoldsNo);
 	ComputeRHS(FG, RHS, flags, iMax, jMax, timestep, stepSizes);
-	Poisson(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
+	int pressureIterations = PoissonMultiThreaded(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
 	ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
 	ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
+	std::cout << "Pressure iterations: " << pressureIterations << ", residual norm " << pressureResidualNorm << std::endl;
 }
 
 void FrontendManager::HandleRequest(BYTE requestByte) {
@@ -60,7 +61,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		int iteration = 0;
 		REAL cumulativeTimestep = 0;
 		while (!stopRequested) {
-			std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed" << std::endl;
+			std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. ";
 			pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
 			Timestep(timestep, stepSizes, velocities, parameters, flags, coordinates, coordinatesLength, FG, RHS, pressure, streamFunction, numFluidCells, pressureResidualNorm);
@@ -130,8 +131,8 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
 #ifdef OBSTACLES
-		int boundaryLeft = (int)(0.45 * iMax);
-		int boundaryRight = (int)(0.55 * iMax);
+		int boundaryLeft = (int)(0.25 * iMax);
+		int boundaryRight = (int)(0.35 * iMax);
 		int boundaryBottom = (int)(0.45 * jMax);
 		int boundaryTop = (int)(0.55 * jMax);
 
@@ -156,8 +157,8 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	parameters.height = 1;
 	parameters.timeStepSafetyFactor = 0.5;
 	parameters.relaxationParameter = 1.7;
-	parameters.pressureResidualTolerance = 1;
-	parameters.pressureMinIterations = 10;
+	parameters.pressureResidualTolerance = 2;
+	parameters.pressureMinIterations = 1;
 	parameters.pressureMaxIterations = 1000;
 	parameters.reynoldsNo = 1000;
 	parameters.inflowVelocity = 1;

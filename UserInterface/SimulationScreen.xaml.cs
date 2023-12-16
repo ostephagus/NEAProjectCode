@@ -29,7 +29,7 @@ namespace UserInterface
         private int min = -1;
         private int max = 2;
         private float contourTolerance = 0.01f;
-        private float contourSpacingMultiplier = 0.1f;
+        private float contourSpacingMultiplier = 0.05f;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;

@@ -6,6 +6,7 @@
 #include <thread>
 #include <cmath>
 #include <chrono>
+//#define DEBUGOUT
 
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
@@ -113,11 +114,9 @@ void PoissonSubset(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int y
 			REAL pressureAverages = ((pressure[i + 1][j] + pressure[i - 1][j]) / square(stepSizes.x)) + ((pressure[i][j + 1] + pressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
 
 			pressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
-			//std::cout << nextPressure[i][j];
 			residualNormSquare += square(pressureAverages - (2 * pressure[i][j]) / square(stepSizes.x) - (2 * pressure[i][j]) / square(stepSizes.y));
 		}
 	}
-	//std::cout << "Thread with x values " << xOffset + 1 << " to " << iMax << ", y values " << yOffset + 1 << " to " << jMax << ": residual norm reference at " << &residualNormSquare << "and square of residual norm" << residualNormSquare << std::endl;
 }
 
 int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm) {
@@ -140,24 +139,24 @@ int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<in
 		yBlocks = 1;
 		xBlocks = 1;
 	}
-	//std::cout << xBlocks << " blocks in x direction, " << yBlocks << " blocks in y direction." << std::endl;
+	REAL* residualNorms = new REAL[xBlocks * yBlocks]();
 
 	do {
 		CopyBoundaryPressures(pressure, coordinates, coordinatesLength, flags, iMax, jMax);
 
 		residualNorm = 0;
+#ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
 		}
-
+#endif // DEBUGOUT
 		// Dispach threads and perform computation
 		std::thread* threads = new std::thread[xBlocks * yBlocks]; // Array of all running threads, heap allocated because size is runtime-determined
-		REAL* residualNorms = new REAL[xBlocks * yBlocks]();
 		int threadNum = 0;
 		for (int xBlock = 0; xBlock < xBlocks; xBlock++) {
 			for (int yBlock = 0; yBlock < yBlocks; yBlock++) {
-				threads[threadNum] = std::thread(PoissonSubset, pressure, RHS, flags, (iMax * xBlock) / xBlocks, (jMax * yBlock) / yBlocks, (iMax * (xBlock + 1)) / xBlocks, (jMax * (yBlock + 1)) / yBlocks, stepSizes, omega, boundaryFraction, std::ref(residualNorm));
+				threads[threadNum] = std::thread(PoissonSubset, pressure, RHS, flags, (iMax * xBlock) / xBlocks, (jMax * yBlock) / yBlocks, (iMax * (xBlock + 1)) / xBlocks, (jMax * (yBlock + 1)) / yBlocks, stepSizes, omega, boundaryFraction, std::ref(residualNorms[threadNum]));
 				threadNum++;
 			}
 		}
@@ -166,18 +165,21 @@ int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<in
 		// Wait for threads to finish exection
 		for (int threadNum = 0; threadNum < xBlocks * yBlocks; threadNum++) {
 			threads[threadNum].join();
+			residualNorm += residualNorms[threadNum];
 		}
 
 		delete[] threads;
-		delete[] residualNorms;
 
 		residualNorm = sqrt(residualNorm) / (numFluidCells);
+#ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
 		}
+#endif // DEBUGOUT
 		currentIteration++;
 	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
+	delete[] residualNorms;
 	return currentIteration;
 }
 
@@ -187,10 +189,12 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
 	do {
 
 		residualNorm = 0;
+#ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
 		}
+#endif // DEBUGOUT
 		for (int i = 1; i <= iMax; i++) {
 			if (i == 224) {
 				int bp = 1;
@@ -213,11 +217,12 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
 		
 		residualNorm = sqrt(residualNorm / numFluidCells);
 		CopyBoundaryPressures(pressure, coordinates, coordinatesLength, flags, iMax, jMax);
+#ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
 			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
 		}
-		//std::cout << residualNorm << ",";
+#endif // DEBUGOUT
 		currentIteration++;
 	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
 	return currentIteration;
