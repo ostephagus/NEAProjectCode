@@ -49,4 +49,13 @@ struct SimulationParameters
 	DoubleReal bodyForces;
 };
 
+struct ThreadStatus
+{
+	bool running;
+	bool startNextIterationRequested;
+	bool stopRequested;
+
+	ThreadStatus() : running(false), startNextIterationRequested(false), stopRequested(false) {} // Constructor just sets everything to false.
+};
+
 #endif

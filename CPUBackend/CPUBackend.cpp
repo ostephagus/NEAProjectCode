@@ -11,7 +11,7 @@
 #include "FrontendManager.h"
 #define DEBUGOUT
 //#define FIELDOUT
-//#define MULTITHREADING
+#define MULTITHREADING
 
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
@@ -209,7 +209,7 @@ void TestBoundaryHandling() {
 
 }
 
-void StepTestSquare(int squareLength, bool multiThreading) {
+void StepTestSquare(int squareLength) {
     int iMax = squareLength, jMax = squareLength;
 
     DoubleField velocities;
@@ -353,11 +353,7 @@ int main(int argc, char** argv) {
         std::cout << "Enter domain size" << std::endl;
         int squareLength;
         std::cin >> squareLength;
-        bool multiThreading = false;
-        if (argc > 2) {
-            multiThreading = true;
-        }
-        StepTestSquare(squareLength, multiThreading);
+        StepTestSquare(squareLength);
         return 0;
     }
     else {

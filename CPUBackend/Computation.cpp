@@ -119,6 +119,99 @@ void PoissonSubset(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int y
 	}
 }
 
+void ThreadLoop(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare, ThreadStatus& threadStatus) {
+	while (!threadStatus.stopRequested) { //Condition to stop the thread entirely
+		std::cout << "Thread waiting" << std::endl;
+		while (!threadStatus.startNextIterationRequested) { // Wait until the next iteration is requested
+			if (threadStatus.stopRequested) { // If a request to stop occurs in this loop, do not complete another iteration.
+				return;
+			}
+		}
+		std::cout << "Thread running" << std::endl;
+		threadStatus.running = true;
+		threadStatus.startNextIterationRequested = false; // Set it to false so that only 1 iteration occurs if there is no input from thread owner
+		for (int i = xOffset + 1; i <= iMax; i++) {
+			for (int j = yOffset + 1; j <= jMax; j++) {
+				if (!(flags[i][j] & SELF)) { // Pressure is defined in the middle of cells, so only check the SELF bit
+					continue; // Skip if the cell is not a fluid cell
+				}
+				REAL relaxedPressure = (1 - omega) * pressure[i][j];
+				REAL pressureAverages = ((pressure[i + 1][j] + pressure[i - 1][j]) / square(stepSizes.x)) + ((pressure[i][j + 1] + pressure[i][j - 1]) / square(stepSizes.y)) - RHS[i][j];
+
+				pressure[i][j] = relaxedPressure + boundaryFraction * pressureAverages;
+				residualNormSquare = square(pressureAverages - (2 * pressure[i][j]) / square(stepSizes.x) - (2 * pressure[i][j]) / square(stepSizes.y));
+			}
+		}
+		threadStatus.running = false;
+	}
+}
+
+int PoissonThreadPool(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm) {
+	int currentIteration = 0;
+	REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
+
+	int totalThreads = std::thread::hardware_concurrency(); // Number of threads returned by hardware, may not be reliable and may be 0 in error case
+	int xBlocks, yBlocks; // Number of blocks in the x and y direction
+
+	if (totalThreads % 4 == 0 && totalThreads > 4) { // Encompasses most multi-threaded CPUs (even number of cores, 2 threads per core)
+		yBlocks = 4;
+		xBlocks = totalThreads / 4;
+	}
+	else if (totalThreads % 2 == 0 && totalThreads > 2) { // Hopefully a catch-all case given all modern CPUs have even numbers of cores
+		yBlocks = 2;
+		xBlocks = totalThreads / 2;
+	}
+	else { // threadHint is odd or 0
+		totalThreads = 1;
+		yBlocks = 1;
+		xBlocks = 1;
+	}
+
+	// Initialise the threads to use, which at this point will be sitting in a loop waiting for the next iteration request
+	REAL* residualNorms = new REAL[totalThreads]();
+	std::thread* threads = new std::thread[totalThreads]; // Array of all running threads, heap allocated because size is runtime-determined
+	ThreadStatus* threadStatuses = new ThreadStatus[totalThreads]();
+	int threadNum = 0;
+	for (int xBlock = 0; xBlock < xBlocks; xBlock++) {
+		for (int yBlock = 0; yBlock < yBlocks; yBlock++) {
+			threads[threadNum] = std::thread(ThreadLoop, pressure, RHS, flags, (iMax * xBlock) / xBlocks, (jMax * yBlock) / yBlocks, (iMax * (xBlock + 1)) / xBlocks, (jMax * (yBlock + 1)) / yBlocks, stepSizes, omega, boundaryFraction, std::ref(residualNorms[threadNum]), std::ref(threadStatuses[threadNum]));
+			threadNum++;
+		}
+	}
+	do {
+		residualNorm = 0;
+
+		// Dispach threads and perform computation
+		for (int threadNum = 0; threadNum < totalThreads; threadNum++) {
+			threadStatuses[threadNum].startNextIterationRequested = true; // Loop through the threads and start the iteration
+			threadStatuses[threadNum].running = true; // TESTING
+		}
+
+
+		// Wait for threads to finish exection
+		for (int threadNum = 0; threadNum < totalThreads; threadNum++) {
+			while (threadStatuses[threadNum].running) {} // Wait until the current thread stops running
+			residualNorm += residualNorms[threadNum];
+		}
+
+
+		CopyBoundaryPressures(pressure, coordinates, coordinatesLength, flags, iMax, jMax);
+		residualNorm = sqrt(residualNorm) / (numFluidCells);
+		currentIteration++;
+	} while ((currentIteration < maxIterations && residualNorm > residualTolerance) || currentIteration < minIterations);
+
+	// Stop and join the threads
+	for (int threadNum = 0; threadNum < totalThreads; threadNum++) {
+		threadStatuses[threadNum].stopRequested = true; // Request for stop
+		threads[threadNum].join(); // And wait for it to actually stop
+	}
+
+	delete[] threadStatuses;
+	delete[] threads;
+	delete[] residualNorms;
+	return currentIteration;
+}
+
 int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int numFluidCells, int iMax, int jMax, DoubleReal stepSizes, REAL residualTolerance, int minIterations, int maxIterations, REAL omega, REAL& residualNorm) {
 	int currentIteration = 0;
 	REAL boundaryFraction = omega / ((2 / square(stepSizes.x)) + (2 / square(stepSizes.y)));
