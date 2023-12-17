@@ -29,6 +29,7 @@ namespace UserInterface
         private int hFieldVAO;
         private int hFieldEBO;
 
+        private bool contour = true;
         private int hContourVAO;
         private int hContourEBO;
 
@@ -175,14 +176,17 @@ namespace UserInterface
             GLHelper.Draw(fieldIndices, PrimitiveType.Triangles);
 
             // Drawing contour lines over the top
-            contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, primitiveRestartIndex, dataWidth, dataHeight);
-            contourShaderManager.Use();
+            if (contour)
+            {
+                contourIndices = GLHelper.FindContourIndices(streamFunction, contourTolerance, contourSpacingMultiplier, primitiveRestartIndex, dataWidth, dataHeight);
+                contourShaderManager.Use();
 
-            GL.BindVertexArray(hContourVAO);
+                GL.BindVertexArray(hContourVAO);
 
-            GLHelper.UpdateEBO(contourIndices, BufferUsageHint.DynamicDraw);
+                GLHelper.UpdateEBO(contourIndices, BufferUsageHint.DynamicDraw);
 
-            GLHelper.Draw(contourIndices, PrimitiveType.LineStrip);
+                GLHelper.Draw(contourIndices, PrimitiveType.LineStrip);
+            }
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)
