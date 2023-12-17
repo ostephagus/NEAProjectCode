@@ -129,7 +129,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
 	if (obstacles == nullptr) { // Perform default initialisation if not already initialised
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } // Set all the cells to fluid
 #ifdef OBSTACLES
 		int boundaryLeft = (int)(0.25 * iMax);
 		int boundaryRight = (int)(0.35 * iMax);

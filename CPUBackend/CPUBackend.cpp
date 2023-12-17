@@ -18,7 +18,7 @@ void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     for (int i = xLength-1; i >= 0; i--) {
         for (int j = 0; j < yLength; j++) {
 
-            printf("%-8.3f", field[j][i]); //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
+            printf("%-8.3f", field[j][i]); // i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
     }
@@ -28,7 +28,7 @@ void PrintField(BYTE** flags, int xLength, int yLength, std::string name) {
     for (int i = xLength - 1; i >= 0; i--) {
         for (int j = 0; j < yLength; j++) {
             std::bitset<8> element(flags[j][i]);
-            std::cout << element << ' '; //i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
+            std::cout << element << ' '; // i and j are swapped here because we print first in the horizontal direction (i or u) then in the vertical (j or v)
         }
         std::cout << std::endl;
     }
@@ -225,7 +225,7 @@ void StepTestSquare(int squareLength) {
 
     BYTE** flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     bool** obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-    for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } //Set all the cells to fluid
+    for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } // Set all the cells to fluid
 
     int boundaryLeft = (int)(0.45 * iMax);
     int boundaryRight = (int)(0.55 * iMax);
@@ -253,9 +253,9 @@ void StepTestSquare(int squareLength) {
     const REAL height = 1;
     const REAL timeStepSafetyFactor = 0.5;
     const REAL relaxationParameter = 1.7;
-    const REAL pressureResidualTolerance = 1; //Needs experimentation
+    const REAL pressureResidualTolerance = 1; // Needs experimentation
     const int pressureMinIterations = 10;
-    const int pressureMaxIterations = 1000; //Needs experimentation
+    const int pressureMaxIterations = 1000; // Needs experimentation
     const REAL reynoldsNo = 1000;
     const REAL inflowVelocity = 1;
     const REAL surfaceFrictionalPermissibility = 0;
@@ -289,11 +289,11 @@ void StepTestSquare(int squareLength) {
     std::cout << "Enter number of iterations ";
     int iterMax;
     std::cin >> iterMax;
-    //int iterMax = 10; //TESTING
+    //int iterMax = 10; // TESTING
     int pressureIterations;
     while (iteration < iterMax) {
         std::cout << "Iteration " << iteration << std::endl;
-        //auto startTime = std::chrono::high_resolution_clock::now(); //TESTING
+        //auto startTime = std::chrono::high_resolution_clock::now(); // TESTING
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
 #ifdef DEBUGOUT
@@ -322,7 +322,7 @@ void StepTestSquare(int squareLength) {
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
 #endif // FIELDOUT
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-        //auto endTime = std::chrono::high_resolution_clock::now(); //TESTING
+        //auto endTime = std::chrono::high_resolution_clock::now(); // TESTING
 #ifdef DEBUGOUT
         std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
 #endif // DEBUGOUT

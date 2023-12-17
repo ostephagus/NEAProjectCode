@@ -17,7 +17,7 @@ constexpr int BOTTOMSHIFT = 1;
 void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
 	REAL velocityModifier = 2 * chi - 1; // This converts chi from chi in [0,1] to in [-1,1]
 
-	//Top and bottom: free-slip
+	// Top and bottom: free-slip
 	for (int i = 1; i <= iMax; i++) {
 		velocities.y[i][0] = 0; // No mass crossing the boundary - velocity is 0
 		velocities.y[i][jMax] = 0;
@@ -44,39 +44,39 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 		BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
 		switch (relevantFlag) {
 		case B_N:
-			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
-			YVEL = 0; //Normal velocity = 0
+			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; // Tangential velocity: friction
+			YVEL = 0; // Normal velocity = 0
 			break;
 		case B_NE:
-			XVEL = 0; //Both velocities owned by a B_NE are normal, so set to 0.
+			XVEL = 0; // Both velocities owned by a B_NE are normal, so set to 0.
 			YVEL = 0; 
 			break;
 		case B_E:
-			XVEL = 0; //Normal velocity = 0
-			YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			XVEL = 0; // Normal velocity = 0
+			YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
 			break;
 		case B_SE:
 			XVEL = 0;
-			YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; //Tangential velocity: friction
+			YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
 			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SE must be set to 0
 			break;
 		case B_S:
-			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
+			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; // Tangential velocity: friction
 			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_S must be set to 0
 			break;
 		case B_SW:
-			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; //Tangential velocity: friction
-			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; // Tangential velocity: friction
+			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
 			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_SW must be set to 0
 			velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SW must be set to 0
 			break;
 		case B_W:
-			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; //Tangential velocity: friction
+			YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
 			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_W must be set to 0
 			break;
 		case B_NW:
-			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; //Tangential velocity: friction
-			YVEL = 0; //Normal velocity = 0
+			XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second + 1]; // Tangential velocity: friction
+			YVEL = 0; // Normal velocity = 0
 			velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_NW must be set to 0
 			break;
 		}
@@ -99,23 +99,23 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, int
 			pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
 		}
 		else { // These are boundary cells with 2 edges
-			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / (REAL)2; //Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
+			pressure[coordinates[coord].first][coordinates[coord].second] = (pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second] + pressure[coordinates[coord].first][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]) / (REAL)2; // Take the average of the one above/below and the one left/right by keeping j constant for the first one, and I constant for the second one.
 		}
 	}
 }
 
-//Counts number of fluid cells in the region [1,iMax]x[1,jMax]
+// Counts number of fluid cells in the region [1,iMax]x[1,jMax]
 int CountFluidCells(BYTE** flags, int iMax, int jMax) {
 	int count = 0;
 	for (int i = 0; i <= iMax; i++) {
 		for (int j = 0; j <= jMax; j++) {
-			count += flags[i][j] >> 4; //This will include only the "self" bit, which is one for fluid cells and 0 for boundary and obstacle cells.
+			count += flags[i][j] >> 4; // This will include only the "self" bit, which is one for fluid cells and 0 for boundary and obstacle cells.
 		}
 	}
 	return count;
 }
 
-std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { //Returns size of array and actual array
+std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax) { // Returns size of array and actual array
 	std::vector<std::pair<int, int>> coordinates;
 	for (int i = 1; i <= iMax; i++) {
 		for (int j = 1; j <= jMax; j++) {

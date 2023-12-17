@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-#pragma warning disable CS8618 //Compiler doesn't understand that Start() is functionally the constructor for this class.
+#pragma warning disable CS8618 // Compiler doesn't understand that Start() is functionally the constructor for this class.
 
 namespace UserInterface
 {
@@ -18,18 +18,18 @@ namespace UserInterface
     {
         private UserControl currentUserControl;
         private Window currentWindow;
-        private MainWindow fullScreenWindowContainer; //2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
+        private MainWindow fullScreenWindowContainer; // 2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
         private PopupWindow popupWindowContainer;
 
         public static event EventHandler<UserControlChangeEventArgs>? UserControlChanged;
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType); //Use the Type parameter to create a new instance
+            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType); // Use the Type parameter to create a new instance
             if (e.IsPopup)
             {
                 popupWindowContainer.Content = currentUserControl;
-                if (currentWindow != popupWindowContainer) //If the currently shown container window is the wrong one, swap them over
+                if (currentWindow != popupWindowContainer) // If the currently shown container window is the wrong one, swap them over
                 {
                     currentWindow.Close();
                     popupWindowContainer.Show();
@@ -48,14 +48,14 @@ namespace UserInterface
             }
         }
 
-        public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) //Static method for other classes to invoke the UserControlChanged event
+        public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) // Static method for other classes to invoke the UserControlChanged event
         {
             UserControlChanged.Invoke(sender, e);
         }
 
         public void Start(object Sender, StartupEventArgs e)
         {
-            fullScreenWindowContainer = new MainWindow(); //Initialise container windows
+            fullScreenWindowContainer = new MainWindow(); // Initialise container windows
             popupWindowContainer = new PopupWindow();
             currentUserControl = new ConfigScreen();
             currentWindow = popupWindowContainer;
@@ -75,7 +75,7 @@ namespace UserInterface
         }
     }
 
-    public class UserControlChangeEventArgs : EventArgs //EventArgs child containing parameters for changing UserControl
+    public class UserControlChangeEventArgs : EventArgs // EventArgs child containing parameters for changing UserControl
     {
         public Type NewUserControlType { get; }
         public bool IsPopup { get; }

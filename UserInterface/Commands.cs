@@ -14,7 +14,7 @@ namespace UserInterface
         {
             public event EventHandler? CanExecuteChanged;
 
-            public bool CanExecute(object? parameter) { return true; } //Unless app logic changes, this command can always execute.
+            public bool CanExecute(object? parameter) { return true; } // Unless app logic changes, this command can always execute.
 
             public void Execute(object? parameter)
             {
@@ -26,7 +26,7 @@ namespace UserInterface
         {
             public event EventHandler? CanExecuteChanged;
 
-            public bool CanExecute(object? parameter) { return true; } //Unless app logic changes, this command can always execute.
+            public bool CanExecute(object? parameter) { return true; } // Unless app logic changes, this command can always execute.
 
             public void Execute(object? parameter)
             {

@@ -13,7 +13,7 @@ Second derivative: the double application of a derivative.
 Donor and non-donor: There are 2 different discretisation methods here, one of which is donor-cell discretisation. The 2 parts of each discretisation formula are named as such.
 */
 
-REAL PuPx(REAL** hVel, int i, int j, REAL delx) { //NOTE: P here is used to represent the partial operator, so PuPx should be read "partial u by partial x"
+REAL PuPx(REAL** hVel, int i, int j, REAL delx) { // NOTE: P here is used to represent the partial operator, so PuPx should be read "partial u by partial x"
 	return (hVel[i][j] - hVel[i - 1][j]) / delx;
 }
 

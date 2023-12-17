@@ -36,7 +36,7 @@ void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, i
 	// G must be set to v when the self bit and the north bit are different (northern boundary cells and fluid cells to the south of a boundary)
 	for (int i = 0; i <= iMax; ++i) {
 		for (int j = 0; j <= jMax; ++j) {
-			if (i == 0 && j == 0) { //Values equal to 0 are boundary cells and are separate with flag 0.
+			if (i == 0 && j == 0) { // Values equal to 0 are boundary cells and are separate with flag 0.
 				continue;
 			}
 			if (i == 0) { // Setting F equal to u and G equal to v at the boundaries
@@ -48,10 +48,10 @@ void ComputeFG(DoubleField velocities, DoubleField FG, BYTE** flags, int iMax, i
 				continue;
 			}
 
-			if (i == iMax) { //Flag of these will be 00010xxx
+			if (i == iMax) { // Flag of these will be 00010xxx
 				FG.x[i][j] = velocities.x[i][j];
 			}
-			if (j == jMax) { //Flag of these will be 0001x0xx
+			if (j == jMax) { // Flag of these will be 0001x0xx
 				FG.y[i][j] = velocities.y[i][j];
 			}
 
@@ -120,7 +120,7 @@ void PoissonSubset(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int y
 }
 
 void ThreadLoop(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare, ThreadStatus& threadStatus) {
-	while (!threadStatus.stopRequested) { //Condition to stop the thread entirely
+	while (!threadStatus.stopRequested) { // Condition to stop the thread entirely
 		std::cout << "Thread waiting" << std::endl;
 		while (!threadStatus.startNextIterationRequested) { // Wait until the next iteration is requested
 			if (threadStatus.stopRequested) { // If a request to stop occurs in this loop, do not complete another iteration.
@@ -241,7 +241,7 @@ int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<in
 #ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
-			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
+			std::cout << "Pressure iteration " << currentIteration << std::endl; // DEBUGGING
 		}
 #endif // DEBUGOUT
 		// Dispach threads and perform computation
@@ -267,7 +267,7 @@ int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<in
 #ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
-			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
+			std::cout << "Residual norm " << residualNorm << std::endl; // DEBUGGING
 		}
 #endif // DEBUGOUT
 		currentIteration++;
@@ -285,7 +285,7 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
 #ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
-			std::cout << "Pressure iteration " << currentIteration << std::endl; //DEBUGGING
+			std::cout << "Pressure iteration " << currentIteration << std::endl; // DEBUGGING
 		}
 #endif // DEBUGOUT
 		for (int i = 1; i <= iMax; i++) {
@@ -313,7 +313,7 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
 #ifdef DEBUGOUT
 		if (currentIteration % 100 == 0)
 		{
-			std::cout << "Residual norm " << residualNorm << std::endl; //DEBUGGING
+			std::cout << "Residual norm " << residualNorm << std::endl; // DEBUGGING
 		}
 #endif // DEBUGOUT
 		currentIteration++;
