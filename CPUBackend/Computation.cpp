@@ -8,6 +8,13 @@
 #include <chrono>
 //#define DEBUGOUT
 
+REAL ArraySum(REAL* array, int arrayLength) {
+	if (arrayLength == 0) return 0;
+	if (arrayLength == 1) return array[0];
+	int midPoint = arrayLength / 2;
+	return ArraySum(array, midPoint) + ArraySum((array + midPoint), arrayLength - midPoint);
+}
+
 REAL fieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
 	for (int i = 0; i < xLength; ++i) {
@@ -258,8 +265,9 @@ int PoissonMultiThreaded(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<in
 		// Wait for threads to finish exection
 		for (int threadNum = 0; threadNum < xBlocks * yBlocks; threadNum++) {
 			threads[threadNum].join();
-			residualNorm += residualNorms[threadNum];
 		}
+
+		residualNorm = ArraySum(residualNorms, xBlocks * yBlocks);
 
 		delete[] threads;
 
