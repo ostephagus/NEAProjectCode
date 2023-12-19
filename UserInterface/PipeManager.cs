@@ -39,6 +39,21 @@ namespace UserInterface
         {
             pipeStream = new NamedPipeServerStream(pipeName);
         }
+
+        /// <summary>
+        /// Serialises an integer into part of a buffer.
+        /// </summary>
+        /// <param name="buffer">The <c>byte[] to store the result in.</c></param>
+        /// <param name="offset">The index in which to store the first element.</param>
+        /// <param name="datum">The datum to store.</param>
+        private void SerialisePrimitive(byte[] buffer, int offset, int datum)
+        {
+            for (int i = 0; i < sizeof(int); i++)
+            {
+                buffer[i + offset] = (byte)(datum >> (i * 8));
+            }
+        }
+
         /// <summary>
         /// Reads one byte asynchronously
         /// </summary>
@@ -137,17 +152,11 @@ namespace UserInterface
             pipeStream.WaitForPipeDrain();
 
             buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.IMAX); // Send PRMSTART with iMax
-            for (int i = 0; i < 4; i++)
-            {
-                buffer[i+1] = (byte)(iMax >> (i * 8));
-            }
+            SerialisePrimitive(buffer, 1, iMax);
             buffer[5] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send corresponding PRMEND
 
             buffer[6] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.JMAX); // Send PRMSTART with jMax
-            for (int i = 0; i < 4; i++)
-            {
-                buffer[i + 7] = (byte)(jMax >> (i * 8));
-            }
+            SerialisePrimitive(buffer, 7, jMax);
             buffer[11] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send PRMEND
 
             pipeStream.Write(new ReadOnlySpan<byte>(buffer));
