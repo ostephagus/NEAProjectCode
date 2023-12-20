@@ -13,7 +13,7 @@ namespace UserInterface
     /// <summary>
     /// Interaction logic for SimulationScreen.xaml
     /// </summary>
-    public partial class SimulationScreen : UserControl, INotifyPropertyChanged
+    public partial class SimulationScreen : SwappableScreen, INotifyPropertyChanged
     {
         private SidePanelButton? currentButton;
         private CancellationTokenSource backendCancellationTokenSource;
@@ -56,7 +56,7 @@ namespace UserInterface
             }
         }
 
-        public SimulationScreen()
+        public SimulationScreen() : base()
         {
             InitializeComponent();
             DataContext = this;
@@ -65,7 +65,17 @@ namespace UserInterface
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
             StartComponents();
             Task.Run(StartComputation); // Asynchronously run the computation
+        }
 
+        public SimulationScreen(ParameterHolder parameterHolder) : base(parameterHolder)
+        {
+            InitializeComponent();
+            DataContext = this;
+            currentButton = null;
+            backendCancellationTokenSource = new CancellationTokenSource();
+            StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
+            StartComponents();
+            Task.Run(StartComputation); // Asynchronously run the computation
         }
 
         private void panelButton_Click(object sender, RoutedEventArgs e)

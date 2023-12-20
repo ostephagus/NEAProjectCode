@@ -18,9 +18,15 @@ namespace UserInterface
     /// <summary>
     /// Interaction logic for ConfigScreen.xaml
     /// </summary>
-    public partial class ConfigScreen : UserControl
+    public partial class ConfigScreen : SwappableScreen
     {
-        public ConfigScreen()
+        public ConfigScreen() : base()
+        {
+            InitializeComponent();
+            DataContext = this;
+        }
+
+        public ConfigScreen(ParameterHolder parameterHolder) : base(parameterHolder)
         {
             InitializeComponent();
             DataContext = this;

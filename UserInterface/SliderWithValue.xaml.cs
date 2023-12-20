@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +29,8 @@ namespace UserInterface
         }
         public int minimum { get; set; } = 0;
         public int maximum { get; set; } = 100;
+        
+        public double Value { get => slider.Value; set => slider.Value = value; }
 
         public bool forceIntegers { get; set; } = false;
 

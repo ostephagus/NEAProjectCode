@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -16,16 +11,18 @@ namespace UserInterface
     /// </summary>
     public partial class App : Application
     {
-        private UserControl currentUserControl;
+        private SwappableScreen currentUserControl;
         private Window currentWindow;
         private MainWindow fullScreenWindowContainer; // 2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
         private PopupWindow popupWindowContainer;
+        private ParameterHolder parameterHolder;
 
         public static event EventHandler<UserControlChangeEventArgs>? UserControlChanged;
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType); // Use the Type parameter to create a new instance
+            currentUserControl = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, new object?[] {parameterHolder}); // Use the Type parameter to create a new instance
+            //currentUserControl.ParameterHolder = parameterHolder; // Give the new instance access to the semi-global parameters
             if (e.IsPopup)
             {
                 popupWindowContainer.Content = currentUserControl;
@@ -48,6 +45,24 @@ namespace UserInterface
             }
         }
 
+        private void SetDefaultParameters()
+        {
+            const float width = 1f;
+            const float height = 1f;
+            const float timeStepSafetyFactor = 0.8f;
+            const float relaxationParameter = 1.7f;
+            const float pressureResidualTolerance = 2f;
+            const float pressureMaxIterations = 1000f;
+            const float reynoldsNumber = 2000f;
+            const float fluidVelocity = 1f;
+            const float surfaceFriction = 0f;
+            FieldParameters initialFieldParams = new FieldParameters();
+            const float contourTolerance = 0.01f;
+            const float contourSpacing = 0.05f;
+
+            parameterHolder = new(width, height, timeStepSafetyFactor, relaxationParameter, pressureResidualTolerance, pressureMaxIterations, reynoldsNumber, fluidVelocity, surfaceFriction, initialFieldParams, contourTolerance, contourSpacing);
+        }
+
         public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) // Static method for other classes to invoke the UserControlChanged event
         {
             UserControlChanged.Invoke(sender, e);
@@ -57,6 +72,9 @@ namespace UserInterface
         {
             fullScreenWindowContainer = new MainWindow(); // Initialise container windows
             popupWindowContainer = new PopupWindow();
+
+            SetDefaultParameters();
+
             currentUserControl = new ConfigScreen();
             currentWindow = popupWindowContainer;
             popupWindowContainer.Content = currentUserControl;
