@@ -9,7 +9,57 @@
 
 void FrontendManager::UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
 	for (int i = 0; i < length / divisions; i++) {
-		pointerArray[i] = flattenedArray + i * divisions;
+
+		memcpy(
+			pointerArray[i],                // Destination address - address at ith pointer
+			flattenedArray + i * divisions, // Source start address - move (i * divisions) each iteration
+			divisions * sizeof(bool)        // Bytes to copy - divisions
+		);
+
+		//pointerArray[i] = flattenedArray + i * divisions;
+	}
+}
+
+void FrontendManager::PrintFlagsArrows(BYTE** flags, int xLength, int yLength) {
+	for (int i = xLength - 1; i >= 0; i--) {
+		for (int j = 0; j < yLength; j++) {
+			switch (flags[j][i]) {
+			case B_N:
+				std::cout << "^^";
+				break;
+			case B_NE:
+				std::cout << "^>";
+				break;
+			case B_E:
+				std::cout << ">>";
+				break;
+			case B_SE:
+				std::cout << "v>";
+				break;
+			case B_S:
+				std::cout << "vv";
+				break;
+			case B_SW:
+				std::cout << "<v";
+				break;
+			case B_W:
+				std::cout << "<<";
+				break;
+			case B_NW:
+				std::cout << "<^";
+				break;
+			case OBS:
+				std::cout << "()";
+				break;
+			case FLUID:
+				std::cout << "  ";
+				break;
+			default:
+				std::cout << "  ";
+				break;
+			}
+		}
+		std::cout << std::endl;
 	}
 }
 
@@ -52,7 +102,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		REAL timestep;
 		DoubleReal stepSizes;
 
-		SetParameters(velocities, pressure, RHS, streamFunction, FG, flags, obstacles, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
+		SetParameters(velocities, pressure, RHS, streamFunction, FG, flags, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
 
 		REAL pressureResidualNorm = 0;
 		bool stopRequested = false;
@@ -95,7 +145,6 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 			iteration++;
 		}
 
-		FreeMatrix(obstacles, iMax + 2);
 		FreeMatrix(velocities.x, iMax + 2);
 		FreeMatrix(velocities.y, iMax + 2);
 		FreeMatrix(pressure, iMax + 2);
@@ -114,7 +163,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 	}
 }
 
-void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, bool**& obstacles, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes)
+void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes)
 {
 	velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
 	velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -128,6 +177,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
 	if (obstacles == nullptr) { // Perform default initialisation if not already initialised
+		std::cout << "Initialising obstacles because frontend did not send obstacles" << std::endl;
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } // Set all the cells to fluid
 #ifdef OBSTACLES
@@ -143,9 +193,20 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 		}
 #endif // OBSTACLES
 	}
-
+	for (int i = 0; i < iMax + 2; i++) {
+		for (int j = 0; j < jMax + 2; j++) {
+			std::cout << obstacles[i][j];
+		}
+		std::cout << std::endl;
+	}
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+
+	PrintFlagsArrows(flags, iMax + 2, jMax + 2);
+
+	/*std::cout << "Type a character and press enter to continue: ";
+	char nonsense;
+	std::cin >> nonsense;*/
 
 	std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
 	coordinates = coordinatesWithLength.first;
@@ -181,7 +242,14 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 		bool* obstaclesFlattened = new bool[(iMax + 2) * (jMax + 2)]();
 		pipeManager.ReceiveObstacles(obstaclesFlattened, iMax + 2, jMax + 2);
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-		UnflattenArray(obstacles, obstaclesFlattened, fieldSize, jMax + 2);
+		UnflattenArray(obstacles, obstaclesFlattened, (iMax + 2) * (jMax + 2), jMax + 2);
+		std::cout << "Address of obstacles after initialisation: " << obstacles << std::endl;
+		for (int i = 0; i < iMax + 2; i++) {
+			for (int j = 0; j < jMax + 2; j++) {
+				std::cout << obstacles[i][j];
+			}
+			std::cout << std::endl;
+		}
 		delete[] obstaclesFlattened;
 	}
 	else {
@@ -193,6 +261,10 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
 	: iMax(iMax), jMax(jMax), fieldSize(iMax * jMax), pipeManager(pipeName), obstacles(nullptr) // Set obstacles to null pointer to represent unallcoated
 {}
+
+FrontendManager::~FrontendManager() {
+	FreeMatrix(obstacles, iMax + 2);
+}
 
 int FrontendManager::Run() {
 	pipeManager.Handshake(iMax, jMax);

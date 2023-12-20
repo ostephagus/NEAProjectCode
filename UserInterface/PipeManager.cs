@@ -219,7 +219,7 @@ namespace UserInterface
             int index = 0;
             for (int i = 0; i < obstacles.Length; i++)
             {
-                buffer[index + 1] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
+                buffer[index] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
                 if (i % 8 == 7) // Add one to the index if the byte is full
                 {
                     index++;

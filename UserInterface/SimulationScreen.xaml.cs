@@ -87,20 +87,29 @@ namespace UserInterface
             backendManager.ConnectBackend();
 
             bool[] obstacles = new bool[(backendManager.IMax + 2) * (backendManager.JMax + 2)];
-            for (int i = 1; i <= (backendManager.IMax + 1) * backendManager.JMax; i++) { obstacles[i] = true; } //Set all the cells to fluid
-            int boundaryLeft = (int)(0.45 * backendManager.IMax);
-            int boundaryRight = (int)(0.55 * backendManager.IMax);
+            
+            for (int i = 1; i <= backendManager.IMax; i++)
+            {
+                for (int j = 1; j <= backendManager.JMax; j++)
+                {
+                    obstacles[i * (backendManager.JMax + 2) + j] = true; // Set cells to fluid
+                }
+            }
+
+            int boundaryLeft = (int)(0.05 * backendManager.IMax);
+            int boundaryRight = (int)(0.15 * backendManager.IMax);
             int boundaryBottom = (int)(0.45 * backendManager.JMax);
             int boundaryTop = (int)(0.55 * backendManager.JMax);
 
-            //for (int i = boundaryLeft; i < boundaryRight; i++)
-            //{ // Create a square of boundary cells
-            //    for (int j = boundaryBottom; j < boundaryTop; j++)
-            //    {
-            //        obstacles[i * backendManager.JMax + j] = false;
-            //    }
-            //}
-            //Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
+            for (int i = boundaryLeft; i < boundaryRight; i++)
+            { // Create a square of boundary cells
+                for (int j = boundaryBottom; j < boundaryTop; j++)
+                {
+                    obstacles[i * (backendManager.JMax + 2) + j] = false;
+                }
+            }
+
+            Trace.WriteLine(backendManager.SendObstacles(obstacles) ? "Obstacle send successful" : "obstacle send unsuccessful");
 
             horizontalVelocity = new float[backendManager.FieldLength];
             pressure = new float[backendManager.FieldLength];

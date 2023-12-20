@@ -347,6 +347,9 @@ int main(int argc, char** argv) {
     }
     if (std::string(argv[1]) == std::string("pipe")) {
         FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+        /*std::cout << "Type a character and press enter to continue: ";
+        char nonsense;
+        std::cin >> nonsense;*/
         return frontendManager.Run();
     }
     else if (std::string(argv[1]) == std::string("compute")) {

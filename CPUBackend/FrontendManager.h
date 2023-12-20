@@ -14,9 +14,10 @@ private:
 	bool** obstacles;
 
 	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
+	void PrintFlagsArrows(BYTE** flags, int xLength, int yLength);
 	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm);
 	void HandleRequest(BYTE requestByte);
-	void SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, bool**& obstacles, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes);
+	void SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes);
 	void ReceiveData(BYTE startMarker);
 
 public:
@@ -27,6 +28,8 @@ public:
 	/// <param name="jMax">The height, in cells, of the simulation domain excloding boundary cells.</param>
 	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
 	FrontendManager(int iMax, int jMax, std::string pipeName);
+
+	~FrontendManager();
 
 	/// <summary>
 	/// Main method for FrontendManager class, which handles all the data flow and computation.
