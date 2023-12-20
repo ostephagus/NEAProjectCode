@@ -75,7 +75,7 @@ namespace UserInterface
 
             SetDefaultParameters();
 
-            currentUserControl = new ConfigScreen();
+            currentUserControl = new ConfigScreen(parameterHolder);
             currentWindow = popupWindowContainer;
             popupWindowContainer.Content = currentUserControl;
             popupWindowContainer.Height = 400;

@@ -25,16 +25,29 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <local:SliderWithValue Grid.Row="0" Grid.Column="1" minimum="0" maximum="40" />
+            <local:SliderWithValue x:Name="sliderInVel" Grid.Row="0" Grid.Column="1" minimum="0" maximum="40" PropertyChanged="sliderInVel_PropertyChanged"/>
+            
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <local:SliderWithValue Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" />
-            <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Command_ChangeWindow}">
+            <local:SliderWithValue x:Name="sliderChi" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" PropertyChanged="sliderChi_PropertyChanged" />
+            
+            <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
+            <local:SliderWithValue x:Name="sliderWidth" Grid.Row="2" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="sliderWidth_PropertyChanged" />
+            
+            <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
+            <local:SliderWithValue x:Name="sliderHeight" Grid.Row="3" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="sliderHeight_PropertyChanged"/>
+
+            <Button x:Name="btnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Click="btnReset_Click">Reset parameters</Button>
+            
+            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Command_ChangeWindow}">
                 <Button.CommandParameter>
                     <local:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
                 </Button.CommandParameter>
