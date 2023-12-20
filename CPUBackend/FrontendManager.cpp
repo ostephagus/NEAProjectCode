@@ -202,7 +202,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
 
-	PrintFlagsArrows(flags, iMax + 2, jMax + 2);
+	//PrintFlagsArrows(flags, iMax + 2, jMax + 2);
 
 	/*std::cout << "Type a character and press enter to continue: ";
 	char nonsense;
