@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace UserInterface
@@ -15,21 +14,22 @@ namespace UserInterface
     /// </summary>
     public partial class SimulationScreen : SwappableScreen, INotifyPropertyChanged
     {
+        #region Fields and properties
         private SidePanelButton? currentButton;
-        private CancellationTokenSource backendCancellationTokenSource;
+        private readonly CancellationTokenSource backendCancellationTokenSource;
 
-        private BackendManager backendManager;
+        private BackendManager? backendManager;
 
-        private float[] horizontalVelocity;
-        private float[] pressure;
-        private float[] streamFunction;
+        private float[]? horizontalVelocity;
+        private float[]? pressure;
+        private float[]? streamFunction;
         private int dataWidth;
         private int dataHeight;
 
-        private int min = -1;
-        private int max = 2;
-        private float contourTolerance = 0.01f;
-        private float contourSpacingMultiplier = 0.05f;
+        private const int min = -1;
+        private const int max = 2;
+        private const float contourTolerance = 0.01f;
+        private const float contourSpacingMultiplier = 0.05f;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
@@ -56,17 +56,16 @@ namespace UserInterface
             }
         }
 
-        public SimulationScreen() : base()
+        public enum SidePanelButton //Different side panels on SimluationScreen
         {
-            InitializeComponent();
-            DataContext = this;
-            currentButton = null;
-            backendCancellationTokenSource = new CancellationTokenSource();
-            StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
-            StartComponents();
-            Task.Run(StartComputation); // Asynchronously run the computation
+            BtnParametersSelect,
+            BtnUnitsSelect,
+            BtnVisualisationSettingsSelect,
+            BtnRecordingSelect
         }
+        #endregion
 
+        #region Constructors and methods
         public SimulationScreen(ParameterHolder parameterHolder) : base(parameterHolder)
         {
             InitializeComponent();
@@ -76,19 +75,7 @@ namespace UserInterface
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
             StartComponents();
             Task.Run(StartComputation); // Asynchronously run the computation
-        }
-
-        private void panelButton_Click(object sender, RoutedEventArgs e)
-        {
-            string name = ((FrameworkElement)sender).Name;
-            if (name == CurrentButton) //If the button of the currently open panel is clicked, close all panels (null)
-            {
-                CurrentButton = null;
-            }
-            else
-            {
-                CurrentButton = name; //If any other panel is open, or no panel is open, open the one corresponding to the button.
-            }
+            SetSliders();
         }
 
         private void StartComponents()
@@ -106,8 +93,8 @@ namespace UserInterface
                 }
             }
 
-            int boundaryLeft = (int)(0.05 * backendManager.IMax);
-            int boundaryRight = (int)(0.15 * backendManager.IMax);
+            int boundaryLeft = (int)(0.15 * backendManager.IMax);
+            int boundaryRight = (int)(0.25 * backendManager.IMax);
             int boundaryBottom = (int)(0.45 * backendManager.JMax);
             int boundaryTop = (int)(0.55 * backendManager.JMax);
 
@@ -127,14 +114,20 @@ namespace UserInterface
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
 
-            VisualisationControlHolder.Content = new VisualisationControl(horizontalVelocity, streamFunction, dataWidth, dataHeight, min, max, contourTolerance, contourSpacingMultiplier);
+            FieldParameters fieldParameters = parameterHolder.FieldParameters.Value; // Get the field parameters struct (structs must be copied, edited, then saved)
+            fieldParameters.field = horizontalVelocity; // Set default field to be horizontal velocity
+            fieldParameters.min = min; // Set the defaults to constants min...
+            fieldParameters.max = max; // ...and max
+            parameterHolder.FieldParameters.Value = fieldParameters; // Save the struct
+
+            VisualisationControlHolder.Content = new VisualisationControl(parameterHolder, streamFunction, dataWidth, dataHeight);
         }
 
         private void StartComputation()
         {
             try
             {
-                backendManager.GetFieldStreamsAsync(horizontalVelocity, null, null, streamFunction, backendCancellationTokenSource.Token);
+                backendManager.GetFieldStreamsAsync(horizontalVelocity, null, pressure, streamFunction, backendCancellationTokenSource.Token);
             } catch (IOException e)
             {
                 MessageBox.Show(e.Message);
@@ -144,17 +137,74 @@ namespace UserInterface
             }
         }
 
+        private void SetSliders()
+        {
+            SliderInVel.Value = parameterHolder.FluidVelocity.Value;
+            SliderChi.Value = parameterHolder.SurfaceFriction.Value;
+
+            FieldParameters fieldParameters = parameterHolder.FieldParameters.Value;
+            RBPressure.IsChecked = fieldParameters.field.Equals(pressure);
+            RBVelocity.IsChecked = fieldParameters.field.Equals(horizontalVelocity);
+            SliderMin.Value = fieldParameters.min;
+            SliderMax.Value = fieldParameters.max;
+
+            SliderContourSpacing.Value = parameterHolder.ContourSpacing.Value;
+            SliderContourTolerance.Value = parameterHolder.ContourTolerance.Value;
+        }
+        #endregion
+
+        #region Event handlers
+        private void PanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            string name = ((FrameworkElement)sender).Name;
+            if (name == CurrentButton) //If the button of the currently open panel is clicked, close all panels (null)
+            {
+                CurrentButton = null;
+            }
+            else
+            {
+                CurrentButton = name; //If any other panel is open, or no panel is open, open the one corresponding to the button.
+            }
+        }
+
         public static void RaiseStopBackendExecuting()
         {
             StopBackendExecuting.Invoke(null, new CancelEventArgs());
         }
 
-        public enum SidePanelButton //Different side panels on SimluationScreen
+        private void SliderInVel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            btnParametersSelect,
-            btnUnitsSelect,
-            btnVisualisationSettingsSelect,
-            btnRecordingSelect
+            parameterHolder.FluidVelocity.Value = (float)SliderInVel.Value;
         }
+
+        private void SliderChi_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            parameterHolder.SurfaceFriction.Value = (float)SliderChi.Value;
+        }
+
+        private void SliderContourTolerance_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            parameterHolder.ContourTolerance.Value = (float)SliderContourTolerance.Value;
+        }
+
+        private void SliderContourSpacing_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            parameterHolder.ContourSpacing.Value = (float)SliderContourSpacing.Value;
+        }
+
+        private void BtnFieldParamsSave_Click(object sender, RoutedEventArgs e)
+        {
+            FieldParameters fieldParameters = parameterHolder.FieldParameters.Value;
+            fieldParameters.field = (RBPressure.IsChecked ?? false) ? pressure : horizontalVelocity; // Set the field according to whether the pressure is checked
+            fieldParameters.min = (float)SliderMin.Value;
+            fieldParameters.max = (float)SliderMax.Value;
+            parameterHolder.FieldParameters.Value = fieldParameters;
+        }
+
+        private void CBContourLines_Click(object sender, RoutedEventArgs e)
+        {
+            parameterHolder.DrawContours.Value = CBContourLines.IsChecked ?? false;
+        }
+        #endregion
     }
 }

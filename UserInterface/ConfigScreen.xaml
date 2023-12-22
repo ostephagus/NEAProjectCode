@@ -34,18 +34,18 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <local:SliderWithValue x:Name="sliderInVel" Grid.Row="0" Grid.Column="1" minimum="0" maximum="40" PropertyChanged="sliderInVel_PropertyChanged"/>
+            <local:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" minimum="0" maximum="40" PropertyChanged="SliderInVel_PropertyChanged"/>
             
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <local:SliderWithValue x:Name="sliderChi" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" PropertyChanged="sliderChi_PropertyChanged" />
+            <local:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
             
             <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <local:SliderWithValue x:Name="sliderWidth" Grid.Row="2" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="sliderWidth_PropertyChanged" />
+            <local:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="SliderWidth_PropertyChanged" />
             
             <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <local:SliderWithValue x:Name="sliderHeight" Grid.Row="3" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="sliderHeight_PropertyChanged"/>
+            <local:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="SliderHeight_PropertyChanged"/>
 
-            <Button x:Name="btnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Click="btnReset_Click">Reset parameters</Button>
+            <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Click="BtnReset_Click">Reset parameters</Button>
             
             <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Command_ChangeWindow}">
                 <Button.CommandParameter>

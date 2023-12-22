@@ -24,6 +24,7 @@
     <None Remove="Images\ParametersIcon.png" />
     <None Remove="Images\RecordingIcon.png" />
     <None Remove="Images\UnitsIcon.png" />
+    <None Remove="Images\VisualisationIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +40,7 @@
     <Resource Include="Images\ParametersIcon.png" />
     <Resource Include="Images\RecordingIcon.png" />
     <Resource Include="Images\UnitsIcon.png" />
+    <Resource Include="Images\VisualisationIcon.png" />
   </ItemGroup>
 
 </Project>

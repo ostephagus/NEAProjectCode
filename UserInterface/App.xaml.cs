@@ -56,11 +56,12 @@ namespace UserInterface
             const float reynoldsNumber = 2000f;
             const float fluidVelocity = 1f;
             const float surfaceFriction = 0f;
-            FieldParameters initialFieldParams = new FieldParameters();
+            FieldParameters initialFieldParams = new();
+            const bool drawContours = true;
             const float contourTolerance = 0.01f;
             const float contourSpacing = 0.05f;
 
-            parameterHolder = new(width, height, timeStepSafetyFactor, relaxationParameter, pressureResidualTolerance, pressureMaxIterations, reynoldsNumber, fluidVelocity, surfaceFriction, initialFieldParams, contourTolerance, contourSpacing);
+            parameterHolder = new(width, height, timeStepSafetyFactor, relaxationParameter, pressureResidualTolerance, pressureMaxIterations, reynoldsNumber, fluidVelocity, surfaceFriction, initialFieldParams, drawContours, contourTolerance, contourSpacing);
         }
 
         public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) // Static method for other classes to invoke the UserControlChanged event
@@ -85,12 +86,12 @@ namespace UserInterface
             UserControlChanged += ChangeUserControl;
         }
 
-        public void StartVisualisationDebugging(object sender, StartupEventArgs e)
-        {
-            fullScreenWindowContainer = new MainWindow();
-            fullScreenWindowContainer.Content = new VisualisationControl();
-            fullScreenWindowContainer.Show();
-        }
+        //public void StartVisualisationDebugging(object sender, StartupEventArgs e)
+        //{
+        //    fullScreenWindowContainer = new MainWindow();
+        //    fullScreenWindowContainer.Content = new VisualisationControl();
+        //    fullScreenWindowContainer.Show();
+        //}
     }
 
     public class UserControlChangeEventArgs : EventArgs // EventArgs child containing parameters for changing UserControl

@@ -126,5 +126,5 @@ std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, i
 	}
 	std::pair<int, int>* coordinatesAsArray = new std::pair<int, int>[coordinates.size()]; // Allocate mem for array into already defined pointer
 	std::copy(coordinates.begin(), coordinates.end(), coordinatesAsArray); // Copy the elements from the vector to the array
-	return std::pair<std::pair<int, int>*, int>(coordinatesAsArray, coordinates.size()); // Return the array with values copied into it and the size
+	return std::pair<std::pair<int, int>*, int>(coordinatesAsArray, (int)coordinates.size()); // Return the array with values copied into it and the size
 }

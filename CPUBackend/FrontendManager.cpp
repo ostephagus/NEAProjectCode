@@ -193,12 +193,12 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 		}
 #endif // OBSTACLES
 	}
-	for (int i = 0; i < iMax + 2; i++) {
+	/*for (int i = 0; i < iMax + 2; i++) {
 		for (int j = 0; j < jMax + 2; j++) {
 			std::cout << obstacles[i][j];
 		}
 		std::cout << std::endl;
-	}
+	}*/
 	//SetObstacles(obstacles);
 	SetFlags(obstacles, flags, iMax + 2, jMax + 2);
 
@@ -216,8 +216,8 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	parameters.width = 1;
 	parameters.height = 1;
-	parameters.timeStepSafetyFactor = 0.5;
-	parameters.relaxationParameter = 1.7;
+	parameters.timeStepSafetyFactor = (REAL)0.5;
+	parameters.relaxationParameter = (REAL)1.7;
 	parameters.pressureResidualTolerance = 2;
 	parameters.pressureMinIterations = 1;
 	parameters.pressureMaxIterations = 1000;
@@ -243,13 +243,13 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 		pipeManager.ReceiveObstacles(obstaclesFlattened, iMax + 2, jMax + 2);
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 		UnflattenArray(obstacles, obstaclesFlattened, (iMax + 2) * (jMax + 2), jMax + 2);
-		std::cout << "Address of obstacles after initialisation: " << obstacles << std::endl;
-		for (int i = 0; i < iMax + 2; i++) {
+		//std::cout << "Address of obstacles after initialisation: " << obstacles << std::endl;
+		/*for (int i = 0; i < iMax + 2; i++) {
 			for (int j = 0; j < jMax + 2; j++) {
 				std::cout << obstacles[i][j];
 			}
 			std::cout << std::endl;
-		}
+		}*/
 		delete[] obstaclesFlattened;
 	}
 	else {

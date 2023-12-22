@@ -11,13 +11,6 @@ namespace UserInterface
     /// </summary>
     public partial class AdvancedParameters : SwappableScreen
     {
-        public AdvancedParameters() : base()
-        {
-            InitializeComponent();
-            DataContext = this;
-            SetSliders();
-        }
-
         public AdvancedParameters(ParameterHolder parameterHolder) : base(parameterHolder) // Sets the parameter holder
         {
             InitializeComponent();

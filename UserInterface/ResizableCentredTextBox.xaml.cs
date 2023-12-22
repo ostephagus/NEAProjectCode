@@ -26,6 +26,6 @@ namespace UserInterface
             DataContext = this;
         }
 
-        public string Text { get; set; }
+        public string Text { get; set; } = "";
     }
 }

@@ -72,6 +72,7 @@ namespace UserInterface
 
         // Visualisation parameters
         private ParameterStruct<FieldParameters> fieldParameters;
+        private ParameterStruct<bool> drawContours;
         private ParameterStruct<float> contourTolerance;
         private ParameterStruct<float> contourSpacing;
 
@@ -87,8 +88,9 @@ namespace UserInterface
         public ParameterStruct<FieldParameters> FieldParameters { get => fieldParameters; set => fieldParameters = value; }
         public ParameterStruct<float> ContourTolerance { get => contourTolerance; set => contourTolerance = value; }
         public ParameterStruct<float> ContourSpacing { get => contourSpacing; set => contourSpacing = value; }
+        public ParameterStruct<bool> DrawContours { get => drawContours; set => drawContours = value; }
 
-        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidVelocity, float surfaceFriction, FieldParameters fieldParameters, float contourTolerance, float contourSpacing)
+        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidVelocity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
         {
 
             this.width =                     new ParameterStruct<float>(width, ParameterUsage.Backend, false);
@@ -101,8 +103,9 @@ namespace UserInterface
             this.fluidVelocity =             new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
             this.surfaceFriction =           new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, false);
             this.fieldParameters =           new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
+            this.drawContours =              new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
             this.contourTolerance =          new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
-            this.contourSpacing =            new ParameterStruct<float>(width, ParameterUsage.Visualisation, false);
+            this.contourSpacing =            new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, false);
         }
 
         public void ReadParameters(string fileName)

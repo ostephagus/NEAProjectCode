@@ -110,8 +110,8 @@ REAL TestParameters(REAL parameterValue, int iterations) {
 
     const REAL width = 1;
     const REAL height = 1;
-    const REAL timeStepSafetyFactor = 0.8;
-    REAL relaxationParameter = 1.7;
+    const REAL timeStepSafetyFactor = (REAL)0.8;
+    REAL relaxationParameter = (REAL)1.7;
     relaxationParameter = parameterValue;
     const REAL pressureResidualTolerance = 1;
     const int pressureMinIterations = 10;
@@ -251,8 +251,8 @@ void StepTestSquare(int squareLength) {
 
     const REAL width = 1;
     const REAL height = 1;
-    const REAL timeStepSafetyFactor = 0.5;
-    const REAL relaxationParameter = 1.7;
+    const REAL timeStepSafetyFactor = (REAL)0.5;
+    const REAL relaxationParameter = (REAL)1.7;
     const REAL pressureResidualTolerance = 1; // Needs experimentation
     const int pressureMinIterations = 10;
     const int pressureMaxIterations = 1000; // Needs experimentation

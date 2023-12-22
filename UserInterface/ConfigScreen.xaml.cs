@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -12,17 +13,10 @@ namespace UserInterface
     {
         private void SetSliders()
         {
-            sliderInVel.Value = parameterHolder.FluidVelocity.Value;
-            sliderChi.Value = parameterHolder.SurfaceFriction.Value;
-            sliderWidth.Value = parameterHolder.Width.Value;
-            sliderHeight.Value = parameterHolder.Height.Value;
-        }
-
-        public ConfigScreen() : base()
-        {
-            InitializeComponent();
-            DataContext = this;
-            SetSliders();
+            SliderInVel.Value = parameterHolder.FluidVelocity.Value;
+            SliderChi.Value = parameterHolder.SurfaceFriction.Value;
+            SliderWidth.Value = parameterHolder.Width.Value;
+            SliderHeight.Value = parameterHolder.Height.Value;
         }
 
         public ConfigScreen(ParameterHolder parameterHolder) : base(parameterHolder)
@@ -34,39 +28,40 @@ namespace UserInterface
 
         public ICommand Command_ChangeWindow { get; } = new Commands.ChangeWindow();
 
-        private void sliderInVel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SliderInVel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)sliderInVel.Value;
+            parameterHolder.FluidVelocity.Value = (float)SliderInVel.Value;
+            Trace.WriteLine(parameterHolder.FluidVelocity.Value);
         }
 
-        private void sliderChi_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SliderChi_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)sliderChi.Value;
+            parameterHolder.SurfaceFriction.Value = (float)SliderChi.Value;
         }
 
-        private void sliderWidth_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SliderWidth_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)sliderWidth.Value;
+            parameterHolder.Width.Value = (float)SliderWidth.Value;
         }
 
-        private void sliderHeight_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SliderHeight_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)sliderHeight.Value;
+            parameterHolder.Height.Value = (float)SliderHeight.Value;
         }
 
-        private void btnReset_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void BtnReset_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             parameterHolder.FluidVelocity.Reset();
-            sliderInVel.Value = parameterHolder.FluidVelocity.DefaultValue;
+            SliderInVel.Value = parameterHolder.FluidVelocity.DefaultValue;
 
             parameterHolder.SurfaceFriction.Reset();
-            sliderChi.Value = parameterHolder.SurfaceFriction.DefaultValue;
+            SliderChi.Value = parameterHolder.SurfaceFriction.DefaultValue;
 
             parameterHolder.Width.Reset();
-            sliderWidth.Value = parameterHolder.Width.DefaultValue;
+            SliderWidth.Value = parameterHolder.Width.DefaultValue;
 
             parameterHolder.Height.Reset();
-            sliderHeight.Value = parameterHolder.Height.DefaultValue;
+            SliderHeight.Value = parameterHolder.Height.DefaultValue;
         }
     }
 }

@@ -30,8 +30,8 @@ namespace UserInterface
 
             slider.ValueChanged += RaisePropertyChanged;
         }
-        public int minimum { get; set; } = 0;
-        public int maximum { get; set; } = 100;
+        public double minimum { get; set; } = 0;
+        public double maximum { get; set; } = 100;
 
         private void RaisePropertyChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {

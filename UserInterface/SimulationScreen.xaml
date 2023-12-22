@@ -27,12 +27,12 @@
                     <Setter Property="Margin" Value="0 0 0 0" />
                 </Style>
             </StackPanel.Resources>
-            <Button x:Name="btnParametersSelect" Click="panelButton_Click">
+            <Button x:Name="BtnParametersSelect" Click="PanelButton_Click">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnParametersSelect">
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="BtnParametersSelect">
                                 <Setter Property="Background" Value="#AAAAAA" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -40,12 +40,12 @@
                 </Button.Style>
                 <Image Source="/Images/ParametersIcon.png" />
             </Button>
-            <Button x:Name="btnUnitsSelect" Click="panelButton_Click">
+            <Button x:Name="BtnUnitsSelect" Click="PanelButton_Click">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnUnitsSelect">
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="BtnUnitsSelect">
                                 <Setter Property="Background" Value="#AAAAAA" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -53,25 +53,25 @@
                 </Button.Style>
                 <Image Source="/Images/UnitsIcon.png" />
             </Button>
-            <Button x:Name="btnVisualisationSettingsSelect" Click="panelButton_Click">
+            <Button x:Name="BtnVisualisationSettingsSelect" Click="PanelButton_Click">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnVisualisationSettingsSelect">
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="BtnVisualisationSettingsSelect">
                                 <Setter Property="Background" Value="#AAAAAA" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
-                <Image Source="/Images/UnitsIcon.png" />
+                <Image Source="/Images/VisualisationIcon.png" />
             </Button>
-            <Button x:Name="btnRecordingSelect" Click="panelButton_Click">
+            <Button x:Name="BtnRecordingSelect" Click="PanelButton_Click">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CurrentButton}" Value="btnRecordingSelect">
+                            <DataTrigger Binding="{Binding CurrentButton}" Value="BtnRecordingSelect">
                                 <Setter Property="Background" Value="#AAAAAA" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -81,25 +81,28 @@
             </Button>
         </StackPanel>
 
-        <Label Grid.Row="2" Grid.Column="1">
-            <Label.Style>
-                <Style TargetType="Label">
+        <StackPanel Grid.Row="2" Grid.Column="1">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnParametersSelect">
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="BtnParametersSelect">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </Label.Style>
-            This is the parameter selection panel
-        </Label>
+            </StackPanel.Style>
+            <Label>Fluid Velocity</Label>
+            <local:SliderWithValue x:Name="SliderInVel" minimum="0" maximum="40" PropertyChanged="SliderInVel_PropertyChanged" />
+            <Label>Material Friction</Label>
+            <local:SliderWithValue x:Name="SliderChi" minimum="0" maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
+        </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
                 <Style TargetType="Label">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnUnitsSelect">
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="BtnUnitsSelect">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -107,25 +110,40 @@
             </Label.Style>
             This is the units selection panel
         </Label>
-        <Label Grid.Row="2" Grid.Column="1">
-            <Label.Style>
-                <Style TargetType="Label">
+        <StackPanel Grid.Row="2" Grid.Column="1">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnVisualisationSettingsSelect">
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="BtnVisualisationSettingsSelect">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </Label.Style>
-            This is the visualisation settings panel
-        </Label>
+            </StackPanel.Style>
+            <Label>Field to visualise</Label>
+            <RadioButton x:Name="RBPressure" GroupName="FieldSelector" IsChecked="True">Pressure</RadioButton>
+            <RadioButton x:Name="RBVelocity" GroupName="FieldSelector">Velocity</RadioButton>
+            <Label>Minimum value</Label>
+            <local:SliderWithValue x:Name="SliderMin" minimum="0" maximum="2000" />
+            <Label>Maximum value</Label>
+            <local:SliderWithValue x:Name="SliderMax" minimum="0" maximum="2000" />
+            <Button x:Name="BtnFieldParamsSave" Click="BtnFieldParamsSave_Click">Save field parameters</Button>
+            <StackPanel Orientation="Horizontal">
+                <Label>Streamlines</Label>
+                <CheckBox x:Name="CBContourLines" IsChecked="True" Click="CBContourLines_Click" />
+            </StackPanel>
+            <Label>Streamline contour tolerance</Label>
+            <local:SliderWithValue x:Name="SliderContourTolerance" minimum="0" maximum="0.1" PropertyChanged="SliderContourTolerance_PropertyChanged" />
+            <Label>Streamline contour spacing</Label>
+            <local:SliderWithValue x:Name="SliderContourSpacing" minimum="0" maximum="0.5" PropertyChanged="SliderContourSpacing_PropertyChanged" />
+        </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
                 <Style TargetType="Label">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding CurrentButton}" Value="btnRecordingSelect">
+                        <DataTrigger Binding="{Binding CurrentButton}" Value="BtnRecordingSelect">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>

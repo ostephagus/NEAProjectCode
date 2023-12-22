@@ -12,7 +12,11 @@ namespace UserInterface
     {
         public class ChangeWindow : ICommand
         {
-            public event EventHandler? CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
 
             public bool CanExecute(object? parameter) { return true; } // Unless app logic changes, this command can always execute.
 
@@ -24,7 +28,11 @@ namespace UserInterface
         }
         public class StopBackend : ICommand
         {
-            public event EventHandler? CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
 
             public bool CanExecute(object? parameter) { return true; } // Unless app logic changes, this command can always execute.
 
