@@ -41,3 +41,5 @@ Improving backend control (pausing as well as stopping) | 1 day | 22/12/23
 Greying out obstacles in visualisation | 1 hour | 22/12/23
 Choose file type(s) to accept and add file reading | 2 days | 28/12/23 - 29/12/23
 Click-and-drag node system | 3 days | 2/12/23 - 4/12/23
+
+**ALSO: Need to convert from half-arsed MVVM to proper MVVM**
