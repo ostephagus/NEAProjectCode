@@ -52,15 +52,13 @@ namespace UserInterface
         /// </summary>
         public static class Marker
         {
-            public static readonly byte GENERIC   = 0b10000000;
+            public static readonly byte GENERIC = 0b10000000;
             public static readonly byte ITERSTART = 0b10000000;
-            public static readonly byte ITEREND   = 0b10001000;
-            public static readonly byte FLDSTART  = 0b10010000;
-            public static readonly byte FLDEND    = 0b10011000;
-            public static readonly byte PRMSTART  = 0b10100000;
-            public static readonly byte PRMEND    = 0b10101000;
-            
-            public static readonly byte PARAMMASK = 0b00000111;
+            public static readonly byte ITEREND = 0b10001000;
+            public static readonly byte FLDSTART = 0b10010000;
+            public static readonly byte FLDEND = 0b10011000;
+
+            public static readonly byte ITERPRMMASK = 0b00000111;
 
             public static readonly byte HVEL = 0b00000001;
             public static readonly byte VVEL = 0b00000010;
@@ -68,8 +66,22 @@ namespace UserInterface
             public static readonly byte STRM = 0b00000100;
             public static readonly byte OBST = 0b00000101;
 
+            public static readonly byte PRMSTART = 0b10100000;
+            public static readonly byte PRMEND = 0b10101000;
+
+            public static readonly byte PRMMASK = 0b00001111;
+
             public static readonly byte IMAX = 0b00000001;
             public static readonly byte JMAX = 0b00000010;
+            public static readonly byte WIDTH = 0b00000011;
+            public static readonly byte HEIGHT = 0b00000100;
+            public static readonly byte TAU = 0b00000101;
+            public static readonly byte OMEGA = 0b00000110;
+            public static readonly byte RMAX = 0b00000111;
+            public static readonly byte ITERMAX = 0b00001000;
+            public static readonly byte REYNOLDS = 0b00001001;
+            public static readonly byte INVEL = 0b00001010;
+            public static readonly byte CHI = 0b00001011;
         }
 
         /// <summary>

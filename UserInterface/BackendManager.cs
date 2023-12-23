@@ -40,7 +40,7 @@ namespace UserInterface
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                MessageBox.Show(ex.Message);
                 return false;
             }
         }
@@ -128,7 +128,19 @@ namespace UserInterface
 
         public BackendManager()
         {
-            filePath = "..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"; // Relative filepath to CPUBackend.exe
+            if (File.Exists(".\\CPUBackend.exe"))
+            {
+                filePath = ".\\CPUBackend.exe"; // Ideally the executables will be in the same directory
+            }
+            else if (File.Exists("..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"))
+            {
+                filePath = "..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"; // Relative filepath when debugging
+            }
+            else
+            {
+                MessageBox.Show("Could not find backend executable. Make sure that CPUBackend.exe is in the same folder as UserInterface.exe");
+                throw new FileNotFoundException("CPUBackend.exe could not be found");
+            }
         }
 
         public BackendManager(string executableFilePath)

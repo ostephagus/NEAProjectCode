@@ -12,13 +12,15 @@ private:
 	const int fieldSize;
 	PipeManager pipeManager;
 	bool** obstacles;
+	SimulationParameters parameters;
 
 	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
 	void PrintFlagsArrows(BYTE** flags, int xLength, int yLength);
-	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm);
+	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm);
 	void HandleRequest(BYTE requestByte);
-	void SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes);
+	void PerformInitialisation(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, DoubleReal& stepSizes);
 	void ReceiveData(BYTE startMarker);
+	void SetParameters();
 
 public:
 	/// <summary>

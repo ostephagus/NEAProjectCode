@@ -63,7 +63,7 @@ void FrontendManager::PrintFlagsArrows(BYTE** flags, int xLength, int yLength) {
 	}
 }
 
-void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, SimulationParameters& parameters, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm)
+void FrontendManager::Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm)
 {
 	SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 	ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
@@ -89,7 +89,6 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		bool pressureWanted = requestByte & PipeConstants::Request::PRES;
 		bool streamWanted = requestByte & PipeConstants::Request::STRM;
 
-		SimulationParameters parameters;
 		DoubleField velocities;
 		REAL** pressure;
 		REAL** RHS;
@@ -102,7 +101,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 		REAL timestep;
 		DoubleReal stepSizes;
 
-		SetParameters(velocities, pressure, RHS, streamFunction, FG, flags, coordinates, coordinatesLength, numFluidCells, parameters, stepSizes);
+		PerformInitialisation(velocities, pressure, RHS, streamFunction, FG, flags, coordinates, coordinatesLength, numFluidCells, stepSizes);
 
 		REAL pressureResidualNorm = 0;
 		bool stopRequested = false;
@@ -114,7 +113,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 			std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. ";
 			pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
-			Timestep(timestep, stepSizes, velocities, parameters, flags, coordinates, coordinatesLength, FG, RHS, pressure, streamFunction, numFluidCells, pressureResidualNorm);
+			Timestep(timestep, stepSizes, velocities, flags, coordinates, coordinatesLength, FG, RHS, pressure, streamFunction, numFluidCells, pressureResidualNorm);
 			cumulativeTimestep += timestep;
 
 			if (hVelWanted) {
@@ -163,7 +162,7 @@ void FrontendManager::HandleRequest(BYTE requestByte) {
 	}
 }
 
-void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, SimulationParameters& parameters, DoubleReal& stepSizes)
+void FrontendManager::PerformInitialisation(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, DoubleReal& stepSizes)
 {
 	velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
 	velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -214,19 +213,6 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 
 	numFluidCells = CountFluidCells(flags, iMax, jMax);
 
-	parameters.width = 1;
-	parameters.height = 1;
-	parameters.timeStepSafetyFactor = (REAL)0.5;
-	parameters.relaxationParameter = (REAL)1.7;
-	parameters.pressureResidualTolerance = 2;
-	parameters.pressureMinIterations = 1;
-	parameters.pressureMaxIterations = 1000;
-	parameters.reynoldsNo = 1000;
-	parameters.inflowVelocity = 1;
-	parameters.surfaceFrictionalPermissibility = 0;
-	parameters.bodyForces.x = 0;
-	parameters.bodyForces.y = 0;
-
 	stepSizes.x = parameters.width / iMax;
 	stepSizes.y = parameters.height / jMax;
 
@@ -238,7 +224,7 @@ void FrontendManager::SetParameters(DoubleField& velocities, REAL**& pressure, R
 }
 
 void FrontendManager::ReceiveData(BYTE startMarker) {
-	if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Only supported use is obstacle send
+	if (startMarker == (PipeConstants::Marker::FLDSTART & PipeConstants::Marker::OBST)) { // Only supported fixed-length field is obstacles
 		bool* obstaclesFlattened = new bool[(iMax + 2) * (jMax + 2)]();
 		pipeManager.ReceiveObstacles(obstaclesFlattened, iMax + 2, jMax + 2);
 		obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
@@ -252,15 +238,69 @@ void FrontendManager::ReceiveData(BYTE startMarker) {
 		}*/
 		delete[] obstaclesFlattened;
 	}
+	else if ((startMarker & !PipeConstants::Marker::PRMMASK) == PipeConstants::Marker::PRMSTART) { // Check if startMarker is a PRMSTART by ANDing it with the inverse of the parameter mask
+		if (startMarker == (PipeConstants::Marker::PRMSTART & PipeConstants::Marker::ITERMAX)) {
+			parameters.pressureMaxIterations = pipeManager.ReadInt();
+		}
+		else {
+			REAL parameterValue = pipeManager.ReadReal(); // All of the other possible parameters have the data type REAL, so read the pipe and convert it to a REAL beforehand
+			switch (startMarker & PipeConstants::Marker::PRMMASK) { // AND the start marker with the parameter mask to see which parameter is sent
+			case PipeConstants::Marker::WIDTH:
+				parameters.width = parameterValue;
+				break;
+			case PipeConstants::Marker::HEIGHT:
+				parameters.height = parameterValue;
+				break;
+			case PipeConstants::Marker::TAU:
+				parameters.timeStepSafetyFactor = parameterValue;
+				break;
+			case PipeConstants::Marker::OMEGA:
+				parameters.relaxationParameter = parameterValue;
+				break;
+			case PipeConstants::Marker::RMAX:
+				parameters.pressureResidualTolerance = parameterValue;
+				break;
+			case PipeConstants::Marker::REYNOLDS:
+				parameters.reynoldsNo = parameterValue;
+				break;
+			case PipeConstants::Marker::INVEL:
+				parameters.inflowVelocity = parameterValue;
+				break;
+			case PipeConstants::Marker::CHI:
+				parameters.surfaceFrictionalPermissibility = parameterValue;
+				break;
+			default:
+				break;
+			}
+		}
+	}
 	else {
 		std::cerr << "Server sent unsupported data" << std::endl;
 		pipeManager.SendByte(PipeConstants::Error::BADREQ); // All others not supported at the moment
 	}
 }
 
+void FrontendManager::SetParameters() {
+	parameters.width = 1;
+	parameters.height = 1;
+	parameters.timeStepSafetyFactor = (REAL)0.5;
+	parameters.relaxationParameter = (REAL)1.7;
+	parameters.pressureResidualTolerance = 2;
+	parameters.pressureMinIterations = 5;
+	parameters.pressureMaxIterations = 1000;
+	parameters.reynoldsNo = 1000;
+	parameters.inflowVelocity = 1;
+	parameters.surfaceFrictionalPermissibility = 0;
+	parameters.bodyForces.x = 0;
+	parameters.bodyForces.y = 0;
+}
+
 FrontendManager::FrontendManager(int iMax, int jMax, std::string pipeName)
 	: iMax(iMax), jMax(jMax), fieldSize(iMax * jMax), pipeManager(pipeName), obstacles(nullptr) // Set obstacles to null pointer to represent unallcoated
-{}
+{
+	parameters = SimulationParameters();
+	SetParameters();
+}
 
 FrontendManager::~FrontendManager() {
 	FreeMatrix(obstacles, iMax + 2);

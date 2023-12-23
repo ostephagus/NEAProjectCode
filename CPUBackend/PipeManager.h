@@ -48,7 +48,7 @@ public:
 	/// <summary>
 	/// Performs a handshake with the frontend.
 	/// </summary>
-	/// <returns>A boolean indicating whether the handshake completed successfully.</returns>
+	/// <returns>A <c>bool</c> indicating whether the handshake completed successfully.</returns>
 	bool Handshake(int iMax, int jMax);
 
 	/// <summary>
@@ -63,10 +63,32 @@ public:
 	/// <param name="obstacles">The obstacles array to output to.</param>
 	/// <param name="xLength">The number of cells in the x direction</param>
 	/// <param name="yLength">The number of cells in the y direction</param>
-	/// <returns>A boolean indicating whether the action was successful.</returns>
+	/// <returns>A <c>bool</c> indicating whether the action was successful.</returns>
 	bool ReceiveObstacles(bool* obstacles, int xLength, int yLength);
+
+	/// <summary>
+	/// Reads a byte from the pipe, and returns it
+	/// </summary>
+	/// <returns>The single byte read from the pipe</returns>
 	BYTE ReadByte();
+
+	/// <summary>
+	/// Writes a single byte to the pipe
+	/// </summary>
+	/// <param name="byte">The byte to write</param>
 	void SendByte(BYTE byte);
+
+	/// <summary>
+	/// Reads a <c>REAL</c> data type from the pipe, assuming one has been sent.
+	/// </summary>
+	/// <returns>The converted <c>REAL</c> read from the pipe.</returns>
+	REAL ReadReal();
+
+	/// <summary>
+	/// Reads a <c>int</c> data type from the pipe, assuming one has been sent.
+	/// </summary>
+	/// <returns>The converted <c>int</c> read from the pipe.</returns>
+	int ReadInt();
 
 	/// <summary>
 	/// Sends the contents of a field through the pipe.

@@ -36,10 +36,8 @@ namespace PipeConstants {
         constexpr BYTE ITEREND = 0b10001000;
         constexpr BYTE FLDSTART = 0b10010000;
         constexpr BYTE FLDEND = 0b10011000;
-        constexpr BYTE PRMSTART = 0b10100000;
-        constexpr BYTE PRMEND = 0b10101000;
 
-        constexpr BYTE PARAMMASK = 0b00000111;
+        constexpr BYTE ITERPRMMASK = 0b00000111;
 
         constexpr BYTE HVEL = 0b00000001;
         constexpr BYTE VVEL = 0b00000010;
@@ -47,8 +45,22 @@ namespace PipeConstants {
         constexpr BYTE STRM = 0b00000100;
         constexpr BYTE OBST = 0b00000101;
 
+        constexpr BYTE PRMSTART = 0b10100000;
+        constexpr BYTE PRMEND = 0b10101000;
+
+        constexpr BYTE PRMMASK = 0b00001111;
+
         constexpr BYTE IMAX = 0b00000001;
         constexpr BYTE JMAX = 0b00000010;
+        constexpr BYTE WIDTH = 0b00000011;
+        constexpr BYTE HEIGHT = 0b00000100;
+        constexpr BYTE TAU = 0b00000101;
+        constexpr BYTE OMEGA = 0b00000110;
+        constexpr BYTE RMAX = 0b00000111;
+        constexpr BYTE ITERMAX = 0b00001000;
+        constexpr BYTE REYNOLDS = 0b00001001;
+        constexpr BYTE INVEL = 0b00001010;
+        constexpr BYTE CHI = 0b00001011;
     }
     namespace Error
     {

@@ -169,6 +169,20 @@ void PipeManager::SendByte(BYTE byte) {
 	Write(byte);
 }
 
+REAL PipeManager::ReadReal() {
+	BYTE buffer[sizeof(REAL)];
+	Read(buffer, sizeof(REAL));
+	REAL* pOutput = reinterpret_cast<REAL*>(buffer);
+	return *pOutput;
+}
+
+int PipeManager::ReadInt() {
+	BYTE buffer[sizeof(int)];
+	Read(buffer, sizeof(int));
+	int* pOutput = reinterpret_cast<int*>(buffer);
+	return *pOutput;
+}
+
 void PipeManager::SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset)
 {
 	BYTE* buffer = new BYTE[xLength * yLength * sizeof(REAL)];
