@@ -178,6 +178,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)x64\$(ConfigurationName)\$(ProjectName).exe" "$(SolutionDir)UserInterface\bin\$(ConfigurationName)\net7.0-windows\$(ProjectName).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boundary.cpp" />
