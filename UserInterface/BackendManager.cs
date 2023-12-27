@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +20,8 @@ namespace UserInterface
         private PipeManager? pipeManager;
         private int iMax;
         private int jMax;
+        private ResizableLinearQueue<ParameterChangedEventArgs> parameterSendQueue;
+        private ParameterHolder parameterHolder;
 
         public int FieldLength { get => iMax * jMax; }
         public int IMax { get => iMax; set => iMax = value; }
@@ -34,7 +34,7 @@ namespace UserInterface
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
                 backendProcess.StartInfo.ArgumentList.Add("pipe");
-                backendProcess.StartInfo.CreateNoWindow = true;
+                //backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 return true;
             }
@@ -126,8 +126,58 @@ namespace UserInterface
             return (requestByte, fields, namedFields.ToArray());
         }
 
-        public BackendManager()
+        private async void SendParameters()
         {
+            while (!parameterSendQueue.IsEmpty)
+            {
+                ParameterChangedEventArgs args = parameterSendQueue.Dequeue();
+                string parameterName = args.PropertyName;
+                float parameterValue = args.NewValue;
+                byte parameterBits = parameterName switch
+                {
+                    "Width" => PipeConstants.Marker.WIDTH,
+                    "Height" => PipeConstants.Marker.HEIGHT,
+                    "TimeStepSafetyFactor" => PipeConstants.Marker.TAU,
+                    "RelaxationParameter" => PipeConstants.Marker.OMEGA,
+                    "PressureResidualTolerance" => PipeConstants.Marker.RMAX,
+                    "PressureMaxIterations" => PipeConstants.Marker.ITERMAX,
+                    "ReynoldsNumber" => PipeConstants.Marker.REYNOLDS,
+                    "InflowVelocity" => PipeConstants.Marker.INVEL,
+                    "SurfaceFriction" => PipeConstants.Marker.CHI,
+                    _ => 0,
+                };
+
+                if (parameterBits == 0) // Error case
+                {
+                    throw new InvalidOperationException("Parameter in queue was not recognised");
+                }
+
+                if (parameterBits == PipeConstants.Marker.ITERMAX) // Itermax is the only parameter that is an integer so needs special treatment
+                {
+                    pipeManager.SendParameter((int)parameterValue, parameterBits);
+                }
+                else
+                {
+                    pipeManager.SendParameter(parameterValue, parameterBits);
+                }
+                if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
+                {
+                    throw new IOException("Backend did not read parameters correctly");
+                }
+            }
+        }
+
+        private void HandleParameterChanged(object? sender, PropertyChangedEventArgs args)
+        {
+            parameterSendQueue.Enqueue(args as ParameterChangedEventArgs);
+        }
+
+        public BackendManager(ParameterHolder parameterHolder)
+        {
+            this.parameterHolder = parameterHolder;
+            parameterHolder.PropertyChanged += HandleParameterChanged;
+
+            parameterSendQueue = new();
             if (File.Exists(".\\CPUBackend.exe"))
             {
                 filePath = ".\\CPUBackend.exe"; // Ideally the executables will be in the same directory
@@ -143,8 +193,12 @@ namespace UserInterface
             }
         }
 
-        public BackendManager(string executableFilePath)
+        public BackendManager(string executableFilePath, ParameterHolder parameterHolder)
         {
+            this.parameterHolder = parameterHolder;
+            parameterHolder.PropertyChanged += HandleParameterChanged;
+
+            parameterSendQueue = new();
             filePath = executableFilePath;
         }
 
@@ -157,6 +211,36 @@ namespace UserInterface
             return StartBackend() && PipeHandshake(); // Return true only if both were successful. Also doesn't attempt handshake if backend did not start correctly
         }
 
+        public async void SendAllParameters()
+        {
+            pipeManager.SendParameter(parameterHolder.Width.Value, PipeConstants.Marker.WIDTH);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.Height.Value, PipeConstants.Marker.HEIGHT);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.TimeStepSafetyFactor.Value, PipeConstants.Marker.TAU);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.RelaxationParameter.Value, PipeConstants.Marker.OMEGA);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.PressureResidualTolerance.Value, PipeConstants.Marker.RMAX);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter((int)parameterHolder.PressureMaxIterations.Value, PipeConstants.Marker.ITERMAX);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.ReynoldsNumber.Value, PipeConstants.Marker.REYNOLDS);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.InflowVelocity.Value, PipeConstants.Marker.INVEL);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.SurfaceFriction.Value, PipeConstants.Marker.CHI);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+        }
 
         /// <summary>
         /// Asynchronous method to repeatedly receive fields from the backend, for visualisation
@@ -171,6 +255,8 @@ namespace UserInterface
         public async void GetFieldStreamsAsync(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction, CancellationToken token)
         {
             (byte requestByte, float[][] fields, FieldType[] namedFields) = CheckFieldParameters(horizontalVelocity, verticalVelocity, pressure, streamFunction); // Abstract the parameter checking into its own function
+
+            SendParameters(); // Send the parameters that were set before the simulation started
 
             SendControlByte(requestByte); // Start the backend executing
             byte receivedByte = await pipeManager.ReadAsync();
@@ -207,10 +293,14 @@ namespace UserInterface
                 {
                     cancellationRequested = true;
                 }
-                else
+                else if (parameterSendQueue.IsEmpty)
                 {
                     SendControlByte(PipeConstants.Status.OK);
-                    Trace.WriteLine("Data received");
+                }
+                else
+                {
+                    SendParameters();
+                    SendControlByte(PipeConstants.Status.OK);
                 }
             }
 

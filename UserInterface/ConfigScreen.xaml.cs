@@ -13,7 +13,7 @@ namespace UserInterface
     {
         private void SetSliders()
         {
-            SliderInVel.Value = parameterHolder.FluidVelocity.Value;
+            SliderInVel.Value = parameterHolder.InflowVelocity.Value;
             SliderChi.Value = parameterHolder.SurfaceFriction.Value;
             SliderWidth.Value = parameterHolder.Width.Value;
             SliderHeight.Value = parameterHolder.Height.Value;
@@ -30,29 +30,29 @@ namespace UserInterface
 
         private void SliderInVel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)SliderInVel.Value;
-            Trace.WriteLine(parameterHolder.FluidVelocity.Value);
+            parameterHolder.InflowVelocity = ModifyParameterValue(parameterHolder.InflowVelocity, (float)SliderInVel.Value);
+            Trace.WriteLine(parameterHolder.InflowVelocity.Value);
         }
 
         private void SliderChi_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.SurfaceFriction.Value = (float)SliderChi.Value;
+            parameterHolder.SurfaceFriction = ModifyParameterValue(parameterHolder.SurfaceFriction, (float)SliderChi.Value);
         }
 
         private void SliderWidth_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.Width.Value = (float)SliderWidth.Value;
+            parameterHolder.Width = ModifyParameterValue(parameterHolder.Width, (float)SliderWidth.Value);
         }
 
         private void SliderHeight_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.Height.Value = (float)SliderHeight.Value;
+            parameterHolder.Height = ModifyParameterValue(parameterHolder.Height, (float)SliderHeight.Value);
         }
 
         private void BtnReset_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Reset();
-            SliderInVel.Value = parameterHolder.FluidVelocity.DefaultValue;
+            parameterHolder.InflowVelocity.Reset();
+            SliderInVel.Value = parameterHolder.InflowVelocity.DefaultValue;
 
             parameterHolder.SurfaceFriction.Reset();
             SliderChi.Value = parameterHolder.SurfaceFriction.DefaultValue;

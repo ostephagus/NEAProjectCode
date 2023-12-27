@@ -73,16 +73,24 @@ namespace UserInterface
             currentButton = null;
             backendCancellationTokenSource = new CancellationTokenSource();
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
-            StartComponents();
-            Task.Run(StartComputation); // Asynchronously run the computation
-            SetSliders();
+            if (StartComponents())
+            {
+                Task.Run(StartComputation); // Asynchronously run the computation
+                SetSliders();
+            }
         }
 
-        private void StartComponents()
+        private bool StartComponents()
         {
-            backendManager = new BackendManager();
-            backendManager.ConnectBackend();
+            backendManager = new BackendManager(parameterHolder);
+            bool success = backendManager.ConnectBackend();
+            if (!success)
+            {
+                MessageBox.Show("Fatal error: backend did not connect properly.");
+                return false;
+            }
 
+            backendManager.SendAllParameters();
             bool[] obstacles = new bool[(backendManager.IMax + 2) * (backendManager.JMax + 2)];
             
             for (int i = 1; i <= backendManager.IMax; i++)
@@ -118,9 +126,10 @@ namespace UserInterface
             fieldParameters.field = horizontalVelocity; // Set default field to be horizontal velocity
             fieldParameters.min = min; // Set the defaults to constants min...
             fieldParameters.max = max; // ...and max
-            parameterHolder.FieldParameters.Value = fieldParameters; // Save the struct
+            parameterHolder.FieldParameters = ModifyParameterValue(parameterHolder.FieldParameters, fieldParameters); // Save it to the parameter holder
 
             VisualisationControlHolder.Content = new VisualisationControl(parameterHolder, streamFunction, dataWidth, dataHeight);
+            return true;
         }
 
         private void StartComputation()
@@ -139,7 +148,7 @@ namespace UserInterface
 
         private void SetSliders()
         {
-            SliderInVel.Value = parameterHolder.FluidVelocity.Value;
+            SliderInVel.Value = parameterHolder.InflowVelocity.Value;
             SliderChi.Value = parameterHolder.SurfaceFriction.Value;
 
             FieldParameters fieldParameters = parameterHolder.FieldParameters.Value;
@@ -174,22 +183,22 @@ namespace UserInterface
 
         private void SliderInVel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.FluidVelocity.Value = (float)SliderInVel.Value;
+            parameterHolder.InflowVelocity = ModifyParameterValue(parameterHolder.InflowVelocity, (float)SliderInVel.Value);
         }
 
         private void SliderChi_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.SurfaceFriction.Value = (float)SliderChi.Value;
+            parameterHolder.SurfaceFriction = ModifyParameterValue(parameterHolder.SurfaceFriction, (float)SliderChi.Value);
         }
 
         private void SliderContourTolerance_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.ContourTolerance.Value = (float)SliderContourTolerance.Value;
+            parameterHolder.ContourTolerance = ModifyParameterValue(parameterHolder.ContourTolerance, (float)SliderContourTolerance.Value);
         }
 
         private void SliderContourSpacing_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            parameterHolder.ContourSpacing.Value = (float)SliderContourSpacing.Value;
+            parameterHolder.ContourSpacing = ModifyParameterValue(parameterHolder.ContourSpacing, (float)SliderContourSpacing.Value);
         }
 
         private void BtnFieldParamsSave_Click(object sender, RoutedEventArgs e)
@@ -198,12 +207,12 @@ namespace UserInterface
             fieldParameters.field = (RBPressure.IsChecked ?? false) ? pressure : horizontalVelocity; // Set the field according to whether the pressure is checked
             fieldParameters.min = (float)SliderMin.Value;
             fieldParameters.max = (float)SliderMax.Value;
-            parameterHolder.FieldParameters.Value = fieldParameters;
+            parameterHolder.FieldParameters = ModifyParameterValue(parameterHolder.FieldParameters, fieldParameters);
         }
 
         private void CBContourLines_Click(object sender, RoutedEventArgs e)
         {
-            parameterHolder.DrawContours.Value = CBContourLines.IsChecked ?? false;
+            parameterHolder.DrawContours = ModifyParameterValue(parameterHolder.DrawContours, CBContourLines.IsChecked ?? false);
         }
         #endregion
     }

@@ -46,12 +46,24 @@ namespace UserInterface
         /// <param name="buffer">The <c>byte[] to store the result in.</c></param>
         /// <param name="offset">The index in which to store the first element.</param>
         /// <param name="datum">The datum to store.</param>
-        private void SerialisePrimitive(byte[] buffer, int offset, int datum)
+        private static void SerialisePrimitive(byte[] buffer, int offset, int datum)
         {
             for (int i = 0; i < sizeof(int); i++)
             {
                 buffer[i + offset] = (byte)(datum >> (i * 8));
             }
+        }
+
+        /// <summary>
+        /// Serialises a float into part of a buffer.
+        /// </summary>
+        /// <param name="buffer">The <c>byte[] to store the result in.</c></param>
+        /// <param name="offset">The index in which to store the first element.</param>
+        /// <param name="datum">The datum to store.</param>
+        private static void SerialisePrimitive(byte[] buffer, int offset, float datum)
+        {
+            byte[] serialisedPrimitive = BitConverter.GetBytes(datum);
+            Buffer.BlockCopy(serialisedPrimitive, 0, buffer, offset, sizeof(float));
         }
 
         /// <summary>
@@ -205,6 +217,34 @@ namespace UserInterface
         public void WaitForConnection()
         {
             pipeStream.WaitForConnection();
+        }
+
+        /// <summary>
+        /// Sends a parameter to the backend
+        /// </summary>
+        /// <param name="parameter">The value of the parameter to send</param>
+        /// <param name="bits">The bits corresponding to the parameter, as read from <c>PipeConstants</c></param>
+        public void SendParameter(float parameter, byte bits)
+        {
+            byte[] buffer = new byte[6];
+            buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | bits);
+            SerialisePrimitive(buffer, 1, parameter);
+            buffer[5] = (byte)(PipeConstants.Marker.PRMEND | bits);
+            pipeStream.Write(buffer, 0, buffer.Length);
+        }
+
+        /// <summary>
+        /// Sends a parameter to the backend
+        /// </summary>
+        /// <param name="parameter">The value of the parameter to send</param>
+        /// <param name="bits">The bits corresponding to the parameter, as read from <c>PipeConstants</c></param>
+        public void SendParameter(int parameter, byte bits)
+        {
+            byte[] buffer = new byte[6];
+            buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | bits);
+            SerialisePrimitive(buffer, 1, parameter);
+            buffer[5] = (byte)(PipeConstants.Marker.PRMEND | bits);
+            pipeStream.Write(buffer, 0, buffer.Length);
         }
 
         /// <summary>

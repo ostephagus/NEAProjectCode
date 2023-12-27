@@ -100,6 +100,7 @@ namespace Visualisation
 
             for (int levelSetNum = 1; levelSetNum < levelSets.Count; levelSetNum++) // Go through each level set, finding coordinates that belong to the level set. Start at 1 because the 0 level set is not drawn.
             {
+                if (levelSets[levelSetNum].Count == 0) continue; // The level set does not exist
                 int currentHeight = (int)levelSets[levelSetNum][0]; // Get the starting height of the level set
                 float targetValue = levelSetNum * spacingMultiplier;
                 for (int i = 1; i < width; i++)

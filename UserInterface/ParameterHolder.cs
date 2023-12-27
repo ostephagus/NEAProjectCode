@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace UserInterface
 {
@@ -8,7 +10,8 @@ namespace UserInterface
         Visualisation
     }
 
-    public class ParameterStruct<T>
+
+    public struct ParameterStruct<T>
     {
         /// <summary>
         /// Initialises a parameter struct with a default value separate to its initial value.
@@ -57,8 +60,10 @@ namespace UserInterface
         public float max;
     }
 
-    public class ParameterHolder
+    public class ParameterHolder : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         // Backend parameters
         private ParameterStruct<float> width;
         private ParameterStruct<float> height;
@@ -76,19 +81,134 @@ namespace UserInterface
         private ParameterStruct<float> contourTolerance;
         private ParameterStruct<float> contourSpacing;
 
-        public ParameterStruct<float> Width { get => width; set => width = value; }
-        public ParameterStruct<float> Height { get => height; set => height = value; }
-        public ParameterStruct<float> TimeStepSafetyFactor { get => timeStepSafetyFactor; set => timeStepSafetyFactor = value; }
-        public ParameterStruct<float> RelaxationParameter { get => relaxationParameter; set => relaxationParameter = value; }
-        public ParameterStruct<float> PressureResidualTolerance { get => pressureResidualTolerance; set => pressureResidualTolerance = value; }
-        public ParameterStruct<float> PressureMaxIterations { get => pressureMaxIterations; set => pressureMaxIterations = value; }
-        public ParameterStruct<float> ReynoldsNumber { get => reynoldsNumber; set => reynoldsNumber = value; }
-        public ParameterStruct<float> FluidVelocity { get => fluidVelocity; set => fluidVelocity = value; }
-        public ParameterStruct<float> SurfaceFriction { get => surfaceFriction; set => surfaceFriction = value; }
-        public ParameterStruct<FieldParameters> FieldParameters { get => fieldParameters; set => fieldParameters = value; }
-        public ParameterStruct<float> ContourTolerance { get => contourTolerance; set => contourTolerance = value; }
-        public ParameterStruct<float> ContourSpacing { get => contourSpacing; set => contourSpacing = value; }
-        public ParameterStruct<bool> DrawContours { get => drawContours; set => drawContours = value; }
+        #region Properties
+        public ParameterStruct<float> Width
+        {
+            get => width;
+
+            set
+            {
+                width = value;
+                OnPropertyChanged(width.Value);
+            }
+        }
+        public ParameterStruct<float> Height
+        {
+            get => height;
+
+            set
+            {
+                height = value;
+                OnPropertyChanged(height.Value);
+            }
+        }
+        public ParameterStruct<float> TimeStepSafetyFactor
+        {
+            get => timeStepSafetyFactor;
+
+            set
+            {
+                timeStepSafetyFactor = value;
+                OnPropertyChanged(TimeStepSafetyFactor.Value);
+            }
+        }
+        public ParameterStruct<float> RelaxationParameter
+        {
+            get => relaxationParameter;
+
+            set
+            {
+                relaxationParameter = value;
+                OnPropertyChanged(relaxationParameter.Value);
+            }
+        }
+        public ParameterStruct<float> PressureResidualTolerance
+        {
+            get => pressureResidualTolerance;
+
+            set
+            {
+                pressureResidualTolerance = value;
+                OnPropertyChanged(pressureResidualTolerance.Value);
+            }
+        }
+        public ParameterStruct<float> PressureMaxIterations
+        {
+            get => pressureMaxIterations;
+
+            set
+            {
+                pressureMaxIterations = value;
+                OnPropertyChanged(pressureMaxIterations.Value);
+            }
+        }
+        public ParameterStruct<float> ReynoldsNumber
+        {
+            get => reynoldsNumber;
+
+            set
+            {
+                reynoldsNumber = value;
+                OnPropertyChanged(reynoldsNumber.Value);
+            }
+        }
+        public ParameterStruct<float> InflowVelocity
+        {
+            get => fluidVelocity;
+
+            set
+            {
+                fluidVelocity = value;
+                OnPropertyChanged(fluidVelocity.Value);
+            }
+        }
+        public ParameterStruct<float> SurfaceFriction
+        {
+            get => surfaceFriction;
+
+            set
+            {
+                surfaceFriction = value;
+                OnPropertyChanged(surfaceFriction.Value);
+            }
+        }
+        public ParameterStruct<FieldParameters> FieldParameters
+        {
+            get => fieldParameters;
+
+            set
+            {
+                fieldParameters = value;
+            }
+        }
+        public ParameterStruct<float> ContourTolerance
+        {
+            get => contourTolerance;
+
+            set
+            {
+                contourTolerance = value;
+            }
+        }
+        public ParameterStruct<float> ContourSpacing
+        {
+            get => contourSpacing;
+
+            set
+            {
+                contourSpacing = value;
+            }
+        }
+        public ParameterStruct<bool> DrawContours
+        {
+            get => drawContours;
+
+            set
+            {
+                drawContours = value;
+            }
+        }
+        #endregion
 
         public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidVelocity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
         {
@@ -106,6 +226,11 @@ namespace UserInterface
             this.drawContours =              new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
             this.contourTolerance =          new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
             this.contourSpacing =            new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, false);
+        }
+
+        private void OnPropertyChanged(float value, [CallerMemberName] string name = "")
+        {
+            PropertyChanged?.Invoke(this, new ParameterChangedEventArgs(name, value));
         }
 
         public void ReadParameters(string fileName)

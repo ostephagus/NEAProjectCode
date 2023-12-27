@@ -45,10 +45,10 @@ namespace UserInterface
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            parameterHolder.TimeStepSafetyFactor.Value = (float)sliderTau.Value;
-            parameterHolder.RelaxationParameter.Value = (float)sliderOmega.Value;
-            parameterHolder.PressureResidualTolerance.Value = (float)sliderR.Value;
-            parameterHolder.PressureMaxIterations.Value = (float)sliderIterMax.Value;
+            parameterHolder.TimeStepSafetyFactor = ModifyParameterValue(parameterHolder.TimeStepSafetyFactor, (float)sliderTau.Value);
+            parameterHolder.RelaxationParameter = ModifyParameterValue(parameterHolder.RelaxationParameter, (float)sliderOmega.Value);
+            parameterHolder.PressureResidualTolerance = ModifyParameterValue(parameterHolder.PressureResidualTolerance, (float)sliderR.Value);
+            parameterHolder.PressureMaxIterations = ModifyParameterValue(parameterHolder.PressureMaxIterations, (float)sliderIterMax.Value);
 
             Command_ChangeWindow.Execute(new WindowChangeParameter() { IsPopup = true, NewWindow = typeof(ConfigScreen) });
         }

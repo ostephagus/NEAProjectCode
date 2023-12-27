@@ -134,7 +134,7 @@
                 <CheckBox x:Name="CBContourLines" IsChecked="True" Click="CBContourLines_Click" />
             </StackPanel>
             <Label>Streamline contour tolerance</Label>
-            <local:SliderWithValue x:Name="SliderContourTolerance" minimum="0" maximum="0.1" PropertyChanged="SliderContourTolerance_PropertyChanged" />
+            <local:SliderWithValue x:Name="SliderContourTolerance" minimum="0" maximum="0.05" PropertyChanged="SliderContourTolerance_PropertyChanged" />
             <Label>Streamline contour spacing</Label>
             <local:SliderWithValue x:Name="SliderContourSpacing" minimum="0" maximum="0.5" PropertyChanged="SliderContourSpacing_PropertyChanged" />
         </StackPanel>
