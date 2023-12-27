@@ -8,7 +8,7 @@
 #include <chrono>
 #include "PipeManager.h"
 #include "PipeConstants.h"
-#include "FrontendManager.h"
+#include "BackendCoordinator.h"
 #define DEBUGOUT
 //#define FIELDOUT
 #define MULTITHREADING
@@ -346,7 +346,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     if (std::string(argv[1]) == std::string("pipe")) {
-        FrontendManager frontendManager(100, 100, "NEAFluidDynamicsPipe");
+        BackendCoordinator frontendManager(100, 100, "NEAFluidDynamicsPipe");
         /*std::cout << "Type a character and press enter to continue: ";
         char nonsense;
         std::cin >> nonsense;*/

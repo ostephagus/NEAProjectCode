@@ -187,7 +187,7 @@
     <ClCompile Include="Computation.cpp" />
     <ClCompile Include="CPUBackend.cpp" />
     <ClCompile Include="DiscreteDerivatives.cpp" />
-    <ClCompile Include="FrontendManager.cpp" />
+    <ClCompile Include="BackendCoordinator.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="PipeManager.cpp" />
   </ItemGroup>
@@ -196,7 +196,7 @@
     <ClInclude Include="Computation.h" />
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="DiscreteDerivatives.h" />
-    <ClInclude Include="FrontendManager.h" />
+    <ClInclude Include="BackendCoordinator.h" />
     <ClInclude Include="Init.h" />
     <ClInclude Include="PipeConstants.h" />
     <ClInclude Include="PipeManager.h" />

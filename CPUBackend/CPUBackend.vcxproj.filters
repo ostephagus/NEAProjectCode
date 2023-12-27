@@ -33,7 +33,7 @@
     <ClCompile Include="PipeManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrontendManager.cpp">
+    <ClCompile Include="BackendCoordinator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ClInclude Include="PipeConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FrontendManager.h">
+    <ClInclude Include="BackendCoordinator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

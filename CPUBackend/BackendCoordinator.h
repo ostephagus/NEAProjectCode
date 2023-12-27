@@ -1,10 +1,10 @@
-#ifndef FRONTEND_MANAGER_H
-#define FRONTEND_MANAGER_H
+#ifndef BACKEND_COORDINATOR_H
+#define BACKEND_COORDINATOR_H
 
 #include "Definitions.h"
 #include "PipeManager.h"
 
-class FrontendManager
+class BackendCoordinator
 {
 private:
 	const int iMax;
@@ -29,9 +29,9 @@ public:
 	/// <param name="iMax">The width, in cells, of the simulation domain excluding boundary cells.</param>
 	/// <param name="jMax">The height, in cells, of the simulation domain excloding boundary cells.</param>
 	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
-	FrontendManager(int iMax, int jMax, std::string pipeName);
+	BackendCoordinator(int iMax, int jMax, std::string pipeName);
 
-	~FrontendManager();
+	~BackendCoordinator();
 
 	/// <summary>
 	/// Main method for FrontendManager class, which handles all the data flow and computation.
@@ -40,4 +40,4 @@ public:
 	int Run();
 };
 
-#endif // !FRONTEND_MANAGER_H
+#endif // !BACKEND_COORDINATOR_H
