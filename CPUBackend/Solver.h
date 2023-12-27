@@ -32,19 +32,29 @@ public:
     /// <param name="jMax">The index of the topmost fluid cell</param>
     Solver(SimulationParameters parameters, int iMax, int jMax);
 
+    ~Solver();
+
     SimulationParameters GetParameters() const;
     void SetParameters(SimulationParameters parameters);
+
+    int GetIMax() const;
+    int GetJMax() const;
+
+    REAL** GetHorizontalVelocity() const;
+    
+    REAL** GetVerticalVelocity() const;
+    
+    REAL** GetPressure() const;
+
+    REAL** GetStreamFunction() const;
+
+    bool** GetObstacles();
 
     /// <summary>
     /// Embeds obstacles into the simulation domain. Assumes obstacles have already been set
     /// </summary>
     virtual void ProcessObstacles();
 
-    /// <summary>
-    /// Embeds <paramref name="obstacles" /> into the simulation domain
-    /// </summary>
-    /// <param name="obstacles">An array representing which cells are obstacle and which are fluid.</param>
-    virtual void ProcessObstacles(bool** obstacles);
 
     /// <summary>
     /// Computes one timestep, solving each of the fields.

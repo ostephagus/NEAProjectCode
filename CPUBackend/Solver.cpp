@@ -21,12 +21,55 @@ Solver::Solver(SimulationParameters parameters, int iMax, int jMax) : iMax(iMax)
     numFluidCells = 0;
 }
 
+Solver::~Solver() {
+    FreeMatrix(velocities.x, iMax + 2);
+    FreeMatrix(velocities.y, iMax + 2);
+    FreeMatrix(pressure, iMax + 2);
+    FreeMatrix(RHS, iMax + 2);
+    FreeMatrix(streamFunction, iMax + 1);
+    FreeMatrix(FG.x, iMax + 2);
+    FreeMatrix(FG.y, iMax + 2);
+    FreeMatrix(obstacles, iMax + 2);
+    FreeMatrix(flags, iMax + 2);
+}
+
 SimulationParameters Solver::GetParameters() const {
     return parameters;
 }
 
 void Solver::SetParameters(SimulationParameters parameters) {
     this->parameters = parameters;
+}
+
+int Solver::GetIMax() const {
+    return iMax;
+}
+
+int Solver::GetJMax() const {
+    return jMax;
+}
+
+REAL** Solver::GetHorizontalVelocity() const {
+    return velocities.x;
+}
+
+REAL** Solver::GetVerticalVelocity() const {
+    return velocities.y;
+}
+
+REAL** Solver::GetPressure() const {
+    return pressure;
+}
+
+REAL** Solver::GetStreamFunction() const {
+    return streamFunction;
+}
+
+bool** Solver::GetObstacles() {
+    if (obstacles == nullptr) {
+        obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    }
+    return obstacles;
 }
 
 void Solver::ProcessObstacles() {
@@ -37,9 +80,4 @@ void Solver::ProcessObstacles() {
     coordinatesLength = coordinatesWithLength.second;
 
     numFluidCells = CountFluidCells(flags, iMax, jMax);
-}
-
-void Solver::ProcessObstacles(bool** obstacles) {
-    this->obstacles = obstacles;
-    ProcessObstacles();
 }

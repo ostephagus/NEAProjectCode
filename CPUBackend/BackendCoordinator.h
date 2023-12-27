@@ -3,38 +3,33 @@
 
 #include "Definitions.h"
 #include "PipeManager.h"
+#include "Solver.h"
 
 class BackendCoordinator
 {
 private:
-	const int iMax;
-	const int jMax;
-	const int fieldSize;
 	PipeManager pipeManager;
-	bool** obstacles;
-	SimulationParameters parameters;
+	Solver* solver;
 
 	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
 	void PrintFlagsArrows(BYTE** flags, int xLength, int yLength);
-	void Timestep(REAL& timestep, const DoubleReal& stepSizes, const DoubleField& velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, const DoubleField& FG, REAL** RHS, REAL** pressure, REAL** streamFunction, int numFluidCells, REAL& pressureResidualNorm);
 	void HandleRequest(BYTE requestByte);
-	void PerformInitialisation(DoubleField& velocities, REAL**& pressure, REAL**& RHS, REAL**& streamFunction, DoubleField& FG, BYTE**& flags, std::pair<int, int>*& coordinates, int& coordinatesLength, int& numFluidCells, DoubleReal& stepSizes);
+	void ReceiveObstacles();
+	void ReceiveParameters(const BYTE parameterBits, SimulationParameters& parameters);
 	void ReceiveData(BYTE startMarker);
-	void SetParameters();
+	void SetDefaultParameters(SimulationParameters& parameters);
 
 public:
 	/// <summary>
 	/// Constructor - sets up field dimensions and pipe name.
 	/// </summary>
 	/// <param name="iMax">The width, in cells, of the simulation domain excluding boundary cells.</param>
-	/// <param name="jMax">The height, in cells, of the simulation domain excloding boundary cells.</param>
+	/// <param name="jMax">The height, in cells, of the simulation domain excluding boundary cells.</param>
 	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
 	BackendCoordinator(int iMax, int jMax, std::string pipeName);
 
-	~BackendCoordinator();
-
 	/// <summary>
-	/// Main method for FrontendManager class, which handles all the data flow and computation.
+	/// Main method for BackendCoordinator class, which handles all the data flow and computation.
 	/// </summary>
 	/// <returns>An exit code to be directly returned by the program</returns>
 	int Run();

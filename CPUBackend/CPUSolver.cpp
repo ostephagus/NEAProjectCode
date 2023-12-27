@@ -2,6 +2,8 @@
 #include "Boundary.h" // SetBoundaryConditions
 #include "Computation.h" // ComputeTimestep, ComputeFG, ComputeRHS, PoissonMultiThreaded, ComputeVelocities, ComputeStream
 
+CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {}
+
 void CPUSolver::Timestep(REAL& simulationTime) {
     DoubleReal stepSizes = DoubleReal();
     stepSizes.x = parameters.width / iMax;

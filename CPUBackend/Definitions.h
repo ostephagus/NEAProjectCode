@@ -2,6 +2,7 @@
 #define DEFINITIONS_H
 
 #include <utility>
+#include <memory>
 
 typedef float REAL;
 typedef unsigned __int8 BYTE;
