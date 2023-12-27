@@ -186,20 +186,24 @@
     <ClCompile Include="Boundary.cpp" />
     <ClCompile Include="Computation.cpp" />
     <ClCompile Include="CPUBackend.cpp" />
+    <ClCompile Include="CPUSolver.cpp" />
     <ClCompile Include="DiscreteDerivatives.cpp" />
     <ClCompile Include="BackendCoordinator.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="PipeManager.cpp" />
+    <ClCompile Include="Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boundary.h" />
     <ClInclude Include="Computation.h" />
+    <ClInclude Include="CPUSolver.h" />
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="DiscreteDerivatives.h" />
     <ClInclude Include="BackendCoordinator.h" />
     <ClInclude Include="Init.h" />
     <ClInclude Include="PipeConstants.h" />
     <ClInclude Include="PipeManager.h" />
+    <ClInclude Include="Solver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
