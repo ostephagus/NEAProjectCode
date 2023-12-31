@@ -158,7 +158,7 @@
                     <Setter Property="Margin" Value="2.5 0 2.5 5" />
                 </Style>
             </StackPanel.Resources>
-            <TextBlock Margin="0 0 5 0">Drag coefficient: 0, Fluid velocity: 0, vorticity: 0</TextBlock>
+            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS}" /><Run Text=" FPS."/></TextBlock>
             <Button>Edit simulation structure</Button>
             <Button>Advanced parameters</Button>
             <Button>Save as image</Button>

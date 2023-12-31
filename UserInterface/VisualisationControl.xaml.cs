@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Wpf;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
 using Visualisation;
@@ -10,7 +11,7 @@ namespace UserInterface
     /// <summary>
     /// Interaction logic for VisualisationControl.xaml
     /// </summary>
-    public partial class VisualisationControl : UserControl
+    public partial class VisualisationControl : UserControl, INotifyPropertyChanged
     {
         private readonly ShaderManager fieldShaderManager;
         private readonly ShaderManager contourShaderManager;
@@ -38,9 +39,14 @@ namespace UserInterface
         private int dataWidth;
         private int dataHeight;
 
+        private float framesPerSecond;
+
         public int DataWidth { get => dataWidth; set => dataWidth = value; }
         public int DataHeight { get => dataHeight; set => dataHeight = value; }
         public float[] StreamFunction { get => streamFunction; set => streamFunction = value; }
+        public float FramesPerSecond { get => framesPerSecond; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public VisualisationControl(ParameterHolder parameterHolder, float[] streamFunction, int dataWidth, int dataHeight)
         {
@@ -147,6 +153,9 @@ namespace UserInterface
 
                 GLHelper.Draw(contourIndices, PrimitiveType.LineStrip);
             }
+
+            framesPerSecond = 1 / (float)delta.TotalSeconds;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FramesPerSecond)));
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)

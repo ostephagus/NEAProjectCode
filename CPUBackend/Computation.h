@@ -10,7 +10,7 @@ constexpr BYTE SOUTH = 0b00000010;
 constexpr BYTE WEST = 0b00000001;
 
 
-REAL fieldMax(REAL** field, int xLength, int yLength);
+REAL FieldMax(REAL** field, int xLength, int yLength);
 
 REAL ComputeGamma(DoubleField velocities, int iMax, int jMax, REAL timestep, DoubleReal stepSizes);
 
@@ -32,6 +32,6 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
 
 void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, BYTE** flags, int iMax, int jMax, REAL timestep, DoubleReal stepSizes);
 
-void ComputeStream(DoubleField velocities, REAL** streamFunction, BYTE** flags, int iMax, int jMax, DoubleReal stepSizes);
+void ComputeStream(DoubleField velocities, REAL** streamFunction, int iMax, int jMax, DoubleReal stepSizes);
 
 #endif

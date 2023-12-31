@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Navigation;
 
 namespace UserInterface
 {
@@ -7,21 +8,15 @@ namespace UserInterface
     /// A memory-efficient linear queue implementation.
     /// </summary>
     /// <typeparam name="T">The type of the objects that will be stored in the queue.</typeparam>
-    public class ResizableLinearQueue<T>
+    public class ResizableLinearQueue<T> : Queue<T>
     {
-        private T[] array;
-        private int back;
-        private int front;
-        private int length;
 
         /// <summary>
         /// Initialises the linear queue with a known start length.
         /// </summary>
         /// <param name="startLength">The initial length of the queue.</param>
-        public ResizableLinearQueue(int startLength)
+        public ResizableLinearQueue(int startLength) : base(startLength)
         {
-            length = startLength;
-            array = new T[length];
             back = 0;
             front = 0;
         }
@@ -44,11 +39,7 @@ namespace UserInterface
             front = 0;
         }
 
-        /// <summary>
-        /// Adds an item to the back of the queue.
-        /// </summary>
-        /// <param name="value">The item to add.</param>
-        public void Enqueue(T value)
+        public override void Enqueue(T value)
         {
             if (back == length)
             {
@@ -66,28 +57,11 @@ namespace UserInterface
             back++;
         }
 
-        /// <summary>
-        /// Adds multiple items to the back of the queue.
-        /// </summary>
-        /// <param name="values">The items to add to the queue.</param>
-        public void EnqueueRange(IEnumerable<T> values)
-        {
-            foreach (T value in values)
-            {
-                Enqueue(value);
-            }
-        }
-
-        /// <summary>
-        /// Removes an item from the front of the queue and returns it
-        /// </summary>
-        /// <returns>The item that used to be at the front of the queue.</returns>
-        /// <exception cref="InvalidOperationException">If the queue was empty before Dequeue was called</exception>
-        public T Dequeue()
+        public override T Dequeue()
         {
             if (IsEmpty)
             {
-                throw new InvalidOperationException("Queue was empty when Dequeue was called");
+                throw new InvalidOperationException("CircularQueue was empty when Dequeue was called");
             }
             T removedItem = array[front];
             front++;
@@ -101,25 +75,10 @@ namespace UserInterface
             return removedItem; //Return the item that has been "removed"
         }
 
-        /// <summary>
-        /// Removes an item from the front of the queue, if the queue is not empty.
-        /// </summary>
-        /// <param name="removedItem">The item removed if the operation succeeded, or the default value for <typeparamref name="T" /> if it failed.</param>
-        /// <returns>A <c>bool</c> indicating whether the item was successfully removed.</returns>
-        public bool TryDequeue(out T? removedItem)
-        {
-            if (IsEmpty)
-            {
-                removedItem = default;
-                return false;
-            }
-            removedItem = Dequeue();
-            return true;
-        }
+        public override bool IsEmpty => front == back;
 
-        public bool IsEmpty
-        {
-            get { return front == back; } //Empty if the front pointer is at the back pointer
-        }
+        public override bool IsFull => false; // As the queue is resizable, it is never full. This is here for inheritance reasons.
+
+        public override int Count => front - back;
     }
 }

@@ -23,5 +23,5 @@ void CPUSolver::Timestep(REAL& simulationTime) {
     (void)PoissonMultiThreaded(pressure, RHS, flags, coordinates, coordinatesLength, numFluidCells, iMax, jMax, stepSizes, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, pressureResidualNorm);
 
     ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-    ComputeStream(velocities, streamFunction, flags, iMax, jMax, stepSizes);
+    ComputeStream(velocities, streamFunction, iMax, jMax, stepSizes);
 }

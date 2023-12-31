@@ -15,7 +15,7 @@ REAL ArraySum(REAL* array, int arrayLength) {
 	return ArraySum(array, midPoint) + ArraySum((array + midPoint), arrayLength - midPoint);
 }
 
-REAL fieldMax(REAL** field, int xLength, int yLength) {
+REAL FieldMax(REAL** field, int xLength, int yLength) {
 	REAL max = 0;
 	for (int i = 0; i < xLength; ++i) {
 		for (int j = 0; j < yLength; ++j) {
@@ -28,8 +28,8 @@ REAL fieldMax(REAL** field, int xLength, int yLength) {
 }
 
 REAL ComputeGamma(DoubleField velocities, int iMax, int jMax, REAL timestep, DoubleReal stepSizes) {
-	REAL horizontalComponent = fieldMax(velocities.x, iMax+2, jMax+2) * (timestep / stepSizes.x);
-	REAL verticalComponent = fieldMax(velocities.y, iMax+2, jMax+2) * (timestep / stepSizes.y);
+	REAL horizontalComponent = FieldMax(velocities.x, iMax+2, jMax+2) * (timestep / stepSizes.x);
+	REAL verticalComponent = FieldMax(velocities.y, iMax+2, jMax+2) * (timestep / stepSizes.y);
 
 	if (horizontalComponent > verticalComponent) {
 		return horizontalComponent;
@@ -98,8 +98,8 @@ void ComputeRHS(DoubleField FG, REAL** RHS, BYTE** flags, int iMax, int jMax, RE
 
 void ComputeTimestep(REAL& timestep, int iMax, int jMax, DoubleReal stepSizes, DoubleField velocities, REAL reynoldsNo, REAL safetyFactor) {
 	REAL inverseSquareRestriction = (REAL)0.5 * reynoldsNo * (1 / (stepSizes.x * stepSizes.x) + 1 / (stepSizes.y * stepSizes.y));
-	REAL xTravelRestriction = stepSizes.x / fieldMax(velocities.x, iMax, jMax);
-	REAL yTravelRestriction = stepSizes.y / fieldMax(velocities.y, iMax, jMax);
+	REAL xTravelRestriction = stepSizes.x / FieldMax(velocities.x, iMax, jMax);
+	REAL yTravelRestriction = stepSizes.y / FieldMax(velocities.y, iMax, jMax);
 
 	REAL smallestRestriction = inverseSquareRestriction; // Choose the smallest restriction
 	if (xTravelRestriction < smallestRestriction) {
@@ -347,7 +347,7 @@ void ComputeVelocities(DoubleField velocities, DoubleField FG, REAL** pressure, 
 	}
 }
 
-void ComputeStream(DoubleField velocities, REAL** streamFunction, BYTE** flags, int iMax, int jMax, DoubleReal stepSizes) {
+void ComputeStream(DoubleField velocities, REAL** streamFunction, int iMax, int jMax, DoubleReal stepSizes) {
 	for (int i = 0; i <= iMax; i++) {
 		streamFunction[i][0] = 0; // Stream function boundary condition
 		for (int j = 1; j <= jMax; j++) {

@@ -19,6 +19,9 @@ namespace UserInterface
         private readonly CancellationTokenSource backendCancellationTokenSource;
 
         private BackendManager? backendManager;
+        private VisualisationControl? visualisationControl;
+        private MovingAverage<float> visFPSAverage;
+        private const int VIS_FPS_WINDOW_SIZE = 50;
 
         private float[]? horizontalVelocity;
         private float[]? pressure;
@@ -28,11 +31,12 @@ namespace UserInterface
 
         private const int min = -1;
         private const int max = 2;
-        private const float contourTolerance = 0.01f;
-        private const float contourSpacingMultiplier = 0.05f;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public static event CancelEventHandler? StopBackendExecuting;
+
+        public string VisFPS { get; set; }
+        public string BackFPS { get; set; } = "0";
 
         public ICommand Command_StopBackendExecuting { get; } = new Commands.StopBackend();
 
@@ -72,6 +76,7 @@ namespace UserInterface
             DataContext = this;
             currentButton = null;
             backendCancellationTokenSource = new CancellationTokenSource();
+            visFPSAverage = new(VIS_FPS_WINDOW_SIZE);
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCancellationTokenSource.Cancel();
             if (StartComponents())
             {
@@ -128,7 +133,9 @@ namespace UserInterface
             fieldParameters.max = max; // ...and max
             parameterHolder.FieldParameters = ModifyParameterValue(parameterHolder.FieldParameters, fieldParameters); // Save it to the parameter holder
 
-            VisualisationControlHolder.Content = new VisualisationControl(parameterHolder, streamFunction, dataWidth, dataHeight);
+            visualisationControl = new VisualisationControl(parameterHolder, streamFunction, dataWidth, dataHeight);
+            VisualisationControlHolder.Content = visualisationControl;
+            visualisationControl.PropertyChanged += VisFPSUpdate;
             return true;
         }
 
@@ -213,6 +220,12 @@ namespace UserInterface
         private void CBContourLines_Click(object sender, RoutedEventArgs e)
         {
             parameterHolder.DrawContours = ModifyParameterValue(parameterHolder.DrawContours, CBContourLines.IsChecked ?? false);
+        }
+
+        private void VisFPSUpdate(object? sender, PropertyChangedEventArgs e)
+        {
+            float newAverage = visFPSAverage.UpdateAverage(visualisationControl.FramesPerSecond); // Update the average and get the new average returned
+            RunVisFPS.Text = newAverage.ToString("0"); // Format the new average and display it
         }
         #endregion
     }

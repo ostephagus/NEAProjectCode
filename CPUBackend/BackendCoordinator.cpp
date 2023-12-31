@@ -246,9 +246,9 @@ int BackendCoordinator::Run() {
     pipeManager.Handshake(solver->GetIMax(), solver->GetJMax());
     std::cout << "Handshake completed ok" << std::endl;
     
-    std::cout << "Enter a character and press enter: ";
+    /*std::cout << "Enter a character and press enter: ";
     char nonsense;
-    std::cin >> nonsense;
+    std::cin >> nonsense;*/
 
     bool closeRequested = false;
 
