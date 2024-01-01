@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PipeManager.h"
 #include <iostream>
 #include "PipeConstants.h"
@@ -88,7 +89,7 @@ bool PipeManager::Handshake(int iMax, int jMax) {
 		return false;
 	}
 
-	
+
 	BYTE buffer[13];
 	buffer[0] = PipeConstants::Status::HELLO; // Reply with HELLO byte
 
@@ -109,7 +110,7 @@ bool PipeManager::Handshake(int iMax, int jMax) {
 	return Read() == PipeConstants::Status::OK; // Success if an OK byte is received
 }
 
-std::pair<int,int> PipeManager::Handshake() {
+std::pair<int, int> PipeManager::Handshake() {
 	BYTE receivedByte = Read();
 
 	if (receivedByte != PipeConstants::Status::HELLO) { return std::pair<int, int>(0, 0); } // We need a HELLO byte, (0,0) is the error case

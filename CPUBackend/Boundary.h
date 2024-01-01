@@ -1,8 +1,7 @@
 #ifndef BOUNDARY_H
 #define BOUNDARY_H
 
-#include "Definitions.h"
-#include <utility>
+#include "pch.h"
 
 void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi);
 

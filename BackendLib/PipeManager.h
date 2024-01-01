@@ -1,12 +1,12 @@
 #ifndef PIPE_MANAGER_H
 #define PIPE_MANAGER_H
 
-#include "Definitions.h"
+#include "pch.h"
 #include <windows.h>
 #include <string>
-#include <utility>
 
-class PipeManager {
+class PipeManager
+{
 private:
 	HANDLE pipeHandle;
 	std::wstring WidenString(std::string input);

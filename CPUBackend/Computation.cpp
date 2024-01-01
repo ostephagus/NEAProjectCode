@@ -4,8 +4,6 @@
 #include "Boundary.h"
 #include <iostream>
 #include <thread>
-#include <cmath>
-#include <chrono>
 //#define DEBUGOUT
 
 REAL ArraySum(REAL* array, int arrayLength) {

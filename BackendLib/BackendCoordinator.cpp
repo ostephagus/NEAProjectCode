@@ -1,11 +1,7 @@
+#include "pch.h"
 #include "BackendCoordinator.h"
 #include "PipeConstants.h"
 #include <iostream>
-#include "PipeManager.h"
-#include "Computation.h"
-#include "Init.h"
-#include "Boundary.h"
-#include "CPUSolver.h"
 #define OBSTACLES
 
 void BackendCoordinator::UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions) {
@@ -117,7 +113,7 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
             pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
             BYTE receivedByte = pipeManager.ReadByte();
-            if (receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL) { 
+            if (receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL) {
                 stopRequested = true; // Stop if requested or the frontend fatally errors
             }
             else { // If stop was requested, skip parameter reading.
@@ -234,18 +230,18 @@ void BackendCoordinator::SetDefaultParameters(SimulationParameters& parameters) 
     parameters.bodyForces.y = 0;
 }
 
-BackendCoordinator::BackendCoordinator(int iMax, int jMax, std::string pipeName)
-    : pipeManager(pipeName)
+BackendCoordinator::BackendCoordinator(int iMax, int jMax, std::string pipeName, Solver* solver)
+    : pipeManager(pipeName), solver(solver)
 {
     SimulationParameters parameters = SimulationParameters();
     SetDefaultParameters(parameters);
-    solver = new CPUSolver(parameters, iMax, jMax);
+    solver->SetParameters(parameters);
 }
 
 int BackendCoordinator::Run() {
     pipeManager.Handshake(solver->GetIMax(), solver->GetJMax());
     std::cout << "Handshake completed ok" << std::endl;
-    
+
     /*std::cout << "Enter a character and press enter: ";
     char nonsense;
     std::cin >> nonsense;*/
@@ -268,7 +264,6 @@ int BackendCoordinator::Run() {
             case PipeConstants::Status::CLOSE:
                 closeRequested = true;
                 pipeManager.SendByte(PipeConstants::Status::OK);
-                delete solver;
                 std::cout << "Backend closing..." << std::endl;
                 break;
             default:

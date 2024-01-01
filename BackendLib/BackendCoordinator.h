@@ -1,9 +1,9 @@
 #ifndef BACKEND_COORDINATOR_H
 #define BACKEND_COORDINATOR_H
 
-#include "Definitions.h"
-#include "PipeManager.h"
+#include "pch.h"
 #include "Solver.h"
+#include "PipeManager.h"
 
 class BackendCoordinator
 {
@@ -26,7 +26,8 @@ public:
 	/// <param name="iMax">The width, in cells, of the simulation domain excluding boundary cells.</param>
 	/// <param name="jMax">The height, in cells, of the simulation domain excluding boundary cells.</param>
 	/// <param name="pipeName">The name of the named pipe to use for communication with the frontend.</param>
-	BackendCoordinator(int iMax, int jMax, std::string pipeName);
+	/// <param name="solver">The instantiated solver to use.</param>
+	BackendCoordinator(int iMax, int jMax, std::string pipeName, Solver* sovler);
 
 	/// <summary>
 	/// Main method for BackendCoordinator class, which handles all the data flow and computation.

@@ -1,6 +1,6 @@
 #ifndef PIPE_CONSTANTS_H
 #define PIPE_CONSTANTS_H
-#include "Definitions.h"
+#include "pch.h"
 
 namespace PipeConstants {
     constexpr BYTE CATEGORYMASK = 0b11000000;

@@ -1,7 +1,7 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "Definitions.h"
+#include "pch.h"
 
 class Solver
 {
@@ -41,19 +41,19 @@ public:
     int GetJMax() const;
 
     REAL** GetHorizontalVelocity() const;
-    
+
     REAL** GetVerticalVelocity() const;
-    
+
     REAL** GetPressure() const;
 
     REAL** GetStreamFunction() const;
 
-    bool** GetObstacles();
+    virtual bool** GetObstacles() = 0;
 
     /// <summary>
     /// Embeds obstacles into the simulation domain. Assumes obstacles have already been set
     /// </summary>
-    virtual void ProcessObstacles();
+    virtual void ProcessObstacles() = 0;
 
 
     /// <summary>

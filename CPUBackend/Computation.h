@@ -1,7 +1,7 @@
 #ifndef COMPUTATION_H
 #define COMPUTATION_H
 
-#include "Definitions.h"
+#include "pch.h"
 
 constexpr BYTE SELF = 0b00010000;
 constexpr BYTE NORTH = 0b00001000;

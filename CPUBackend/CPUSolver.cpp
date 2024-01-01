@@ -1,8 +1,50 @@
 #include "CPUSolver.h"
+#include "Init.h" // MatrixMAlloc, FlagMatrixMAlloc
 #include "Boundary.h" // SetBoundaryConditions
 #include "Computation.h" // ComputeTimestep, ComputeFG, ComputeRHS, PoissonMultiThreaded, ComputeVelocities, ComputeStream
 
-CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {}
+CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {
+    velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    velocities.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    pressure = MatrixMAlloc(iMax + 2, jMax + 2);
+    RHS = MatrixMAlloc(iMax + 2, jMax + 2);
+    streamFunction = MatrixMAlloc(iMax + 1, jMax + 1);
+
+    FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
+    FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
+
+    flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+}
+
+CPUSolver::~CPUSolver() {
+    FreeMatrix(velocities.x, iMax + 2);
+    FreeMatrix(velocities.y, iMax + 2);
+    FreeMatrix(pressure, iMax + 2);
+    FreeMatrix(RHS, iMax + 2);
+    FreeMatrix(streamFunction, iMax + 1);
+    FreeMatrix(FG.x, iMax + 2);
+    FreeMatrix(FG.y, iMax + 2);
+    FreeMatrix(obstacles, iMax + 2);
+    FreeMatrix(flags, iMax + 2);
+}
+
+bool** CPUSolver::GetObstacles() {
+    if (obstacles == nullptr) {
+        obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    }
+    return obstacles;
+}
+
+void CPUSolver::ProcessObstacles() {
+    SetFlags(obstacles, flags, iMax + 2, jMax + 2);
+
+    std::pair<std::pair<int, int>*, int> coordinatesWithLength = FindBoundaryCells(flags, iMax, jMax);
+    coordinates = coordinatesWithLength.first;
+    coordinatesLength = coordinatesWithLength.second;
+
+    numFluidCells = CountFluidCells(flags, iMax, jMax);
+}
 
 void CPUSolver::Timestep(REAL& simulationTime) {
     DoubleReal stepSizes = DoubleReal();

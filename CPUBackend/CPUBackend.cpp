@@ -1,18 +1,23 @@
-#include <iostream>
-#include <string>
-#include "Boundary.h"
-#include "Computation.h"
-#include "DiscreteDerivatives.h"
-#include "Init.h"
-#include <bitset>
-#include <chrono>
-#include "PipeManager.h"
-#include "PipeConstants.h"
+#include "pch.h"
+//#include <iostream>
+//#include <string>
+//#include "Boundary.h"
+//#include "Computation.h"
+//#include "DiscreteDerivatives.h"
+//#include "Init.h"
+//#include <bitset>
+//#include <chrono>
+//#include "PipeManager.h"
+//#include "PipeConstants.h"
+#include "Solver.h"
+#include "CPUSolver.h"
 #include "BackendCoordinator.h"
-#define DEBUGOUT
-//#define FIELDOUT
-#define MULTITHREADING
 
+//#define DEBUGOUT
+//#define FIELDOUT
+//#define MULTITHREADING
+
+/*
 void PrintField(REAL** field, int xLength, int yLength, std::string name) {
     std::cout << name << ": " << std::endl;
     for (int i = xLength-1; i >= 0; i--) {
@@ -194,8 +199,6 @@ void TestBoundaryHandling() {
 
     int numFluidCells = CountFluidCells(flags, iMax, jMax);
     
-    //PrintFlagsArrows(flags, iMax + 2, jMax + 2);
-
     REAL** pressure = MatrixMAlloc(iMax + 2, jMax + 2);
     for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
@@ -270,30 +273,13 @@ void StepTestSquare(int squareLength) {
     stepSizes.x = width / iMax;
     stepSizes.y = height / jMax;
 
-    /*for (int i = 0; i <= iMax+1; i++) {
-        for (int j = 0; j <= jMax+1; j++) {
-            pressure[i][j] = 1000;
-        }
-    }*/
-    //PrintField(pressure, iMax+2, jMax+2, "Pressure");
-    /*for (int i = 1; i <= iMax; i++) {
-        for (int j = 1; j <= jMax; j++) {
-            velocities.x[i][j] = 4;
-            velocities.y[i][j] = 0;
-        }
-    }*/
-    //PrintField(velocities.x, iMax + 2, jMax + 2, "Horizontal velocities");
-    //PrintField(velocities.y, iMax + 2, jMax + 2, "Vertical velocities");
-
     int iteration = 0;
     std::cout << "Enter number of iterations ";
     int iterMax;
     std::cin >> iterMax;
-    //int iterMax = 10; // TESTING
     int pressureIterations;
     while (iteration < iterMax) {
         std::cout << "Iteration " << iteration << std::endl;
-        //auto startTime = std::chrono::high_resolution_clock::now(); // TESTING
         SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, inflowVelocity, surfaceFrictionalPermissibility);
         ComputeTimestep(timestep, iMax, jMax, stepSizes, velocities, reynoldsNo, timeStepSafetyFactor);
 #ifdef DEBUGOUT
@@ -322,11 +308,9 @@ void StepTestSquare(int squareLength) {
         PrintField(pressure, iMax + 2, jMax + 2, "Pressure");
 #endif // FIELDOUT
         ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
-        //auto endTime = std::chrono::high_resolution_clock::now(); // TESTING
 #ifdef DEBUGOUT
         std::cout << "Iteration " << iteration << ": starting velocity " << velocities.x[2][jMax / 2] << ", velocity before " << velocities.x[boundaryLeft-1][(boundaryTop + boundaryBottom)/2] << ", velocity after " << velocities.x[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", pressure before " << pressure[boundaryLeft - 1][(boundaryTop + boundaryBottom) / 2] << ", pressure after " << pressure[boundaryRight + 1][(boundaryTop + boundaryBottom) / 2] << ", residual norm " << pressureResidualNorm << std::endl;
 #endif // DEBUGOUT
-        //std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / 1000.0 << " seconds." << std::endl;
         iteration++;
     }
 
@@ -338,28 +322,15 @@ void StepTestSquare(int squareLength) {
     FreeMatrix(FG.x, iMax + 2);
     FreeMatrix(FG.y, iMax + 2);
 }
+*/
 
 int main(int argc, char** argv) {
-    
-    if (argc < 2) {
-        std::cout << "Command-line arguments in incorrect format. There must be one argument." << std::endl;
-        return -1;
-    }
-    if (std::string(argv[1]) == std::string("pipe")) {
-        BackendCoordinator frontendManager(100, 100, "NEAFluidDynamicsPipe");
-        /*std::cout << "Type a character and press enter to continue: ";
-        char nonsense;
-        std::cin >> nonsense;*/
-        return frontendManager.Run();
-    }
-    else if (std::string(argv[1]) == std::string("compute")) {
-        std::cout << "Enter domain size" << std::endl;
-        int squareLength;
-        std::cin >> squareLength;
-        StepTestSquare(squareLength);
-        return 0;
-    }
-    else {
-        TestBoundaryHandling();
-    }
+    int iMax = 100;
+    int jMax = 100;
+    SimulationParameters parameters = SimulationParameters();
+    Solver* solver = new CPUSolver(parameters, iMax, jMax);
+    BackendCoordinator backendCoordinator(iMax, jMax, std::string("NEAFluidDynamicsPipe"), solver);
+    int retValue = backendCoordinator.Run();
+    delete solver;
+    return retValue;
 }
