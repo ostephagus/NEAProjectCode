@@ -1,4 +1,7 @@
 #include "pch.h"
+#include "Solver.h"
+#include "CPUSolver.h"
+#include "BackendCoordinator.h"
 //#include <iostream>
 //#include <string>
 //#include "Boundary.h"
@@ -9,9 +12,6 @@
 //#include <chrono>
 //#include "PipeManager.h"
 //#include "PipeConstants.h"
-#include "Solver.h"
-#include "CPUSolver.h"
-#include "BackendCoordinator.h"
 
 //#define DEBUGOUT
 //#define FIELDOUT
