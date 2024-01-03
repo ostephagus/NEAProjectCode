@@ -9,19 +9,7 @@ protected:
     int iMax;
     int jMax;
 
-    DoubleField velocities;
-    REAL** pressure;
-    REAL** RHS;
-    REAL** streamFunction;
-    DoubleField FG;
-
     SimulationParameters parameters;
-
-    bool** obstacles;
-    BYTE** flags;
-    std::pair<int, int>* coordinates;
-    int coordinatesLength;
-    int numFluidCells;
 
 public:
     /// <summary>
@@ -40,13 +28,13 @@ public:
     int GetIMax() const;
     int GetJMax() const;
 
-    REAL** GetHorizontalVelocity() const;
+    virtual REAL** GetHorizontalVelocity() const = 0;
 
-    REAL** GetVerticalVelocity() const;
+    virtual REAL** GetVerticalVelocity() const = 0;
 
-    REAL** GetPressure() const;
+    virtual REAL** GetPressure() const = 0;
 
-    REAL** GetStreamFunction() const;
+    virtual REAL** GetStreamFunction() const = 0;
 
     virtual bool** GetObstacles() = 0;
 
@@ -55,6 +43,10 @@ public:
     /// </summary>
     virtual void ProcessObstacles() = 0;
 
+    /// <summary>
+    /// Performs setup before calls to timestep are made.
+    /// </summary>
+    virtual void PerformSetup() = 0;
 
     /// <summary>
     /// Computes one timestep, solving each of the fields.

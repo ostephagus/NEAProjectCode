@@ -1,5 +1,5 @@
 #include "CPUSolver.h"
-#include "Init.h" // MatrixMAlloc, FlagMatrixMAlloc
+#include "Init.h" // MatrixMAlloc, FlagMatrixMAlloc, ObstacleMatrixMAlloc, SetFlags
 #include "Boundary.h" // SetBoundaryConditions
 #include "Computation.h" // ComputeTimestep, ComputeFG, ComputeRHS, PoissonMultiThreaded, ComputeVelocities, ComputeStream
 
@@ -15,6 +15,12 @@ CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
     flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+
+    coordinates = nullptr;
+    coordinatesLength = 0;
+    numFluidCells = 0;
+    obstacles = nullptr;
+    stepSizes = DoubleReal();
 }
 
 CPUSolver::~CPUSolver() {
@@ -27,6 +33,22 @@ CPUSolver::~CPUSolver() {
     FreeMatrix(FG.y, iMax + 2);
     FreeMatrix(obstacles, iMax + 2);
     FreeMatrix(flags, iMax + 2);
+}
+
+REAL** CPUSolver::GetHorizontalVelocity() const {
+    return velocities.x;
+}
+
+REAL** CPUSolver::GetVerticalVelocity() const {
+    return velocities.y;
+}
+
+REAL** CPUSolver::GetPressure() const {
+    return pressure;
+}
+
+REAL** CPUSolver::GetStreamFunction() const {
+    return streamFunction;
 }
 
 bool** CPUSolver::GetObstacles() {
@@ -46,11 +68,12 @@ void CPUSolver::ProcessObstacles() {
     numFluidCells = CountFluidCells(flags, iMax, jMax);
 }
 
-void CPUSolver::Timestep(REAL& simulationTime) {
-    DoubleReal stepSizes = DoubleReal();
+void CPUSolver::PerformSetup() {
     stepSizes.x = parameters.width / iMax;
     stepSizes.y = parameters.height / jMax;
+}
 
+void CPUSolver::Timestep(REAL& simulationTime) {
     SetBoundaryConditions(velocities, flags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 
     REAL timestep;

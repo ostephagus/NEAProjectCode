@@ -80,6 +80,7 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
 
         int iteration = 0;
         REAL cumulativeTimestep = 0;
+        solver->PerformSetup();
         while (!stopRequested) {
             std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. " << std::endl;
             pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
@@ -157,7 +158,6 @@ void BackendCoordinator::ReceiveParameters(const BYTE parameterBits, SimulationP
 {
     if (parameterBits == PipeConstants::Marker::ITERMAX) {
         parameters.pressureMaxIterations = pipeManager.ReadInt();
-        std::cout << "IterMax changed" << std::endl;
     }
     else {
         REAL parameterValue = pipeManager.ReadReal(); // All of the other possible parameters have the data type REAL, so read the pipe and convert it to a REAL beforehand

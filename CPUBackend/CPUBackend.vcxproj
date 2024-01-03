@@ -157,6 +157,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>..\BackendLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -172,6 +173,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>..\BackendLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -189,14 +191,12 @@
     <ClCompile Include="CPUBackend.cpp" />
     <ClCompile Include="CPUSolver.cpp" />
     <ClCompile Include="DiscreteDerivatives.cpp" />
-    <ClCompile Include="Init.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boundary.h" />
     <ClInclude Include="Computation.h" />
     <ClInclude Include="CPUSolver.h" />
     <ClInclude Include="DiscreteDerivatives.h" />
-    <ClInclude Include="Init.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackendLib\BackendLib.vcxproj">
