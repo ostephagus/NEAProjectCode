@@ -5,7 +5,7 @@ This is a repository for the code I make as part of my technical solution of my 
 The CPU Backend is the first part of the project, allowing me to get to grips with C++, and is mostly the same as the code in the Griebels Book. **DONE**
 
 ## GPU Backend
-The GPU Backend is the evolution of the CPU Backend to work on a GPU, using parallelisation and SIMD (Single-Instruction Multiple-Data) for greater processing efficiency. **TODO**
+The GPU Backend is the evolution of the CPU Backend to work on a GPU, using parallelisation and SIMD (Single-Instruction Multiple-Data) for greater processing efficiency. **INDEV**
 
 ## UI
 The UI is written in C# using the WPF library and provides a GUI for the project. **INDEV**
@@ -21,7 +21,7 @@ The CPU backend is finished. A few more optimisation could be carried out if the
 The GPU backend is optional, and should be implemented if there is time.
 
 ### Visualisation
-The visualiusation in its current state is nearly complete, the only thing that needs adding is a way to differentiate obstacles. The streamlines also move upwards as velocity decreases, this may turn out to be fine when obstacles are involved, or may need looking into.
+The visualiusation in its current state is nearly complete, the only thing that needs adding is a way to differentiate obstacles.
 
 ### User Interface
 The User Interface is now able to change and send parameters, although key areas still to work on are adding tooltips, greater control over the backend (starting and stopping), click-and-drag node system for defining obstacles and reading in a file for obstacles. In its current state, the User Interface does not follow the MVVM design pattern, and shoud be refactored to do so.
@@ -29,7 +29,7 @@ The User Interface is now able to change and send parameters, although key areas
 ## Plan for over christmas
 The work on the project will be split into backend and frontend.
 ### Backend
-As the CPU Backend is finished, I will soon start on the GPU backend.
+The GPU backend is underway, with some of the easier kernels finished. Through January and into February, I plan to finish this with the more difficult kernels (reduction kernels and SOR).
 
 ### Frontend
 The frontend is made up of lots of smaller tasks, below is the order and how long approximately they should take. I will update this as I go.
