@@ -5,35 +5,42 @@
 #include "math.h"
 
 GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {
-    hVel = pointerWithPitch<REAL>();
+    hVel = PointerWithPitch<REAL>();
     cudaMallocPitch(&hVel.ptr, &hVel.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    vVel = pointerWithPitch<REAL>();
+    vVel = PointerWithPitch<REAL>();
     cudaMallocPitch(&vVel.ptr, &vVel.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    pressure = pointerWithPitch<REAL>();
+    pressure = PointerWithPitch<REAL>();
     cudaMallocPitch(&pressure.ptr, &pressure.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    RHS = pointerWithPitch<REAL>();
+    RHS = PointerWithPitch<REAL>();
     cudaMallocPitch(&RHS.ptr, &RHS.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    F = pointerWithPitch<REAL>();
+    F = PointerWithPitch<REAL>();
     cudaMallocPitch(&F.ptr, &F.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    G = pointerWithPitch<REAL>();
+    G = PointerWithPitch<REAL>();
     cudaMallocPitch(&G.ptr, &G.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    streamFunction = pointerWithPitch<REAL>();
+    streamFunction = PointerWithPitch<REAL>();
     cudaMallocPitch(&streamFunction.ptr, &streamFunction.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
-    devFlags = pointerWithPitch<BYTE>();
+    devFlags = PointerWithPitch<BYTE>();
     cudaMallocPitch(&devFlags.ptr, &devFlags.pitch, (jMax + 2) * sizeof(BYTE), iMax + 2);
         
     hostFlags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     obstacles = nullptr;
+    streams = nullptr;
 }
 
 GPUSolver::~GPUSolver() {
+    if (streams != nullptr) {
+        for (int i = 0; i < totalStreams; i++) {
+            cudaStreamDestroy(streams[i]); // Destroy all of the streams
+        }
+    }
+
     cudaFree(hVel.ptr);
     cudaFree(vVel.ptr);
     cudaFree(pressure.ptr);
@@ -88,15 +95,18 @@ void GPUSolver::PerformSetup() {
 
     SetBlockDimensions();
 
-
+    streams = new cudaStream_t[totalStreams];
+    for (int i = 0; i < totalStreams; i++) {
+        cudaStreamCreate(&streams[i]);
+    }
 }
 
 void GPUSolver::Timestep(REAL& simulationTime) {
     SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 
-    //REAL timestep;
+    REAL timestep;
     // Compute timestep
-    //simulationTime += timestep;
+    simulationTime += timestep;
 
     // Compute gamma
     // Compute F and G

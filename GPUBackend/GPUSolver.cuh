@@ -4,18 +4,22 @@
 #include "Definitions.cuh"
 #include "Solver.h"
 
+constexpr int computationStreams = 4; // Number of streams for launching parallelisable computation kernels
+constexpr int memcpyStreams = 4; // Number of streams for launching parallel memory copies
+constexpr int totalStreams = computationStreams + memcpyStreams;
+
 class GPUSolver :
     public Solver
 {
 private:
-    pointerWithPitch<REAL> hVel; // Horizontal velocity, resides on device.
-    pointerWithPitch<REAL> vVel; // Vertical velocity, resides on device.
-    pointerWithPitch<REAL> pressure; // Pressure, resides on device.
-    pointerWithPitch<REAL> RHS; // Pressure equation RHS, resides on device.
-    pointerWithPitch<REAL> streamFunction; // Stream function, resides on device.
-    pointerWithPitch<REAL> F; // Quantity F, resides on device.
-    pointerWithPitch<REAL> G; // Quantity G, resides on device.
-    pointerWithPitch<BYTE> devFlags; // Cell flags, resides on device.
+    PointerWithPitch<REAL> hVel; // Horizontal velocity, resides on device.
+    PointerWithPitch<REAL> vVel; // Vertical velocity, resides on device.
+    PointerWithPitch<REAL> pressure; // Pressure, resides on device.
+    PointerWithPitch<REAL> RHS; // Pressure equation RHS, resides on device.
+    PointerWithPitch<REAL> streamFunction; // Stream function, resides on device.
+    PointerWithPitch<REAL> F; // Quantity F, resides on device.
+    PointerWithPitch<REAL> G; // Quantity G, resides on device.
+    PointerWithPitch<BYTE> devFlags; // Cell flags, resides on device.
 
     REAL delX; // Step size in x direction, resides on host.
     REAL delY; // Step size in y direction, resides on host.
@@ -32,7 +36,7 @@ private:
     BYTE** hostFlags; // 2D array of flags, resides on host.
 
     cudaDeviceProp deviceProperties;
-    cudaStream_t** streams;
+    cudaStream_t* streams; // Streams that can be used. First are the computation streams (0 to the number of computation streams), then are memcpy streams. To access memcpy streams, first add computationStreams then an offset
 
     void SetBlockDimensions();
 

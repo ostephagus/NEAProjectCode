@@ -6,7 +6,7 @@ constexpr BYTE EAST = 0b00000100;
 constexpr BYTE SOUTH = 0b00000010;
 constexpr BYTE WEST = 0b00000001;
 
-__global__ void ComputeRHS(pointerWithPitch<REAL> F, pointerWithPitch<REAL> G, pointerWithPitch<REAL> RHS, pointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY) {
+__global__ void ComputeRHS(PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<REAL> RHS, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY) {
     int rowNum = blockIdx.x * blockDim.x + threadIdx.x + 1;
     int colNum = blockIdx.y * blockDim.y + threadIdx.y + 1;
 

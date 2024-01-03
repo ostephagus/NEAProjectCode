@@ -10,7 +10,7 @@
 #define B_PITCHACCESS(basePtr, pitch, i, j) (basePtr) + (i) * (pitch) + (j) // Used for accessing a location in a pitched array (F for float, B for byte)
 
 template <typename T>
-struct pointerWithPitch
+struct PointerWithPitch
 {
     T* ptr;
     size_t pitch;

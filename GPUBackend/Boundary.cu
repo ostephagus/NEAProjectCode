@@ -1,24 +1,17 @@
 #include "Boundary.cuh"
 #include "math.h"
-void SetBoundaryConditions(cudaStream_t** streams, int threadsPerBlock, pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> vVel, pointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
+void SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
     int numBlocksTopBottom = (int)ceilf((float)iMax / threadsPerBlock);
     int numBlocksLeftRight = (int)ceilf((float)jMax / threadsPerBlock);
-    if (streams == nullptr) { // Case where the device only supports sequential kernel execution
-        TopBoundary<<< numBlocksTopBottom, threadsPerBlock >>>(hVel, vVel, jMax);
-        BottomBoundary<<< numBlocksTopBottom, threadsPerBlock >>>(hVel, vVel);
-        LeftBoundary<<< numBlocksLeftRight, threadsPerBlock >>>(hVel, vVel, inflowVelocity);
-        RightBoundary<<< numBlocksLeftRight, threadsPerBlock >>>(hVel, vVel, iMax);
-    }
-    else { // Case where device supports at least some streams
-        // Streams is an array of pointers to streams. This allows for, for example, streams[2] to reference the same stream as streams[0], in the case the device supports only 2 streams (the same would occur with streams[3] and streams[1].
-        TopBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, *streams[0] >>>(hVel, vVel, jMax);
-        BottomBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, *streams[1] >>>(hVel, vVel);
-        LeftBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, *streams[2] >>>(hVel, vVel, inflowVelocity);
-        RightBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, *streams[2] >>>(hVel, vVel, iMax);
-    }
+    
+    TopBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, streams[0] >>>(hVel, vVel, jMax);
+    BottomBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, streams[1] >>>(hVel, vVel);
+    LeftBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, streams[2] >>>(hVel, vVel, inflowVelocity);
+    RightBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, streams[3] >>>(hVel, vVel, iMax);
+    cudaDeviceSynchronize();
 }
 
-__global__ void TopBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> vVel, int jMax)
+__global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int jMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
@@ -26,7 +19,7 @@ __global__ void TopBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> 
     *F_PITCHACCESS(vVel.ptr, vVel.pitch, index, jMax) = 0; // Set vVel along the top to 0
 }
 
-__global__ void BottomBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> vVel)
+__global__ void BottomBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
@@ -34,7 +27,7 @@ __global__ void BottomBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REA
     *F_PITCHACCESS(vVel.ptr, vVel.pitch, index, 0) = 0; // Set vVel along the bottom to 0
 }
 
-__global__ void LeftBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> vVel, REAL inflowVelocity)
+__global__ void LeftBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, REAL inflowVelocity)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
@@ -42,7 +35,7 @@ __global__ void LeftBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL>
     *F_PITCHACCESS(vVel.ptr, vVel.pitch, 0, index) = 0; // Set vVel to 0
 }
 
-__global__ void RightBoundary(pointerWithPitch<REAL> hVel, pointerWithPitch<REAL> vVel, int iMax)
+__global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
