@@ -1,15 +1,5 @@
 #include "Boundary.cuh"
 #include "math.h"
-void SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
-    int numBlocksTopBottom = (int)ceilf((float)iMax / threadsPerBlock);
-    int numBlocksLeftRight = (int)ceilf((float)jMax / threadsPerBlock);
-    
-    TopBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, streams[0] >>>(hVel, vVel, jMax);
-    BottomBoundary<<< numBlocksTopBottom, threadsPerBlock, 0, streams[1] >>>(hVel, vVel);
-    LeftBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, streams[2] >>>(hVel, vVel, inflowVelocity);
-    RightBoundary<<< numBlocksLeftRight, threadsPerBlock, 0, streams[3] >>>(hVel, vVel, iMax);
-    cudaDeviceSynchronize();
-}
 
 __global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int jMax)
 {
@@ -41,4 +31,15 @@ __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL
 
     *F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax, index) = *F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax - 1, index); // Copy the velocity values from the previous cell (mass flows out at the boundary)
     *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax + 1, index) = *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax, index);
+}
+
+cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
+    int numBlocksTopBottom = (int)ceilf((float)iMax / threadsPerBlock);
+    int numBlocksLeftRight = (int)ceilf((float)jMax / threadsPerBlock);
+    
+    TopBoundary<<<numBlocksTopBottom, threadsPerBlock, 0, streams[0]>>>(hVel, vVel, jMax);
+    BottomBoundary<<<numBlocksTopBottom, threadsPerBlock, 0, streams[1]>>>(hVel, vVel);
+    LeftBoundary<<<numBlocksLeftRight, threadsPerBlock, 0, streams[2]>>>(hVel, vVel, inflowVelocity);
+    RightBoundary<<<numBlocksLeftRight, threadsPerBlock, 0, streams[3]>>>(hVel, vVel, iMax);
+    return cudaDeviceSynchronize();
 }

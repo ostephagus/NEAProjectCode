@@ -51,7 +51,6 @@ public:
 
     void ProcessObstacles();
 
-
     void PerformSetup();
 
     void Timestep(REAL& simulationTime); // Implementing abstract inherited method

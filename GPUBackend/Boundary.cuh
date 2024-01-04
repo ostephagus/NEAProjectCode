@@ -3,9 +3,6 @@
 
 #include "Definitions.cuh"
 
-
-void SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi);
-
 /// <summary>
 /// Applies top boundary conditions. Requires iMax threads.
 /// </summary>
@@ -36,5 +33,11 @@ __global__ void LeftBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL>
 /// <param name="vVel">Pointer with pitch for vertical velocity.</param>
 /// <param name="iMax">The number of fluid cells in the x direction.</param>
 __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax);
+
+// TODO: handle obstacle boundary conditions.
+/// <summary>
+/// Sets outer boundary conditions. Handles kernel launching internally.
+/// </summary>
+cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi);
 
 #endif // !BOUNDARY_CUH

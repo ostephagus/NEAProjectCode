@@ -99,22 +99,31 @@ void GPUSolver::PerformSetup() {
     for (int i = 0; i < totalStreams; i++) {
         cudaStreamCreate(&streams[i]);
     }
+
+    delX = parameters.width / iMax;
+    delY = parameters.height / jMax;
 }
 
 void GPUSolver::Timestep(REAL& simulationTime) {
     SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 
-    REAL timestep;
+    REAL* timestep;
+    cudaMalloc(&timestep, sizeof(REAL));
     // Compute timestep
-    simulationTime += timestep;
+    //simulationTime += timestep;
 
     // Compute gamma
     // Compute F and G
     
-    ComputeRHS<<<numBlocks, threadsPerBlock>>>(F, G, RHS, iMax, jMax, timestep, delX, delY);
+    ComputeRHS<<<numBlocks, threadsPerBlock>>>(F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
 
     // Compute pressure Poisson
-    // Compute velocities
-    // Compute stream function
+
+    ComputeVelocities(streams, threadsPerBlock, hVel, vVel, F, G, pressure, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
+
+    dim3 numBlocksForStreamCalc((int)ceilf((float)(iMax + 1) / threadsPerBlock.x), (int)ceilf((float)(jMax + 1) / threadsPerBlock.y));
+    ComputeStream<<<numBlocksForStreamCalc, threadsPerBlock>>>(hVel, streamFunction, iMax, jMax, delY); // Untested
+
+    // Perform memory copies asynchronously
 }
 

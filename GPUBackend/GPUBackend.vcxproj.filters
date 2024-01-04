@@ -38,4 +38,7 @@
       <Extensions>cpp;c;cxx;cu</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
 </Project>
