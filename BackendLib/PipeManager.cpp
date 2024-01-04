@@ -143,11 +143,10 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int xLength, int yLength) {
 	int byteNumber = 0;
 	for (int i = 0; i < fieldLength; i++) {
 		obstacles[byteNumber * 8 + (i % 8)] = (((buffer[byteNumber] >> (i % 8)) & 1) == 0) ? false : true; // Due to the way bits are shifted into the bytes by the server, they must be shifted off in the opposite order hence the complicated expression for obstacles[...]. Right shift and AND with 1 takes that bit only
-		//std::cout << "Byte number: " << byteNumber << ", i mod 8: " << (i % 8) << ", byte: " << (int)buffer[byteNumber] << ", stored to obstacles: " << obstacles[byteNumber * 8 + (i % 8)] << std::endl;
+		
 
 		if (i % 8 == 7) {
 			byteNumber++;
-			//currentByte = Read();
 		}
 	}
 

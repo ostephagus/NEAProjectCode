@@ -44,7 +44,7 @@ public:
     virtual void ProcessObstacles() = 0;
 
     /// <summary>
-    /// Performs setup before calls to timestep are made.
+    /// Performs setup for executing timesteps. This function must be called once before the first call to <c>Timestep</c>, and after any changes to <c>parameters</c>.
     /// </summary>
     virtual void PerformSetup() = 0;
 
