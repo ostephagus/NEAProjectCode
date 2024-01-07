@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
+             xmlns:HelperControls="clr-namespace:UserInterface.HelperControls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -19,7 +20,7 @@
             <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
 
-        <local:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulating" MaxWidth="300" />
+        <HelperControls:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulating" MaxWidth="300" />
 
         <StackPanel Grid.Row="1" Grid.Column="0">
             <StackPanel.Resources>
@@ -93,9 +94,9 @@
                 </Style>
             </StackPanel.Style>
             <Label>Fluid Velocity</Label>
-            <local:SliderWithValue x:Name="SliderInVel" minimum="0" maximum="40" PropertyChanged="SliderInVel_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderInVel" minimum="0" maximum="40" PropertyChanged="SliderInVel_PropertyChanged" />
             <Label>Material Friction</Label>
-            <local:SliderWithValue x:Name="SliderChi" minimum="0" maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderChi" minimum="0" maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
         </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
@@ -125,18 +126,18 @@
             <RadioButton x:Name="RBPressure" GroupName="FieldSelector" IsChecked="True">Pressure</RadioButton>
             <RadioButton x:Name="RBVelocity" GroupName="FieldSelector">Velocity</RadioButton>
             <Label>Minimum value</Label>
-            <local:SliderWithValue x:Name="SliderMin" minimum="0" maximum="2000" />
+            <HelperControls:SliderWithValue x:Name="SliderMin" minimum="0" maximum="2000" />
             <Label>Maximum value</Label>
-            <local:SliderWithValue x:Name="SliderMax" minimum="0" maximum="2000" />
+            <HelperControls:SliderWithValue x:Name="SliderMax" minimum="0" maximum="2000" />
             <Button x:Name="BtnFieldParamsSave" Click="BtnFieldParamsSave_Click">Save field parameters</Button>
             <StackPanel Orientation="Horizontal">
                 <Label>Streamlines</Label>
                 <CheckBox x:Name="CBContourLines" IsChecked="True" Click="CBContourLines_Click" />
             </StackPanel>
             <Label>Streamline contour tolerance</Label>
-            <local:SliderWithValue x:Name="SliderContourTolerance" minimum="0" maximum="0.05" PropertyChanged="SliderContourTolerance_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderContourTolerance" minimum="0" maximum="0.05" PropertyChanged="SliderContourTolerance_PropertyChanged" />
             <Label>Streamline contour spacing</Label>
-            <local:SliderWithValue x:Name="SliderContourSpacing" minimum="0" maximum="0.5" PropertyChanged="SliderContourSpacing_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderContourSpacing" minimum="0" maximum="0.5" PropertyChanged="SliderContourSpacing_PropertyChanged" />
         </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>

@@ -10,7 +10,6 @@ namespace UserInterface.Views
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
         }
     }
 }

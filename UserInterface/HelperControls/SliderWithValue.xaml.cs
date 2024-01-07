@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
-namespace UserInterface.Views
+namespace UserInterface.HelperControls
 {
     /// <summary>
     /// Interaction logic for SliderWithValue.xaml

@@ -4,8 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
+             xmlns:HelperControls="clr-namespace:UserInterface.HelperControls"
+             xmlns:ViewModels="clr-namespace:UserInterface.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="700">
+    <local:SwappableScreen.DataContext>
+        <ViewModels:AdvancedParametersVM />
+    </local:SwappableScreen.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -20,17 +25,17 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <local:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Advanced Parameters" />
+        <HelperControls:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Advanced Parameters" />
         <Label Grid.Row="1" Grid.Column="0">Timestep Safety Factor &#964;</Label>
-        <local:SliderWithValue x:Name="sliderTau" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" />
+        <HelperControls:SliderWithValue x:Name="sliderTau" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" Value="{Binding Tau}"/>
         <Label Grid.Row="2" Grid.Column="0">SOR relaxation parameter &#969;</Label>
-        <local:SliderWithValue x:Name="sliderOmega" Grid.Row="2" Grid.Column="1" minimum="0" maximum="2" />
+        <HelperControls:SliderWithValue x:Name="sliderOmega" Grid.Row="2" Grid.Column="1" minimum="0" maximum="2" Value="{Binding Omega}" />
         <Label Grid.Row="3" Grid.Column="0">Pressure residual tolerance r</Label>
-        <local:SliderWithValue x:Name="sliderR" Grid.Row="3" Grid.Column="1" minimum="0" maximum="10" />
+        <HelperControls:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" minimum="0" maximum="10" Value="{Binding RMax}" />
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
-        <local:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" minimum="0" maximum="10000" />
+        <HelperControls:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" minimum="0" maximum="10000" Value="{Binding IterMax}" />
         <Label Grid.Row="5" Grid.Column="0">Grid cells per compute unit</Label>
-        <local:SliderWithValue Grid.Row="5" Grid.Column="1" maximum="10" forceIntegers="True"/>
+        <HelperControls:SliderWithValue Grid.Row="5" Grid.Column="1" maximum="10" forceIntegers="True"/>
         <Button x:Name="ResetButton" Grid.Row="6" Grid.Column="0" FontSize="16" Click="ResetButton_Click">Reset values</Button>
         <Button x:Name="SaveButton" Grid.Row="6" Grid.Column="1" FontSize="16" Click="SaveButton_Click">
             Save and return to parameter setup...</Button>

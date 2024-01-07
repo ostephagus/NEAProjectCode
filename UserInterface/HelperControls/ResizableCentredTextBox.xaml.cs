@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace UserInterface.Views
+namespace UserInterface.HelperControls
 {
     /// <summary>
     /// Interaction logic for ResizableCentredTextBox.xaml
@@ -10,9 +10,7 @@ namespace UserInterface.Views
         public ResizableCentredTextBox()
         {
             InitializeComponent();
-            DataContext = this;
         }
-
         public string Text { get; set; } = "";
     }
 }
