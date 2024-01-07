@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
+using UserInterface.HelperClasses;
 using Visualisation;
 
 namespace UserInterface

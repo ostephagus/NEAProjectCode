@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Numerics;
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     public class MovingAverage<T> where T : INumber<T>
     {
         private CircularQueue<T> dataPoints;
         private readonly int windowSize;
 
-        private T currentSum; // Contains the sum of all the current data points
+        private T currentSum = default; // Contains the sum of all the current data points
 
         public T Average { get; private set; }
 

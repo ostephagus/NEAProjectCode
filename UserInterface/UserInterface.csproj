@@ -43,4 +43,9 @@
     <Resource Include="Images\VisualisationIcon.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
+    <Folder Include="Views\" />
+  </ItemGroup>
+
 </Project>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Navigation;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     /// <summary>
     /// A memory-efficient linear queue implementation.

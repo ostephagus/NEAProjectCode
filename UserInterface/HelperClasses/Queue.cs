@@ -1,4 +1,4 @@
-﻿namespace UserInterface
+﻿namespace UserInterface.HelperClasses
 {
     /// <summary>
     /// An abstract class to represent the methods for a queue.

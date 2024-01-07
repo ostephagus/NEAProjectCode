@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UserInterface
+﻿namespace UserInterface.HelperClasses
 {
     /// <summary>
     /// Constants for pipe communication, containing all the control bytes as defined in Documentation D.3 Precise Specification
@@ -21,12 +14,12 @@ namespace UserInterface
         public static class Status
         {
             public static readonly byte GENERIC = 0b00000000;
-            public static readonly byte HELLO   = 0b00001000;
-            public static readonly byte BUSY    = 0b00010000;
-            public static readonly byte OK      = 0b00011000;
-            public static readonly byte STOP    = 0b00100000;
-            public static readonly byte CLOSE   = 0b00101000;
-            
+            public static readonly byte HELLO = 0b00001000;
+            public static readonly byte BUSY = 0b00010000;
+            public static readonly byte OK = 0b00011000;
+            public static readonly byte STOP = 0b00100000;
+            public static readonly byte CLOSE = 0b00101000;
+
             public static readonly byte PARAMMASK = 0b00000111;
         }
 
@@ -35,9 +28,9 @@ namespace UserInterface
         /// </summary>
         public static class Request
         {
-            public static readonly byte GENERIC   = 0b01000000;
+            public static readonly byte GENERIC = 0b01000000;
             public static readonly byte FIXLENREQ = 0b01000000;
-            public static readonly byte CONTREQ   = 0b01100000;
+            public static readonly byte CONTREQ = 0b01100000;
 
             public static readonly byte PARAMMASK = 0b00011111;
 
@@ -89,13 +82,13 @@ namespace UserInterface
         /// </summary>
         public static class Error
         {
-            public static readonly byte GENERIC  = 0b11000000;
-            public static readonly byte BADREQ   = 0b11000001;
+            public static readonly byte GENERIC = 0b11000000;
+            public static readonly byte BADREQ = 0b11000001;
             public static readonly byte BADPARAM = 0b11000010;
             public static readonly byte INTERNAL = 0b11000011;
-            public static readonly byte TIMEOUT  = 0b11000100;
-            public static readonly byte BADTYPE  = 0b11000101;
-            public static readonly byte BADLEN   = 0b11000110;
+            public static readonly byte TIMEOUT = 0b11000100;
+            public static readonly byte BADTYPE = 0b11000101;
+            public static readonly byte BADLEN = 0b11000110;
         }
     }
 }

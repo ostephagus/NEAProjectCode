@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipes;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     /// <summary>
     /// Struct enclosing a bool, specifying whether a read operation happened, and a buffer for the read operation output (if applicable)
@@ -50,7 +44,7 @@ namespace UserInterface
         {
             for (int i = 0; i < sizeof(int); i++)
             {
-                buffer[i + offset] = (byte)(datum >> (i * 8));
+                buffer[i + offset] = (byte)(datum >> i * 8);
             }
         }
 
@@ -97,8 +91,9 @@ namespace UserInterface
         {
             byte[] buffer = new byte[1024]; // Start by reading 1kiB of the pipe
             int bytesRead = pipeStream.Read(buffer, 0, buffer.Length);
-            if (bytesRead == 0) { 
-                return new ReadResults { anythingRead = false, data = new byte[1] }; 
+            if (bytesRead == 0)
+            {
+                return new ReadResults { anythingRead = false, data = new byte[1] };
             }
             int offset = 1;
             while (bytesRead == 1024) // While the buffer gets filled
@@ -108,7 +103,7 @@ namespace UserInterface
                 offset++;
             }
             Array.Resize(ref buffer, (offset - 1) * 1024 + bytesRead); // Resize the buffer to the actual length of data
-            return new ReadResults { anythingRead = true, data = buffer };            
+            return new ReadResults { anythingRead = true, data = buffer };
         }
 
         public async Task<ReadResults> ReadFieldAsync(FieldType field, int fieldLength)
@@ -259,7 +254,7 @@ namespace UserInterface
             int index = 0;
             for (int i = 0; i < obstacles.Length; i++)
             {
-                buffer[index] |= (byte)((obstacles[i] ? 1 : 0) << (i % 8)); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
+                buffer[index] |= (byte)((obstacles[i] ? 1 : 0) << i % 8); // Convert the bool to 1 or 0, shift it left the relevant amount of times and OR it with the current value in the buffer
                 if (i % 8 == 7) // Add one to the index if the byte is full
                 {
                     index++;
@@ -271,7 +266,7 @@ namespace UserInterface
             pipeStream.Write(buffer, 0, buffer.Length);
 
             ReadResults readResults = AttemptRead();
-            
+
             Trace.WriteLine("SendObstacles finished executing");
             return readResults.anythingRead && readResults.data[0] == PipeConstants.Status.OK;
         }

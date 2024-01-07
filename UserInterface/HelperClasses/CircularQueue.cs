@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     public class CircularQueue<T> : Queue<T>
     {

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
 
     /// <summary>
@@ -169,7 +169,7 @@ namespace UserInterface
 
         private void HandleParameterChanged(object? sender, PropertyChangedEventArgs args)
         {
-            parameterSendQueue.Enqueue(args as ParameterChangedEventArgs);
+            parameterSendQueue.Enqueue((ParameterChangedEventArgs)args);
         }
 
         public BackendManager(ParameterHolder parameterHolder)
@@ -268,7 +268,7 @@ namespace UserInterface
                 }
                 throw new IOException("Result from backend not understood"); // Throw a generic error if it was not understood at all
             }
-            
+
             byte[] tmpByteBuffer = new byte[FieldLength * sizeof(float)]; // Temporary buffer for pipe output
 
             bool cancellationRequested = token.IsCancellationRequested;
@@ -281,7 +281,7 @@ namespace UserInterface
                 {
                     byte fieldBits = (byte)namedFields[fieldNum];
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
-                    
+
                     await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * sizeof(float)); // Read the stream of bytes into the temporary buffer
                     Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
                     if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits

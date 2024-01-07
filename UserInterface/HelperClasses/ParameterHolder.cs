@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     public enum ParameterUsage
     {
@@ -213,19 +213,19 @@ namespace UserInterface
         public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidVelocity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
         {
 
-            this.width =                     new ParameterStruct<float>(width, ParameterUsage.Backend, false);
-            this.height =                    new ParameterStruct<float>(height, ParameterUsage.Backend, false);
-            this.timeStepSafetyFactor =      new ParameterStruct<float>(timeStepSafetyFactor, ParameterUsage.Backend, false);
-            this.relaxationParameter =       new ParameterStruct<float>(relaxationParameter, ParameterUsage.Backend, false);
+            this.width = new ParameterStruct<float>(width, ParameterUsage.Backend, false);
+            this.height = new ParameterStruct<float>(height, ParameterUsage.Backend, false);
+            this.timeStepSafetyFactor = new ParameterStruct<float>(timeStepSafetyFactor, ParameterUsage.Backend, false);
+            this.relaxationParameter = new ParameterStruct<float>(relaxationParameter, ParameterUsage.Backend, false);
             this.pressureResidualTolerance = new ParameterStruct<float>(pressureResidualTolerance, ParameterUsage.Backend, false);
-            this.pressureMaxIterations =     new ParameterStruct<float>(pressureMaxIterations, ParameterUsage.Backend, false);
-            this.reynoldsNumber =            new ParameterStruct<float>(reynoldsNumber, ParameterUsage.Backend, false);
-            this.fluidVelocity =             new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
-            this.surfaceFriction =           new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, false);
-            this.fieldParameters =           new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
-            this.drawContours =              new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
-            this.contourTolerance =          new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
-            this.contourSpacing =            new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, false);
+            this.pressureMaxIterations = new ParameterStruct<float>(pressureMaxIterations, ParameterUsage.Backend, false);
+            this.reynoldsNumber = new ParameterStruct<float>(reynoldsNumber, ParameterUsage.Backend, false);
+            this.fluidVelocity = new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
+            this.surfaceFriction = new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, false);
+            this.fieldParameters = new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
+            this.drawContours = new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
+            this.contourTolerance = new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
+            this.contourSpacing = new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, false);
         }
 
         private void OnPropertyChanged(float value, [CallerMemberName] string name = "")

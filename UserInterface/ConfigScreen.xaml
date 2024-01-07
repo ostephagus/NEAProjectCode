@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface"
+             xmlns:helperClasses="clr-namespace:UserInterface.HelperClasses"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="700">
     <Grid>
@@ -49,7 +50,7 @@
             
             <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Command_ChangeWindow}">
                 <Button.CommandParameter>
-                    <local:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
+                    <helperClasses:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
                 </Button.CommandParameter>
                 Advanced parameters</Button>
         </Grid>
@@ -59,7 +60,7 @@
         </StackPanel>
         <Button Grid.Row="3" Grid.Column="1" Command="{Binding Command_ChangeWindow}">
             <Button.CommandParameter>
-                <local:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
+                <helperClasses:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
             </Button.CommandParameter>
             Simulate</Button>
     </Grid>

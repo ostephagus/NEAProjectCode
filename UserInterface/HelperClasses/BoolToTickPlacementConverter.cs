@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 
-namespace UserInterface
+namespace UserInterface.HelperClasses
 {
     class BoolToTickPlacementConverter : IValueConverter
     {
