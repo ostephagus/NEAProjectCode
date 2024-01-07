@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using UserInterface.HelperClasses;
+using UserInterface.Views;
 
 #pragma warning disable CS8618 // Compiler doesn't understand that Start() is functionally the constructor for this class.
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
+using UserInterface.Views;
 
 namespace UserInterface.HelperClasses
 {

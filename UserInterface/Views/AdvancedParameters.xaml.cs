@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using UserInterface.HelperClasses;
 
-namespace UserInterface
+namespace UserInterface.Views
 {
     /// <summary>
     /// Interaction logic for AdvancedParameters.xaml

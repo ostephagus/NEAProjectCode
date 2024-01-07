@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Controls;
 using System.Windows.Input;
 using UserInterface.HelperClasses;
 
-namespace UserInterface
+namespace UserInterface.Views
 {
     /// <summary>
     /// Interaction logic for ConfigScreen.xaml

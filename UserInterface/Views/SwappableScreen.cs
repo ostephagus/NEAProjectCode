@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using UserInterface.HelperClasses;
 
-namespace UserInterface
+namespace UserInterface.Views
 {
     public abstract class SwappableScreen : UserControl
     {
