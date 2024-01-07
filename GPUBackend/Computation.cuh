@@ -4,14 +4,24 @@
 #include "Definitions.cuh"
 
 /// <summary>
-/// Computes quantity F. Requires iMax x jMax threads.
+/// Computes F on the top and bottom of the simulation domain. Requires jMax threads.
 /// </summary>
-__global__ void ComputeF(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> F, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timeStep, REAL delX, REAL xForce, REAL* gamma, REAL reynoldsNum);
+__global__ void ComputeFBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> F, int iMax, int jMax);
 
 /// <summary>
-/// Computes quantity G. Requires iMax x jMax threads.
+/// Computes G on the left and right of the simulation domain. Requires iMax threads.
 /// </summary>
-__global__ void ComputeG(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> G, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timeStep, REAL delY, REAL yForce, REAL* gamma, REAL reynoldsNum);
+__global__ void ComputeGBoundary(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> G, int iMax, int jMax);
+
+/// <summary>
+/// Computes quantity F. Requires (iMax - 1) x (jMax - 1) threads.
+/// </summary>
+__global__ void ComputeF(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL xForce, REAL* gamma, REAL reynoldsNum);
+
+/// <summary>
+/// Computes quantity G. Requires (iMax - 1) x (jMax - 1) threads.
+/// </summary>
+__global__ void ComputeG(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> G, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL yForce, REAL* gamma, REAL reynoldsNum);
 
 /// <summary>
 /// Computes F and G. Handles kernel launching internally

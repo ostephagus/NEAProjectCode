@@ -29,4 +29,4 @@ REAL PpPy(REAL** pressure, int i, int j, REAL dely);
 
 REAL square(REAL operand);
 
-#endif
+#endif // !DISCRETE_DERIVATIVES_CUH

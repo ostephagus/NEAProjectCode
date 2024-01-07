@@ -13,6 +13,9 @@
     <CudaCompile Include="Computation.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="DiscreteDerivatives.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUSolver.cuh">
@@ -25,6 +28,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Computation.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DiscreteDerivatives.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
