@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Input;
 using UserInterface.HelperClasses;
 using UserInterface.ViewModels;
@@ -13,7 +14,7 @@ namespace UserInterface.Views
         public AdvancedParameters(ParameterHolder parameterHolder) : base(parameterHolder) // Sets the parameter holder
         {
             InitializeComponent();
-            //DataContext = new AdvancedParametersVM();
+            DataContext = new AdvancedParametersVM(parameterHolder);
         }
 
         public ICommand Command_ChangeWindow { get; } = new Commands.ChangeWindow();

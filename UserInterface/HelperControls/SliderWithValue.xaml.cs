@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Navigation;
+using UserInterface.HelperClasses;
 
 namespace UserInterface.HelperControls
 {
@@ -14,25 +16,26 @@ namespace UserInterface.HelperControls
         public SliderWithValue()
         {
             InitializeComponent();
-            DataContext = this;
-
-            slider.ValueChanged += RaisePropertyChanged;
+            LayoutRoot.DataContext = this;
         }
-        public double minimum { get; set; } = 0;
-        public double maximum { get; set; } = 100;
-
-        private void RaisePropertyChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (PropertyChanged is null) return; // Avoid race condition where property changes as window switches
-            PropertyChanged.Invoke(sender, new PropertyChangedEventArgs(nameof(Value)));
-        }
+        public double Minimum { get; set; } = 0;
+        public double Maximum { get; set; } = 100;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public double Value { get => slider.Value; set => slider.Value = value; }
+        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue));
 
-        public bool forceIntegers { get; set; } = false;
+        public double Value {
+            get => (double)GetValue(ValueProperty);
+            set
+            {
+                SetValue(ValueProperty, value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+            }
+        }
 
-        public TickPlacement tickPlacement { get; } = TickPlacement.None;
+        public bool ForceIntegers { get; set; } = false;
+
+        public TickPlacement TickPlacement { get; } = TickPlacement.None;
     }
 }

@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace UserInterface.HelperClasses
 {
-    class BoolToTickPlacementConverter : IValueConverter
+    public class BoolToTickPlacementConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

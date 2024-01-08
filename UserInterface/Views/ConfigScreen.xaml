@@ -36,16 +36,16 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <HelperControls:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" minimum="0" maximum="40" PropertyChanged="SliderInVel_PropertyChanged"/>
+            <HelperControls:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" PropertyChanged="SliderInVel_PropertyChanged"/>
             
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <HelperControls:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" minimum="0" maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
             
             <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <HelperControls:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="SliderWidth_PropertyChanged" />
+            <HelperControls:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" PropertyChanged="SliderWidth_PropertyChanged" />
             
             <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <HelperControls:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" minimum="0" maximum="5" PropertyChanged="SliderHeight_PropertyChanged"/>
+            <HelperControls:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" PropertyChanged="SliderHeight_PropertyChanged"/>
 
             <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Click="BtnReset_Click">Reset parameters</Button>
             

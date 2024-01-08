@@ -3,15 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:helperClasses="clr-namespace:UserInterface.HelperClasses"
+             xmlns:HelperClasses="clr-namespace:UserInterface.HelperClasses"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
-            <helperClasses:BoolToTickPlacementConverter x:Key="Converter_BoolToTickPlacement" />
+            <HelperClasses:BoolToTickPlacementConverter x:Key="Converter_BoolToTickPlacement" />
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -22,9 +22,9 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" Content="{Binding minimum}" />
-        <Label Grid.Row="0" Grid.Column="2" Content="{Binding maximum}" />
-        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding minimum}" Maximum="{Binding maximum}" x:Name="slider" Margin="10 0 10 0" Ticks="{Binding forceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding forceIntegers}" />
-        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding ElementName=slider, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Width="40" />
+        <Label Grid.Row="0" Grid.Column="0" Content="{Binding Minimum}" />
+        <Label Grid.Row="0" Grid.Column="2" Content="{Binding Maximum}" />
+        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" x:Name="slider" Margin="10 0 10 0" Ticks="{Binding ForceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding ForceIntegers}" Value="{Binding Value}" />
+        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Value}" TextAlignment="Right" Width="40" />
     </Grid>
 </UserControl>

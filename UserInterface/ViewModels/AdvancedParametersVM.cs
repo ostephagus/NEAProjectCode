@@ -1,10 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Diagnostics;
+using System.Windows.Input;
 using UserInterface.HelperClasses;
 
 namespace UserInterface.ViewModels
 {
-    internal class AdvancedParametersVM : INotifyPropertyChanged
+    public class AdvancedParametersVM : ViewModel
     {
+        #region Field and Properties
         private float tau;
         private float omega;
         private float rMax;
@@ -15,7 +18,8 @@ namespace UserInterface.ViewModels
             set
             {
                 tau = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Tau)));
+                OnPropertyChanged(this, nameof(Tau));
+                Trace.WriteLine("Tau changed");
             } 
         }
 
@@ -24,7 +28,7 @@ namespace UserInterface.ViewModels
             set
             {
                 omega = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Omega)));
+                OnPropertyChanged(this, nameof(Omega));
             }
         }
 
@@ -34,7 +38,7 @@ namespace UserInterface.ViewModels
             set
             {
                 rMax = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RMax)));
+                OnPropertyChanged(this, nameof(RMax));
             }
         }
 
@@ -44,18 +48,20 @@ namespace UserInterface.ViewModels
             set
             {
                 iterMax = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IterMax)));
+                OnPropertyChanged(this, nameof(IterMax));
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public Commands.ResetCommand ResetCommand { get; set; }
+        #endregion
 
-        public AdvancedParametersVM()
+        public AdvancedParametersVM(ParameterHolder parameterHolder) : base(parameterHolder)
         {
-            //Tau = parameterHolder.TimeStepSafetyFactor.Value;
-            //Omega = parameterHolder.RelaxationParameter.Value;
-            //RMax = parameterHolder.PressureResidualTolerance.Value;
-            //IterMax = parameterHolder.PressureMaxIterations.Value;
+            Tau = parameterHolder.TimeStepSafetyFactor.Value;
+            Omega = parameterHolder.RelaxationParameter.Value;
+            RMax = parameterHolder.PressureResidualTolerance.Value;
+            IterMax = parameterHolder.PressureMaxIterations.Value;
+            ResetCommand = new Commands.ResetCommand(this, parameterHolder);
         }
     }
 }
