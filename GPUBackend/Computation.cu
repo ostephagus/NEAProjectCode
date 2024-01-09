@@ -27,61 +27,46 @@ __global__ void ComputeGBoundary(PointerWithPitch<REAL> vVel, PointerWithPitch<R
 }
 
 __global__ void ComputeF(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL xForce, REAL* gamma, REAL reynoldsNum) {
-    // Branchless plan:
-    // if neither east nor self are set, set F to 0: east NOR self
-    // if east or self but not both are set, set F to xVel: east XOR self
-    // if both are set, set F to the equation: east AND self.
-    // Compute east AND self. Multiply this by the larger computation.
-    // Compute east OR self. Multiply this by xVel.
-    // Add them.
-    int rowNum = blockIdx.x * blockDim.x + threadIdx.x;
-    int colNum = blockIdx.y * blockDim.y + threadIdx.y;
+    int rowNum = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int colNum = blockIdx.y * blockDim.y + threadIdx.y + 1;
 
     if (rowNum >= iMax) return;
-    if (colNum >= jMax) return;
+    if (colNum > jMax) return;
 
-    int selfBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) >> SELFSHIFT;
-    int eastBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & EAST) >> EASTSHIFT;
-
-    *F_PITCHACCESS(F.ptr, F.pitch, rowNum, colNum) = 
-        *F_PITCHACCESS(hVel.ptr, hVel.pitch, rowNum, colNum) * (selfBit | eastBit) // self OR east is either a fluid or boundary cell - these cells need xVel.
-        + *timestep * (1 / reynoldsNum * (SecondPuPx(hVel, rowNum, colNum, delX) + SecondPuPy(hVel, rowNum, colNum, delY)) - PuSquaredPx(hVel, rowNum, colNum, delX, *gamma) - PuvPy(hVel, vVel, rowNum, colNum, delX, delY, *gamma) + xForce)
-        * (selfBit & eastBit); // These are only fluid cells, perform the computation
+    int selfBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) >> SELFSHIFT; // SELF bit of the cell's flag
+    int eastBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & EAST) >> EASTSHIFT; // EAST bit of the cell's flag
+    
+    *F_PITCHACCESS(F.ptr, F.pitch, rowNum, colNum) =
+        *F_PITCHACCESS(hVel.ptr, hVel.pitch, rowNum, colNum) * (selfBit | eastBit) // For boundary cells or fluid cells, add hVel
+        + *timestep * (1 / reynoldsNum * (SecondPuPx(hVel, rowNum, colNum, delX) + SecondPuPy(hVel, rowNum, colNum, delY)) - PuSquaredPx(hVel, rowNum, colNum, delX, *gamma) - PuvPy(hVel, vVel, rowNum, colNum, delX, delY, *gamma) + xForce) * (selfBit & eastBit); // For fluid cells only, perform the computation. Obstacle cells without an eastern boundary are set to 0.
 }
 
 
 __global__ void ComputeG(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> G, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL yForce, REAL* gamma, REAL reynoldsNum) {
-    // Branchless plan:
-    // if neither east nor self are set, set F to 0: east NOR self
-    // if east or self but not both are set, set F to xVel: east XOR self
-    // if both are set, set F to the equation: east AND self.
-    // Compute east AND self. Multiply this by the larger computation.
-    // Compute east OR self. Multiply this by xVel.
-    // Add them.
-    int rowNum = blockIdx.x * blockDim.x + threadIdx.x;
-    int colNum = blockIdx.y * blockDim.y + threadIdx.y;
+    int rowNum = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int colNum = blockIdx.y * blockDim.y + threadIdx.y + 1;
 
-    if (rowNum >= iMax) return;
+    if (rowNum > iMax) return;
     if (colNum >= jMax) return;
 
-    int selfBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) >> SELFSHIFT;
-    int northBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & NORTH) >> NORTHSHIFT;
+    int selfBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) >> SELFSHIFT;    // SELF bit of the cell's flag
+    int northBit = (*B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & NORTH) >> NORTHSHIFT; // NORTH bit of the cell's flag
 
     *F_PITCHACCESS(G.ptr, G.pitch, rowNum, colNum) =
-        *F_PITCHACCESS(vVel.ptr, vVel.pitch, rowNum, colNum) * (selfBit | northBit) // self OR east is either a fluid or boundary cell - these cells need xVel.
-        + *timestep * (1 / reynoldsNum * (SecondPvPx(vVel, rowNum, colNum, delX) + SecondPvPy(vVel, rowNum, colNum, delY)) - PuvPx(hVel, vVel, rowNum, colNum, delX, delY, *gamma) - PvSquaredPy(vVel, rowNum, colNum, delY, *gamma) + yForce)
-        * (selfBit & northBit); // These are only fluid cells, perform the computation
+        *F_PITCHACCESS(vVel.ptr, vVel.pitch, rowNum, colNum) * (selfBit | northBit) // For boundary cells or fluid cells, add vVel
+        + *timestep * (1 / reynoldsNum * (SecondPvPx(vVel, rowNum, colNum, delX) + SecondPvPy(vVel, rowNum, colNum, delY)) - PuvPx(hVel, vVel, rowNum, colNum, delX, delY, *gamma) - PvSquaredPy(vVel, rowNum, colNum, delY, *gamma) + yForce) * (selfBit & northBit); // For fluid cells only, perform the computation. Obstacle cells without a northern boundary are set to 0.
 }
 
 cudaError_t ComputeFG(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL xForce, REAL yForce, REAL* gamma, REAL reynoldsNum) {
-    dim3 numBlocks((int)ceilf((float)(iMax - 1) / threadsPerBlock.x), (int)ceilf((float)(jMax - 1) / threadsPerBlock.y));
+    dim3 numBlocksF((int)ceilf((float)(iMax - 1) / threadsPerBlock.x), (int)ceilf((float)jMax / threadsPerBlock.y));
+    dim3 numBlocksG((int)ceilf((float)iMax / threadsPerBlock.x), (int)ceilf((float)(jMax - 1) / threadsPerBlock.y));
 
     int threadsPerBlockFlat = threadsPerBlock.x * threadsPerBlock.y;
     int numBlocksIMax = (int)ceilf((float)iMax / threadsPerBlockFlat);
     int numBlocksJMax = (int)ceilf((float)jMax / threadsPerBlockFlat);
 
-    ComputeF<<<numBlocks, threadsPerBlock, 0, streams[0]>>>(hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
-    ComputeG<<<numBlocks, threadsPerBlock, 0, streams[1]>>>(hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
+    ComputeF<<<numBlocksF, threadsPerBlock, 0, streams[0]>>>(hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
+    ComputeG<<<numBlocksG, threadsPerBlock, 0, streams[1]>>>(hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
 
     ComputeFBoundary<<<numBlocksJMax, threadsPerBlockFlat, 0, streams[2]>>>(hVel, F, iMax, jMax);
     ComputeGBoundary<<<numBlocksIMax, threadsPerBlockFlat, 0, streams[3]>>>(vVel, G, iMax, jMax);
