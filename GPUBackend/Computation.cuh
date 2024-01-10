@@ -48,7 +48,6 @@ __global__ void ComputeVVel(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> 
 /// </summary>
 cudaError_t ComputeVelocities(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<REAL> pressure, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY);
 
-// TODO: Possibility of using cooperative groups here to parallelise (sort of) the vertical looping
 /// <summary>
 /// Computes stream function in the y direction. Requires (iMax + 1) threads.
 /// </summary>

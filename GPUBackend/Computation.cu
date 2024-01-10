@@ -116,7 +116,7 @@ __global__ void ComputeVVel(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> 
 
 cudaError_t ComputeVelocities(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<REAL> pressure, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY)
 {
-    dim3 numBlocks(iMax / threadsPerBlock.x, jMax / threadsPerBlock.y);
+    dim3 numBlocks((int)ceilf((float)iMax / threadsPerBlock.x), (int)ceilf((float)jMax / threadsPerBlock.y));
     ComputeHVel<<<numBlocks, threadsPerBlock, 0, streams[0]>>>(hVel, F, pressure, flags, iMax, jMax, timestep, delX); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
     ComputeVVel<<<numBlocks, threadsPerBlock, 0, streams[1]>>>(vVel, G, pressure, flags, iMax, jMax, timestep, delY);
     return cudaDeviceSynchronize();
