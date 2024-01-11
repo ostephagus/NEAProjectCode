@@ -3,6 +3,24 @@
 
 #include "Definitions.cuh"
 
+#ifdef __INTELLISENSE__ // Allow intellisense to recognise cooperative groups
+#define __CUDACC__
+#endif // __INTELLISENSE__
+#include <cooperative_groups.h>
+#ifdef __INTELLISENSE__
+#undef __CUDACC__
+#endif // __INTELLISENSE__
+
+namespace cg = cooperative_groups;
+
+__device__ void GroupMax(cg::thread_group group, volatile float* sharedArray, int arrayLength);
+
+__global__ void ComputeMaxesSingleBlock(float* max, float* globalArray, int arrayLength);
+
+__global__ void ComputeMaxesMultiBlock(float* maxesArray, float* globalArray, int arrayLength);
+
+cudaError_t ArrayMax(float* max, int numThreads, float* values, int arrayLength);
+
 /// <summary>
 /// Computes F on the top and bottom of the simulation domain. Requires jMax threads.
 /// </summary>
