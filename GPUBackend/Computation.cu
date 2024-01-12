@@ -12,96 +12,85 @@ constexpr BYTE NORTHSHIFT = 3;
 constexpr BYTE EASTSHIFT  = 2;
 
 
-__device__ void GroupMax(cg::thread_group group, volatile float* sharedArray, int arrayLength) {
-    // Each thread starts by copying their value into a shared memory array for speed, then comparing their value to the one at index + indexThreshold and storing the max at index
-    // Then the number of threads are halved, and this is repeated
-    // The final thread returns a value
-
+__device__ void GroupMax(cg::thread_group group, volatile REAL* sharedArray) {
     int index = group.thread_rank();
-    float val = 0;
-    for (int indexThreshold = arrayLength / 2; indexThreshold > 1; indexThreshold = INT_DIVIDE_ROUND_UP(indexThreshold, 2)) {
+    REAL val = sharedArray[index];
+    for (int indexThreshold = group.size() / 2; indexThreshold > 0; indexThreshold /= 2) {
         if (index < indexThreshold) { // Halve the number of threads each iteration
             val = fmaxf(val, sharedArray[index + indexThreshold]); // Get the max of the thread's own value and the one at index + indexThreshold
             sharedArray[index] = val; // Store the max into the shared array at the current index
-            //if (blockIdx.x == 3) printf("Thread %i: value %f\n", index, val);
         }
         group.sync();
     }
-    if (index == 0) { // Final iteration for the last thread (indices 0 and 1 to compare)
-        sharedArray[index] = fmaxf(sharedArray[0], sharedArray[1]);
-        //if (blockIdx.x == 3) printf("Thread %i: value %f\n", 0, sharedArray[0]);
-    }
 }
 
-__global__ void ComputeMaxesSingleBlock(float* max, float* globalArray, int arrayLength) {
-
-    extern __shared__ float sharedArray[];
+__global__ void ComputePartialMaxes(REAL* partialMaxes, PointerWithPitch<REAL> field, int yLength) {
     cg::thread_block threadBlock = cg::this_thread_block();
-    int index = threadBlock.thread_rank();
+    REAL* colBase = (REAL*)((char*)field.ptr + blockIdx.x * field.pitch);
 
-    if (index < (arrayLength / 2)) { // Bounds checking
-        *(float2*)(sharedArray + index * 2) = *(float2*)(globalArray + index * 2); // Copy 2 floats at once (vectorised access) because threadsPerBlock * 2 floats need to be copied.
+    // Perform copy to shared memory.
+    // Put a 0 in shared if current index is greater than yLength (this catches index in pitch padding, or index > size of a row)
+    extern __shared__ REAL sharedArray[];
+
+    if (threadIdx.x < yLength) { // the index of the thread is greater than the length of a column.
+        sharedArray[threadIdx.x] = *(colBase + threadIdx.x);
     }
-
-    threadBlock.sync(); // Sync all threads, including inactive ones.
-
-    GroupMax(threadBlock, sharedArray, arrayLength); // Run the actual function. Inactive threads that run the function will be handled inside it.
-
-    if (index == 0) { // Thread 0 sets the return value
-        *max = sharedArray[0];
+    else {
+        sharedArray[threadIdx.x] = (REAL)0;
     }
+    threadBlock.sync();
 
+    GroupMax(threadBlock, sharedArray);
+
+    if (threadIdx.x == 0) { // If the thread is the 0th in the block, store its result to global memory.
+        partialMaxes[blockIdx.x] = sharedArray[0];
+    }
 }
 
-__global__ void ComputeMaxesMultiBlock(float* maxesArray, float* globalArray, int arrayLength) {
-    // Each thread performs GroupMax with this_thread_block() as parameter
-    // Note: keep in mind that the below code is run by INDIVIDUAL THREADS IN DIFFERENT BLOCKS.
-    // Also, all of the thread blocks here are independant
-
-    int gridIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    int currentBlock = blockIdx.x;
-
-    extern __shared__ float sharedArray[];
+__global__ void ComputeFinalMax(REAL* max, REAL* partialMaxes, int xLength)
+{
     cg::thread_block threadBlock = cg::this_thread_block();
 
-    if (gridIndex < arrayLength / 2) { // Bounds checking
-        *(float2*)(sharedArray + threadIdx.x * 2) = *(float2*)(globalArray + gridIndex * 2); // Copy 2 floats at once (vectorised access) because (gridDim.x * 2) floats need to be copied.
-        // The above line may not work correctly - each thread copies a section of global memory into a section of its block's shared memory (ideally)
+    extern __shared__ REAL sharedMem[];
+
+    // Copy to shared memory again
+    if (threadIdx.x < xLength) {
+        sharedMem[threadIdx.x] = partialMaxes[threadIdx.x];
     }
-
-    threadBlock.sync(); // Wait for all threads to do their copy
-
-    int subArrayLength = threadBlock.size() * 2;
-    if (currentBlock == gridDim.x - 1) { // Last block may not have all threads active
-        subArrayLength = arrayLength - blockDim.x * blockIdx.x * 2; // Subtract the size of all the previous blocks, multiply by 2.
+    else {
+        sharedMem[threadIdx.x] = (REAL)0;
     }
+    threadBlock.sync();
 
-    GroupMax(threadBlock, sharedArray, subArrayLength); // Results are stored at each block's sharedArray[0] for i between 0 and number of blocks
-
-    if (threadBlock.thread_rank() == 0) { // Thread 0 for each block sets the value in the max array in global mem
-        maxesArray[currentBlock] = sharedArray[0];
+    GroupMax(threadBlock, sharedMem);
+    if (threadIdx.x == 0) { // Thread 0 stores the final element.
+        *max = sharedMem[0];
     }
 }
 
-cudaError_t ArrayMax(cudaStream_t stream, float* max, int threadsPerBlock, float* values, int arrayLength) {
-    cudaError_t status;
-    int numElementsPerBlock = threadsPerBlock * 2;
-    int numBlocks = INT_DIVIDE_ROUND_UP(arrayLength, numElementsPerBlock); // Each block processes (threadsPerBlock * 2) values
-    float* partialSums;
-    status = cudaMalloc(&partialSums, numBlocks * sizeof(float)); // Allocate an array for the blocks to store their return values.
-    if (status != cudaSuccess) goto free;
+cudaError_t FieldMax(REAL* max, cudaStream_t streamToUse, PointerWithPitch<REAL> field, int xLength, int yLength) {
+    cudaError_t retVal;
 
-    ComputeMaxesMultiBlock<<<numBlocks, threadsPerBlock, threadsPerBlock * 2 * sizeof(float), stream>>>(partialSums, values, arrayLength); // Gets the maxes and stores it in the secondary results array
-    status = cudaDeviceSynchronize();
-    if (status != cudaSuccess) goto free;
+    REAL* partialMaxes;
+    retVal = cudaMalloc(&partialMaxes, xLength * sizeof(REAL));
+    if (retVal != cudaSuccess) { // Return if there was an error in allocation
+        return retVal;
+    }
 
-    ComputeMaxesSingleBlock<<<1, threadsPerBlock, numBlocks * sizeof(float), stream>>>(max, partialSums, numBlocks); // Use 1 thread block to compute
-    status = cudaDeviceSynchronize();
+    // Run the GPU kernel:
+    ComputePartialMaxes << <xLength, field.pitch / sizeof(REAL), field.pitch, streamToUse >> > (partialMaxes, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
+    retVal = cudaStreamSynchronize(streamToUse);
+    if (retVal != cudaSuccess) { // Skip the rest of the computation if there was an error
+        goto free;
+    }
 
-    free:
-    cudaFree(partialSums);
+    ComputeFinalMax << <1, xLength, xLength * sizeof(REAL), streamToUse >> > (max, partialMaxes, xLength); // 1 block to process all of the partial maxes, number of threads equal to number of partial maxes (xLength is also this)
+    retVal = cudaStreamSynchronize(streamToUse);
 
-    return status;
+
+free:
+    cudaFree(partialMaxes);
+    return retVal;
 }
 
 __global__ void FinishComputeGamma(REAL* gamma, REAL* hVelMax, REAL* vVelMax, REAL* timestep, REAL delX, REAL delY) {

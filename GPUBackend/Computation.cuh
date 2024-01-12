@@ -13,13 +13,13 @@
 
 namespace cg = cooperative_groups;
 
-__device__ void GroupMax(cg::thread_group group, volatile float* sharedArray, int arrayLength);
+__device__ void GroupMax(cg::thread_group group, volatile REAL* sharedArray);
 
-__global__ void ComputeMaxesSingleBlock(float* max, float* globalArray, int arrayLength);
+__global__ void ComputePartialMaxes(REAL* partialMaxes, PointerWithPitch<REAL> field, int yLength);
 
-__global__ void ComputeMaxesMultiBlock(float* maxesArray, float* globalArray, int arrayLength);
+__global__ void ComputeFinalMax(REAL* max, REAL* partialMaxes, int xLength);
 
-cudaError_t ArrayMax(cudaStream_t stream, float* max, int numThreads, float* values, int arrayLength);
+cudaError_t FieldMax(REAL* max, cudaStream_t streamToUse, PointerWithPitch<REAL> field, int xLength, int yLength);
 
 /// <summary>
 /// Computes F on the top and bottom of the simulation domain. Requires jMax threads.
