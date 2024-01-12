@@ -3,6 +3,9 @@
 #include "Boundary.cuh"
 #include "Computation.cuh"
 #include "math.h"
+#include <iostream>
+
+constexpr int GPU_MIN_MAJOR_VERSION = 6;
 
 GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {
     hVel = PointerWithPitch<REAL>();
@@ -127,3 +130,15 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     // Perform memory copies asynchronously
 }
 
+bool GPUSolver::IsDeviceSupported() {
+    int count;
+    cudaGetDeviceCount(&count);
+    if (count > 0) {
+        cudaDeviceProp properties;
+        cudaGetDeviceProperties(&properties, 0);
+        if (properties.major >= GPU_MIN_MAJOR_VERSION) {
+            return true;
+        }
+    }
+    return false;
+}

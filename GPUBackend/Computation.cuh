@@ -19,7 +19,7 @@ __global__ void ComputeMaxesSingleBlock(float* max, float* globalArray, int arra
 
 __global__ void ComputeMaxesMultiBlock(float* maxesArray, float* globalArray, int arrayLength);
 
-cudaError_t ArrayMax(float* max, int numThreads, float* values, int arrayLength);
+cudaError_t ArrayMax(cudaStream_t stream, float* max, int numThreads, float* values, int arrayLength);
 
 /// <summary>
 /// Computes F on the top and bottom of the simulation domain. Requires jMax threads.

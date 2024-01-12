@@ -83,7 +83,7 @@ __global__ void ComputeMaxesMultiBlock(float* maxesArray, float* globalArray, in
     }
 }
 
-cudaError_t ArrayMax(float* max, int threadsPerBlock, float* values, int arrayLength) {
+cudaError_t ArrayMax(cudaStream_t stream, float* max, int threadsPerBlock, float* values, int arrayLength) {
     cudaError_t status;
     int numElementsPerBlock = threadsPerBlock * 2;
     int numBlocks = INT_DIVIDE_ROUND_UP(arrayLength, numElementsPerBlock); // Each block processes (threadsPerBlock * 2) values
@@ -91,17 +91,56 @@ cudaError_t ArrayMax(float* max, int threadsPerBlock, float* values, int arrayLe
     status = cudaMalloc(&partialSums, numBlocks * sizeof(float)); // Allocate an array for the blocks to store their return values.
     if (status != cudaSuccess) goto free;
 
-    ComputeMaxesMultiBlock<<<numBlocks, threadsPerBlock, threadsPerBlock * 2 * sizeof(float)>>>(partialSums, values, arrayLength); // Gets the maxes and stores it in the secondary results array
+    ComputeMaxesMultiBlock<<<numBlocks, threadsPerBlock, threadsPerBlock * 2 * sizeof(float), stream>>>(partialSums, values, arrayLength); // Gets the maxes and stores it in the secondary results array
     status = cudaDeviceSynchronize();
     if (status != cudaSuccess) goto free;
 
-    ComputeMaxesSingleBlock<<<1, threadsPerBlock, numBlocks * sizeof(float)>>>(max, partialSums, numBlocks); // Use 1 thread block to compute
+    ComputeMaxesSingleBlock<<<1, threadsPerBlock, numBlocks * sizeof(float), stream>>>(max, partialSums, numBlocks); // Use 1 thread block to compute
     status = cudaDeviceSynchronize();
 
     free:
     cudaFree(partialSums);
 
     return status;
+}
+
+__global__ void FinishComputeGamma(REAL* gamma, REAL* hVelMax, REAL* vVelMax, REAL* timestep, REAL delX, REAL delY) {
+    REAL horizontalComponent = *hVelMax * (*timestep / delX);
+    REAL verticalComponent = *vVelMax * (*timestep / delY);
+
+    if (horizontalComponent > verticalComponent) {
+        *gamma = horizontalComponent;
+    }
+    else {
+        *gamma = verticalComponent;
+    }
+}
+
+cudaError_t ComputeGamma(REAL* gamma, cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY) {
+    cudaError_t retVal;
+    REAL* hVelMax;
+    retVal = cudaMalloc(&hVelMax, sizeof(REAL));
+    if (retVal != cudaSuccess) goto free;
+
+    REAL* vVelMax;
+    retVal = cudaMalloc(&vVelMax, sizeof(REAL));
+    if (retVal != cudaSuccess) goto free;
+
+    ArrayMax(streams[0], hVelMax, threadsPerBlock, hVel, (iMax + 2) * (jMax + 2));
+    ArrayMax(streams[1], vVelMax, threadsPerBlock, vVel, (iMax + 2) * (jMax + 2));
+
+    retVal = cudaStreamSynchronize(streams[0]);
+    if (retVal != cudaSuccess) goto free;
+
+    retVal = cudaStreamSynchronize(streams[1]);
+    if (retVal != cudaSuccess) goto free;
+
+    FinishComputeGamma<<<1, 1, 0, streams[0]>>>(gamma, hVelMax, vVelMax, timestep, delX, delY);
+
+    free:
+    cudaFree(hVelMax);
+    cudaFree(vVelMax);
+    return retVal;
 }
 
 __global__ void ComputeFBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> F, int iMax, int jMax) {

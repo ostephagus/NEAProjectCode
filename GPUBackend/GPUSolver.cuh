@@ -54,6 +54,8 @@ public:
     void PerformSetup();
 
     void Timestep(REAL& simulationTime); // Implementing abstract inherited method
+
+    static bool IsDeviceSupported();
 };
 
 #endif // !GPUSOLVER_CUH
