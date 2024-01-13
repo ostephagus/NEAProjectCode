@@ -20,27 +20,38 @@ private:
     PointerWithPitch<REAL> F; // Quantity F, resides on device.
     PointerWithPitch<REAL> G; // Quantity G, resides on device.
     PointerWithPitch<BYTE> devFlags; // Cell flags, resides on device.
+    PointerWithPitch<bool> devObstacles; // Boolean obstacles array, resides on device.
 
     REAL delX; // Step size in x direction, resides on host.
     REAL delY; // Step size in y direction, resides on host.
     REAL* timestep; // Timestep, resides on device.
 
-    uint2* coordinates;
-    int coordinatesLength;
+    uint2* devCoordinates; // Array of obstacle coordinates, resides on device.
+    int coordinatesLength; // Length of coordinates array
+    int numFluidCells;
 
-    dim3 numBlocks;
+    dim3 numBlocks; // Number of blocks for a grid of iMax x jMax threads.
+    dim3 threadsPerBlock; // Maximum number of threads per block in a 2D square allocation.
 
-    dim3 threadsPerBlock;
-
-    bool** obstacles; // 2D array of obstacles, resides on host.
+    bool** hostObstacles; // 2D array of obstacles, resides on host.
     BYTE** hostFlags; // 2D array of flags, resides on host.
 
     cudaDeviceProp deviceProperties;
     cudaStream_t* streams; // Streams that can be used. First are the computation streams (0 to the number of computation streams), then are memcpy streams. To access memcpy streams, first add computationStreams then an offset
 
-    void SetBlockDimensions();
+    template<typename T>
+    void UnflattenArray(T** pointerArray, T* flattenedArray, int length, int divisions);
 
-    void CreatePointerArray(REAL** ptrArray, REAL* valueArray, int stride, int count);
+    template<typename T>
+    void FlattenArray(T** pointerArray, T* flattenedArray, int length, int divisions);
+
+    template<typename T>
+    cudaError_t CopyFieldToDevice(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength);
+
+    template<typename T>
+    cudaError_t CopyFieldToHost(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength);
+
+    void SetBlockDimensions();
 
 public:
     GPUSolver(SimulationParameters parameters, int iMax, int jMax);

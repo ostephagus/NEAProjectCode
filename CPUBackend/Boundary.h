@@ -7,6 +7,8 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
 
 void CopyBoundaryPressures(REAL** pressure, std::pair<int, int>* coordinates, int numCoords, BYTE** flags, int iMax, int jMax);
 
+void SetFlags(bool** obstacles, BYTE** flags, int xLength, int yLength);
+
 int CountFluidCells(BYTE** flags, int iMax, int jMax);
 
 std::pair<std::pair<int, int>*, int> FindBoundaryCells(BYTE** flags, int iMax, int jMax);

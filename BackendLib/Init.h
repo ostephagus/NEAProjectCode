@@ -15,6 +15,4 @@ void FreeMatrix(BYTE** matrix, int xLength);
 
 void FreeMatrix(bool** matrix, int xLength);
 
-void SetFlags(bool** obstacles, BYTE** flags, int xLength, int yLength);
-
 #endif

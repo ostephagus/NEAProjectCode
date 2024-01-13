@@ -31,9 +31,13 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
 
     devFlags = PointerWithPitch<BYTE>();
     cudaMallocPitch(&devFlags.ptr, &devFlags.pitch, (jMax + 2) * sizeof(BYTE), iMax + 2);
-        
-    hostFlags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
-    obstacles = nullptr;
+    
+    devObstacles = PointerWithPitch<bool>();
+    cudaMallocPitch(&devObstacles.ptr, &devObstacles.pitch, (jMax + 2) * sizeof(bool), iMax + 2);
+
+    devCoordinates = nullptr;
+    hostObstacles = nullptr;
+    hostFlags = nullptr;
     streams = nullptr;
 }
 
@@ -52,9 +56,62 @@ GPUSolver::~GPUSolver() {
     cudaFree(G.ptr);
     cudaFree(streamFunction.ptr);
     cudaFree(devFlags.ptr);
+    cudaFree(devCoordinates);
+
+    FreeMatrix(hostObstacles, iMax + 2);
     FreeMatrix(hostFlags, iMax + 2);
-    FreeMatrix(obstacles, iMax + 2);
+    delete[] streams;
 }
+template<typename T>
+void GPUSolver::UnflattenArray(T** pointerArray, T* flattenedArray, int length, int divisions) {
+    for (int i = 0; i < length / divisions; i++) {
+
+        memcpy(
+            pointerArray[i],                // Destination address - address at ith pointer
+            flattenedArray + i * divisions, // Source start address - move (i * divisions) each iteration
+            divisions * sizeof(T)           // Bytes to copy - divisions
+        );
+
+    }
+}
+
+template<typename T>
+void GPUSolver::FlattenArray(T** pointerArray, T* flattenedArray, int length, int divisions) {
+    for (int i = 0; i < length / divisions; i++) {
+
+        memcpy(
+            flattenedArray + i * divisions, // Destination address - move (i * divisions) each iteration
+            pointerArray[i],                // Source start address - address at ith pointer
+            divisions * sizeof(T)           // Bytes to copy - divisions
+        );
+
+    }
+}
+
+template<typename T>
+cudaError_t GPUSolver::CopyFieldToDevice(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength)
+{
+    T* hostFieldFlattened = new T[xLength * yLength];
+    FlattenArray(hostField, hostFieldFlattened, xLength * yLength, yLength);
+
+    cudaError_t retVal = cudaMemcpy2D(devField.ptr, devField.pitch, hostFieldFlattened, yLength * sizeof(T), yLength * sizeof(T), xLength, cudaMemcpyHostToDevice);
+    delete[] hostFieldFlattened;
+
+    return retVal;
+}
+
+template<typename T>
+cudaError_t GPUSolver::CopyFieldToHost(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength) {
+    T* hostFieldFlattened = new T[xLength * yLength];
+
+    cudaError_t retVal = cudaMemcpy2D(hostFieldFlattened, yLength * sizeof(T), devField.ptr, devField.pitch, yLength * sizeof(T), xLength, cudaMemcpyDeviceToHost);
+
+    UnflattenArray(hostField, hostFieldFlattened, xLength * yLength, yLength);
+    delete[] hostFieldFlattened;
+
+    return retVal;
+}
+
 
 void GPUSolver::SetBlockDimensions()
 {
@@ -73,24 +130,30 @@ void GPUSolver::SetBlockDimensions()
     numBlocks = dim3(blocksForIMax, blocksForJMax);
 }
 
-void GPUSolver::CreatePointerArray(REAL** ptrArray, REAL* valueArray, int stride, int count)
-{
-    for (int i = 0; i < count; i++) {
-        ptrArray[i] = valueArray + i * stride; // Set the pointer at the certain index to however far along the flattened array the next row is
-    }
-}
-
 bool** GPUSolver::GetObstacles() {
-    if (obstacles == nullptr) {
-        obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
+    if (hostObstacles == nullptr) {
+        hostObstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     }
-    return obstacles;
+    return hostObstacles;
 }
 
 void GPUSolver::ProcessObstacles() {
-    SetFlags(obstacles, hostFlags, iMax + 2, jMax + 2); // SetFlags is done on the CPU
+    CopyFieldToDevice(devObstacles, hostObstacles, iMax + 2, jMax + 2); // Copies obstacles to device to do SetFlags
 
+    SetFlags KERNEL_ARGS2(numBlocks, threadsPerBlock) (devObstacles, devFlags, iMax, jMax);
 
+    hostFlags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
+    CopyFieldToHost(devFlags, hostFlags, iMax + 2, jMax + 2); // Copy the flags back to do some CPU-specific processing
+
+    uint2* hostCoordinates; // Obstacle coordinates are put here first, then copied to the GPU.
+    FindBoundaryCells(hostFlags, hostCoordinates, coordinatesLength, iMax, jMax);
+
+    numFluidCells = CountFluidCells(hostFlags, iMax, jMax);
+
+    cudaMalloc(&devCoordinates, coordinatesLength * sizeof(uint2));
+    cudaMemcpy(devCoordinates, hostCoordinates, coordinatesLength * sizeof(uint2), cudaMemcpyHostToDevice);
+
+    delete[] hostCoordinates;
 }
 
 void GPUSolver::PerformSetup() {
@@ -108,12 +171,14 @@ void GPUSolver::PerformSetup() {
 }
 
 void GPUSolver::Timestep(REAL& simulationTime) {
-    SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, coordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
+    SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, devCoordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
 
     REAL* timestep;
     cudaMalloc(&timestep, sizeof(REAL));
-    // Compute timestep
-    //simulationTime += timestep;
+    
+    ComputeTimestep(timestep, streams, hVel, vVel, iMax, jMax, delX, delY, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
+    REAL* hostTimestep = new REAL;
+    cudaMemcpyAsync(hostTimestep, timestep, sizeof(REAL), cudaMemcpyDeviceToHost, *(streams + computationStreams));
 
     REAL* gamma;
     cudaMalloc(&gamma, sizeof(REAL));
@@ -132,6 +197,9 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     ComputeStream KERNEL_ARGS2(numBlocksForStreamCalc, threadsPerBlock) (hVel, streamFunction, iMax, jMax, delY); // Untested
 
     // Perform memory copies asynchronously
+
+    simulationTime += *hostTimestep;
+    delete hostTimestep;
 
     cudaFree(timestep);
     cudaFree(gamma);

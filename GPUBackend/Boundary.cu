@@ -1,5 +1,16 @@
 #include "Boundary.cuh"
 #include "math.h"
+#include <vector>
+
+__global__ void SetFlags(PointerWithPitch<bool> obstacles, PointerWithPitch<BYTE> flags, int iMax, int jMax) {
+    int rowNum = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    int colNum = blockIdx.y * blockDim.y + threadIdx.y + 1;
+    if (rowNum > iMax) return;
+    if (colNum > jMax) return;
+
+    *F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); //5 bits in the format: self, north, east, south, west.
+}
+
 
 __global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int jMax)
 {
@@ -33,13 +44,52 @@ __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL
     *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax + 1, index) = *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax, index);
 }
 
+__global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, REAL chi) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index > coordinatesLength) return;
+
+    //TODO: do obstacle processing.
+}
+
 cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
-    int numBlocksTopBottom = (int)ceilf((float)iMax / threadsPerBlock);
-    int numBlocksLeftRight = (int)ceilf((float)jMax / threadsPerBlock);
+    int numBlocksTopBottom = INT_DIVIDE_ROUND_UP(iMax, threadsPerBlock);
+    int numBlocksLeftRight = INT_DIVIDE_ROUND_UP(jMax, threadsPerBlock);
+    int numBlocksObstacle = INT_DIVIDE_ROUND_UP(coordinatesLength, threadsPerBlock);
     
     TopBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, jMax);
     BottomBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel);
     LeftBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
     RightBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
+
+    ObstacleBoundary KERNEL_ARGS4(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
+
     return cudaDeviceSynchronize();
+}
+
+// Counts number of fluid cells in the region [1,iMax]x[1,jMax]
+int CountFluidCells(BYTE** flags, int iMax, int jMax) {
+    int count = 0;
+    for (int i = 0; i <= iMax; i++) {
+        for (int j = 0; j <= jMax; j++) {
+            count += flags[i][j] >> 4; // This will include only the "self" bit, which is one for fluid cells and 0 for boundary and obstacle cells.
+        }
+    }
+    return count;
+}
+
+void FindBoundaryCells(BYTE** flags, uint2*& coordinates, int& coordinatesLength, int iMax, int jMax) {
+    std::vector<uint2> coordinatesVec;
+    for (int i = 1; i <= iMax; i++) {
+        for (int j = 1; j <= jMax; j++) {
+            if (flags[i][j] >= 0b00000001 && flags[i][j] <= 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set. This could probably be optimised.
+                uint2 coordinate = uint2();
+                coordinate.x = i;
+                coordinate.y = j;
+                coordinatesVec.push_back(coordinate);
+            }
+        }
+    }
+    coordinates = new uint2[coordinatesVec.size()]; // Allocate mem for array into already defined pointer
+    std::copy(coordinatesVec.begin(), coordinatesVec.end(), coordinates); // Copy the elements from the vector to the array
+    coordinatesLength = (int)coordinatesVec.size();
 }
