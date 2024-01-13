@@ -131,6 +131,51 @@ cudaError_t ComputeGamma(REAL* gamma, cudaStream_t* streams, int threadsPerBlock
     return retVal;
 }
 
+__global__ void FinishComputeTimestep(REAL* timestep, REAL* hVelMax, REAL* vVelMax, REAL delX, REAL delY, REAL reynoldsNo, REAL safetyFactor)
+{
+    REAL inverseSquareRestriction = (REAL)0.5 * reynoldsNo * (1 / square(delX) + 1 / square(delY));
+    REAL xTravelRestriction = delX / *hVelMax;
+    REAL yTravelRestriction = delY / *vVelMax;
+
+    REAL smallestRestriction = inverseSquareRestriction; // Choose the smallest restriction
+    if (xTravelRestriction < smallestRestriction) {
+        smallestRestriction = xTravelRestriction;
+    }
+    if (yTravelRestriction < smallestRestriction) {
+        smallestRestriction = yTravelRestriction;
+    }
+    *timestep = safetyFactor * smallestRestriction;
+}
+
+cudaError_t ComputeTimestep(REAL* timestep, cudaStream_t* streams, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax, REAL delX, REAL delY, REAL reynoldsNo, REAL safetyFactor)
+{
+    cudaError_t retVal;
+    REAL* hVelMax;
+    retVal = cudaMalloc(&hVelMax, sizeof(REAL));
+    if (retVal != cudaSuccess) goto free;
+
+    REAL* vVelMax;
+    retVal = cudaMalloc(&vVelMax, sizeof(REAL));
+    if (retVal != cudaSuccess) goto free;
+
+    FieldMax(hVelMax, streams[0], hVel, iMax + 2, jMax + 2);
+
+    retVal = cudaStreamSynchronize(streams[0]);
+    if (retVal != cudaSuccess) goto free;
+
+    FieldMax(vVelMax, streams[1], vVel, iMax + 2, jMax + 2);
+
+    retVal = cudaStreamSynchronize(streams[1]);
+    if (retVal != cudaSuccess) goto free;
+
+    FinishComputeTimestep KERNEL_ARGS4(1, 1, 0, streams[0]) (timestep, hVelMax, vVelMax, delX, delY, reynoldsNo, safetyFactor);
+
+free:
+    cudaFree(hVelMax);
+    cudaFree(vVelMax);
+    return retVal;
+}
+
 __global__ void ComputeFBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> F, int iMax, int jMax) {
     int colNum = blockIdx.x * blockDim.x + threadIdx.x;
     if (colNum > jMax) return;
