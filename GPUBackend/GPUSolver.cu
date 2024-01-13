@@ -115,19 +115,26 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     // Compute timestep
     //simulationTime += timestep;
 
-    // Compute gamma
-    // Compute F and G
+    REAL* gamma;
+    cudaMalloc(&gamma, sizeof(REAL));
+
+    ComputeGamma(gamma, streams, threadsPerBlock.x * threadsPerBlock.y, hVel, vVel, iMax, jMax, timestep, delX, delY);
+
+    ComputeFG(streams, threadsPerBlock, hVel, vVel, F, G, devFlags, iMax, jMax, timestep, delX, delY, parameters.bodyForces.x, parameters.bodyForces.y, gamma, parameters.reynoldsNo);
     
-    ComputeRHS<<<numBlocks, threadsPerBlock>>>(F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
+    ComputeRHS KERNEL_ARGS2(numBlocks, threadsPerBlock) (F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
 
     // Compute pressure Poisson
 
     ComputeVelocities(streams, threadsPerBlock, hVel, vVel, F, G, pressure, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
 
-    dim3 numBlocksForStreamCalc((int)ceilf((float)(iMax + 1) / threadsPerBlock.x), (int)ceilf((float)(jMax + 1) / threadsPerBlock.y));
-    ComputeStream<<<numBlocksForStreamCalc, threadsPerBlock>>>(hVel, streamFunction, iMax, jMax, delY); // Untested
+    dim3 numBlocksForStreamCalc(INT_DIVIDE_ROUND_UP(iMax + 1, threadsPerBlock.x), INT_DIVIDE_ROUND_UP(jMax + 1, threadsPerBlock.y));
+    ComputeStream KERNEL_ARGS2(numBlocksForStreamCalc, threadsPerBlock) (hVel, streamFunction, iMax, jMax, delY); // Untested
 
     // Perform memory copies asynchronously
+
+    cudaFree(timestep);
+    cudaFree(gamma);
 }
 
 bool GPUSolver::IsDeviceSupported() {

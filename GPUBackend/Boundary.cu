@@ -37,9 +37,9 @@ cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, Po
     int numBlocksTopBottom = (int)ceilf((float)iMax / threadsPerBlock);
     int numBlocksLeftRight = (int)ceilf((float)jMax / threadsPerBlock);
     
-    TopBoundary<<<numBlocksTopBottom, threadsPerBlock, 0, streams[0]>>>(hVel, vVel, jMax);
-    BottomBoundary<<<numBlocksTopBottom, threadsPerBlock, 0, streams[1]>>>(hVel, vVel);
-    LeftBoundary<<<numBlocksLeftRight, threadsPerBlock, 0, streams[2]>>>(hVel, vVel, inflowVelocity);
-    RightBoundary<<<numBlocksLeftRight, threadsPerBlock, 0, streams[3]>>>(hVel, vVel, iMax);
+    TopBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, jMax);
+    BottomBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel);
+    LeftBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
+    RightBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
     return cudaDeviceSynchronize();
 }

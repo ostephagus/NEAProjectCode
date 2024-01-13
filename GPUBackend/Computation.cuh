@@ -21,6 +21,10 @@ __global__ void ComputeFinalMax(REAL* max, REAL* partialMaxes, int xLength);
 
 cudaError_t FieldMax(REAL* max, cudaStream_t streamToUse, PointerWithPitch<REAL> field, int xLength, int yLength);
 
+__global__ void FinishComputeGamma(REAL* gamma, REAL* hVelMax, REAL* vVelMax, REAL* timestep, REAL delX, REAL delY);
+
+cudaError_t ComputeGamma(REAL* gamma, cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY);
+
 /// <summary>
 /// Computes F on the top and bottom of the simulation domain. Requires jMax threads.
 /// </summary>

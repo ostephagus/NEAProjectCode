@@ -2,8 +2,6 @@
 #include "DiscreteDerivatives.cuh"
 #include <cmath>
 
-#define INT_DIVIDE_ROUND_UP(numerator, denominator) (((numerator) + (denominator) - 1) / (denominator))
-
 constexpr BYTE SELF  = 0b00010000;
 constexpr BYTE NORTH = 0b00001000;
 constexpr BYTE EAST  = 0b00000100;
@@ -78,13 +76,13 @@ cudaError_t FieldMax(REAL* max, cudaStream_t streamToUse, PointerWithPitch<REAL>
     }
 
     // Run the GPU kernel:
-    ComputePartialMaxes << <xLength, field.pitch / sizeof(REAL), field.pitch, streamToUse >> > (partialMaxes, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
+    ComputePartialMaxes KERNEL_ARGS4(xLength, (unsigned int)field.pitch / sizeof(REAL), field.pitch, streamToUse) (partialMaxes, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
     retVal = cudaStreamSynchronize(streamToUse);
     if (retVal != cudaSuccess) { // Skip the rest of the computation if there was an error
         goto free;
     }
 
-    ComputeFinalMax << <1, xLength, xLength * sizeof(REAL), streamToUse >> > (max, partialMaxes, xLength); // 1 block to process all of the partial maxes, number of threads equal to number of partial maxes (xLength is also this)
+    ComputeFinalMax KERNEL_ARGS4(1, xLength, xLength * sizeof(REAL), streamToUse) (max, partialMaxes, xLength); // 1 block to process all of the partial maxes, number of threads equal to number of partial maxes (xLength is also this)
     retVal = cudaStreamSynchronize(streamToUse);
 
 
@@ -115,16 +113,17 @@ cudaError_t ComputeGamma(REAL* gamma, cudaStream_t* streams, int threadsPerBlock
     retVal = cudaMalloc(&vVelMax, sizeof(REAL));
     if (retVal != cudaSuccess) goto free;
 
-    ArrayMax(streams[0], hVelMax, threadsPerBlock, hVel, (iMax + 2) * (jMax + 2));
-    ArrayMax(streams[1], vVelMax, threadsPerBlock, vVel, (iMax + 2) * (jMax + 2));
+    FieldMax(hVelMax, streams[0], hVel, iMax + 2, jMax + 2);
 
     retVal = cudaStreamSynchronize(streams[0]);
     if (retVal != cudaSuccess) goto free;
 
+    FieldMax(vVelMax, streams[1], vVel, iMax + 2, jMax + 2);
+
     retVal = cudaStreamSynchronize(streams[1]);
     if (retVal != cudaSuccess) goto free;
 
-    FinishComputeGamma<<<1, 1, 0, streams[0]>>>(gamma, hVelMax, vVelMax, timestep, delX, delY);
+    FinishComputeGamma KERNEL_ARGS4(1, 1, 0, streams[0]) (gamma, hVelMax, vVelMax, timestep, delX, delY);
 
     free:
     cudaFree(hVelMax);
@@ -187,11 +186,11 @@ cudaError_t ComputeFG(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPi
     int numBlocksIMax = INT_DIVIDE_ROUND_UP(iMax, threadsPerBlockFlat);
     int numBlocksJMax = INT_DIVIDE_ROUND_UP(jMax, threadsPerBlockFlat);
 
-    ComputeF<<<numBlocksF, threadsPerBlock, 0, streams[0]>>>(hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
-    ComputeG<<<numBlocksG, threadsPerBlock, 0, streams[1]>>>(hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
+    ComputeF KERNEL_ARGS4(numBlocksF, threadsPerBlock, 0, streams[0]) (hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
+    ComputeG KERNEL_ARGS4(numBlocksG, threadsPerBlock, 0, streams[1]) (hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
 
-    ComputeFBoundary<<<numBlocksJMax, threadsPerBlockFlat, 0, streams[2]>>>(hVel, F, iMax, jMax);
-    ComputeGBoundary<<<numBlocksIMax, threadsPerBlockFlat, 0, streams[3]>>>(vVel, G, iMax, jMax);
+    ComputeFBoundary KERNEL_ARGS4(numBlocksJMax, threadsPerBlockFlat, 0, streams[2]) (hVel, F, iMax, jMax);
+    ComputeGBoundary KERNEL_ARGS4(numBlocksIMax, threadsPerBlockFlat, 0, streams[3]) (vVel, G, iMax, jMax);
 
     return cudaDeviceSynchronize();
 }
@@ -239,8 +238,8 @@ __global__ void ComputeVVel(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> 
 cudaError_t ComputeVelocities(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<REAL> pressure, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY)
 {
     dim3 numBlocks(INT_DIVIDE_ROUND_UP(iMax, threadsPerBlock.x), INT_DIVIDE_ROUND_UP(jMax, threadsPerBlock.y));
-    ComputeHVel<<<numBlocks, threadsPerBlock, 0, streams[0]>>>(hVel, F, pressure, flags, iMax, jMax, timestep, delX); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
-    ComputeVVel<<<numBlocks, threadsPerBlock, 0, streams[1]>>>(vVel, G, pressure, flags, iMax, jMax, timestep, delY);
+    ComputeHVel KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[0]) (hVel, F, pressure, flags, iMax, jMax, timestep, delX); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
+    ComputeVVel KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[1]) (vVel, G, pressure, flags, iMax, jMax, timestep, delY);
     return cudaDeviceSynchronize();
 }
 
