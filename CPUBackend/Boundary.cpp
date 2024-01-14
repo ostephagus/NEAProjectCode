@@ -53,11 +53,11 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
             break;
         case B_E:
             XVEL = 0; // Normal velocity = 0
-            YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
+            YVEL = velocityModifier * velocities.y[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
             break;
         case B_SE:
             XVEL = 0;
-            YVEL = velocityModifier * velocities.x[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
+            YVEL = velocityModifier * velocities.y[coordinates[coord].first + 1][coordinates[coord].second]; // Tangential velocity: friction
             velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SE must be set to 0
             break;
         case B_S:
@@ -66,12 +66,12 @@ void SetBoundaryConditions(DoubleField velocities, BYTE** flags, std::pair<int, 
             break;
         case B_SW:
             XVEL = velocityModifier * velocities.x[coordinates[coord].first][coordinates[coord].second - 1]; // Tangential velocity: friction
-            YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
+            YVEL = velocityModifier * velocities.y[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
             velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_SW must be set to 0
             velocities.y[coordinates[coord].first][coordinates[coord].second - 1] = 0; // y velocity south of a B_SW must be set to 0
             break;
         case B_W:
-            YVEL = velocityModifier * velocities.x[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
+            YVEL = velocityModifier * velocities.y[coordinates[coord].first - 1][coordinates[coord].second]; // Tangential velocity: friction
             velocities.x[coordinates[coord].first - 1][coordinates[coord].second] = 0; // x velocity west of a B_W must be set to 0
             break;
         case B_NW:
