@@ -47,8 +47,33 @@ __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL
 __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, REAL chi) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index > coordinatesLength) return;
+    
+    uint2 coordinate = coordinates[index];
 
-    //TODO: do obstacle processing.
+    BYTE flag = *B_PITCHACCESS(flags.ptr, flags.pitch, coordinate.x, coordinate.y);
+    int northBit = (flag & NORTH) >> NORTHSHIFT;
+    int eastBit  = (flag & EAST)  >> EASTSHIFT;
+    int southBit = (flag & SOUTH) >> SOUTHSHIFT;
+    int westBit  = (flag & WEST) >> WESTSHIFT;
+
+    REAL velocityModifier = 2 * chi - 1; // This converts chi from chi in [0,1] to in [-1,1]
+
+    *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y) = (1 - eastBit) // If the cell is an eastern boudary, hVel is 0
+        * (northBit * velocityModifier * *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y + 1) // For northern boundaries, use the horizontal velocity above...
+            + southBit * velocityModifier * *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y - 1)); // ...and for southern boundaries, use the horizontal velocity below.
+
+    *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y) = (1 - northBit) // If the cell is a northern boundary, vVel is 0
+        * (eastBit * velocityModifier * *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x + 1, coordinate.y) // For eastern boundaries, use the vertical velocity to the right...
+            + westBit * velocityModifier * *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x - 1, coordinate.y)); // ...and for western boundaries, use the vertical velocity to the left.
+
+    // The following lines are unavoidable branches.
+    if (southBit != 0) { // If south bit is set,...
+        *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y - 1) = 0; // ...then set the velocity coming into the boundary to 0.
+    }
+
+    if (westBit != 0) { // If west bit is set,...
+        *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x - 1, coordinate.y) = 0; // ...then set the velocity coming into the boundary to 0.
+    }
 }
 
 cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi) {
@@ -61,6 +86,7 @@ cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, Po
     LeftBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
     RightBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
 
+    cudaStreamSynchronize(streams[0]);
     ObstacleBoundary KERNEL_ARGS4(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
 
     return cudaDeviceSynchronize();

@@ -47,7 +47,7 @@ __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL
 __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, REAL chi);
 
 /// <summary>
-/// Sets boundary conditions. Handles kernel launching internally.
+/// Sets boundary conditions. Handles kernel launching internally. Requires 4 streams.
 /// </summary>
 cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi);
 

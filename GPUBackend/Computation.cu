@@ -2,12 +2,7 @@
 #include "DiscreteDerivatives.cuh"
 #include <cmath>
 
-constexpr BYTE SELF  = 0b00010000;
-constexpr BYTE NORTH = 0b00001000;
-constexpr BYTE EAST  = 0b00000100;
-constexpr BYTE SELFSHIFT  = 4;
-constexpr BYTE NORTHSHIFT = 3;
-constexpr BYTE EASTSHIFT  = 2;
+
 
 
 __device__ void GroupMax(cg::thread_group group, volatile REAL* sharedArray) {
@@ -206,7 +201,6 @@ __global__ void ComputeF(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVe
         *F_PITCHACCESS(hVel.ptr, hVel.pitch, rowNum, colNum) * (selfBit | eastBit) // For boundary cells or fluid cells, add hVel
         + *timestep * (1 / reynoldsNum * (SecondPuPx(hVel, rowNum, colNum, delX) + SecondPuPy(hVel, rowNum, colNum, delY)) - PuSquaredPx(hVel, rowNum, colNum, delX, *gamma) - PuvPy(hVel, vVel, rowNum, colNum, delX, delY, *gamma) + xForce) * (selfBit & eastBit); // For fluid cells only, perform the computation. Obstacle cells without an eastern boundary are set to 0.
 }
-
 
 __global__ void ComputeG(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> G, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY, REAL yForce, REAL* gamma, REAL reynoldsNum) {
     int rowNum = blockIdx.x * blockDim.x + threadIdx.x + 1;
