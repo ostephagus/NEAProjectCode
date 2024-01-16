@@ -13,13 +13,9 @@
 
 // Horrific macros to make intellisense stop complaining about the triple angle bracket syntax for kernel launches
 #ifndef __INTELLISENSE__
-#define KERNEL_ARGS2(numBlocks, numThreads) <<< numBlocks, numThreads >>> // Launch a kernel with no shared memory and the default stream.
-#define KERNEL_ARGS3(numBlocks, numThreads, sh_mem) <<< numBlocks, numThreads, sh_mem >>> // Launch a kernel with a shared memory allocation and the default stream.
-#define KERNEL_ARGS4(numBlocks, numThreads, sh_mem, stream) <<< numBlocks, numThreads, sh_mem, stream >>> // Launch a kernel with shared memory and stream specified.
+#define KERNEL_ARGS(numBlocks, numThreads, sh_mem, stream) <<< numBlocks, numThreads, sh_mem, stream >>> // Launch a kernel with shared memory and stream specified.
 #else
-#define KERNEL_ARGS2(numBlocks, numThreads) // Launch a kernel with no shared memory and the default stream.
-#define KERNEL_ARGS3(numBlocks, numThreads, sh_mem) // Launch a kernel with a shared memory allocation and the default stream.
-#define KERNEL_ARGS4(numBlocks, numThreads, sh_mem, stream) // Launch a kernel with shared memory and stream specified.
+#define KERNEL_ARGS(numBlocks, numThreads, sh_mem, stream) // Launch a kernel with shared memory and stream specified.
 #endif
 
 #define INT_DIVIDE_ROUND_UP(numerator, denominator) (((numerator) + (denominator) - 1) / (denominator))

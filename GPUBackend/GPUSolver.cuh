@@ -22,6 +22,11 @@ private:
     PointerWithPitch<BYTE> devFlags; // Cell flags, resides on device.
     PointerWithPitch<bool> devObstacles; // Boolean obstacles array, resides on device.
 
+    REAL* copiedHVel;
+    REAL* copiedVVel;
+    REAL* copiedPressure;
+    REAL* copiedStream;
+
     REAL delX; // Step size in x direction, resides on host.
     REAL delY; // Step size in y direction, resides on host.
     REAL* timestep; // Timestep, resides on device.
@@ -29,6 +34,7 @@ private:
     uint2* devCoordinates; // Array of obstacle coordinates, resides on device.
     int coordinatesLength; // Length of coordinates array
     int numFluidCells;
+    const int numColoursSOR = 2;
 
     dim3 numBlocks; // Number of blocks for a grid of iMax x jMax threads.
     dim3 threadsPerBlock; // Maximum number of threads per block in a 2D square allocation.

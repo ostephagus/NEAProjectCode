@@ -2,6 +2,7 @@
 #include "Init.h"
 #include "Boundary.cuh"
 #include "Computation.cuh"
+#include "PressureComputation.cuh"
 #include "math.h"
 #include <iostream>
 
@@ -35,6 +36,11 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     devObstacles = PointerWithPitch<bool>();
     cudaMallocPitch(&devObstacles.ptr, &devObstacles.pitch, (jMax + 2) * sizeof(bool), iMax + 2);
 
+    copiedHVel = new REAL[iMax * jMax];
+    copiedVVel = new REAL[iMax * jMax];
+    copiedPressure = new REAL[iMax * jMax];
+    copiedStream = new REAL[iMax * jMax];
+
     devCoordinates = nullptr;
     hostObstacles = nullptr;
     hostFlags = nullptr;
@@ -61,6 +67,11 @@ GPUSolver::~GPUSolver() {
     FreeMatrix(hostObstacles, iMax + 2);
     FreeMatrix(hostFlags, iMax + 2);
     delete[] streams;
+
+    delete[] copiedHVel;
+    delete[] copiedVVel;
+    delete[] copiedPressure;
+    delete[] copiedStream;
 }
 template<typename T>
 void GPUSolver::UnflattenArray(T** pointerArray, T* flattenedArray, int length, int divisions) {
@@ -140,7 +151,7 @@ bool** GPUSolver::GetObstacles() {
 void GPUSolver::ProcessObstacles() {
     CopyFieldToDevice(devObstacles, hostObstacles, iMax + 2, jMax + 2); // Copies obstacles to device to do SetFlags
 
-    SetFlags KERNEL_ARGS2(numBlocks, threadsPerBlock) (devObstacles, devFlags, iMax, jMax);
+    SetFlags KERNEL_ARGS(numBlocks, threadsPerBlock, 0, 0 /*default stream*/) (devObstacles, devFlags, iMax, jMax);
 
     hostFlags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     CopyFieldToHost(devFlags, hostFlags, iMax + 2, jMax + 2); // Copy the flags back to do some CPU-specific processing
@@ -171,36 +182,47 @@ void GPUSolver::PerformSetup() {
 }
 
 void GPUSolver::Timestep(REAL& simulationTime) {
-    SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, devCoordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility);
-
-    REAL* timestep;
-    cudaMalloc(&timestep, sizeof(REAL));
-    
-    ComputeTimestep(timestep, streams, hVel, vVel, iMax, jMax, delX, delY, parameters.reynoldsNo, parameters.timeStepSafetyFactor);
-    REAL* hostTimestep = new REAL;
-    cudaMemcpyAsync(hostTimestep, timestep, sizeof(REAL), cudaMemcpyDeviceToHost, *(streams + computationStreams));
-
-    REAL* gamma;
-    cudaMalloc(&gamma, sizeof(REAL));
-
-    ComputeGamma(gamma, streams, threadsPerBlock.x * threadsPerBlock.y, hVel, vVel, iMax, jMax, timestep, delX, delY);
-
-    ComputeFG(streams, threadsPerBlock, hVel, vVel, F, G, devFlags, iMax, jMax, timestep, delX, delY, parameters.bodyForces.x, parameters.bodyForces.y, gamma, parameters.reynoldsNo);
-    
-    ComputeRHS KERNEL_ARGS2(numBlocks, threadsPerBlock) (F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
-
-    // Compute pressure Poisson
-
-    ComputeVelocities(streams, threadsPerBlock, hVel, vVel, F, G, pressure, devFlags, iMax, jMax, timestep, delX, delY); // Tested working
-
+    REAL* hostTimestep = nullptr; // Set heap or global mem pointers to nullptr so freeing has no effect and only free label is needed.
+    REAL* timestep = nullptr;
+    REAL* gamma = nullptr;
+    REAL pressureResidualNorm = 0;
     dim3 numBlocksForStreamCalc(INT_DIVIDE_ROUND_UP(iMax + 1, threadsPerBlock.x), INT_DIVIDE_ROUND_UP(jMax + 1, threadsPerBlock.y));
-    ComputeStream KERNEL_ARGS2(numBlocksForStreamCalc, threadsPerBlock) (hVel, streamFunction, iMax, jMax, delY); // Untested
 
-    // Perform memory copies asynchronously
+    // Perform computations
+    if (SetBoundaryConditions(streams, deviceProperties.maxThreadsPerBlock, hVel, vVel, devFlags, devCoordinates, coordinatesLength, iMax, jMax, parameters.inflowVelocity, parameters.surfaceFrictionalPermissibility) != cudaSuccess) goto free;
 
-    simulationTime += *hostTimestep;
+    cudaMalloc(&timestep, sizeof(REAL)); // Allocate a new device variable for timestep
+    
+    if (ComputeTimestep(timestep, streams, hVel, vVel, iMax, jMax, delX, delY, parameters.reynoldsNo, parameters.timeStepSafetyFactor) != cudaSuccess) goto free;
+
+    hostTimestep = new REAL; // Copy the device timestep so it can be added to simulation time
+    if (cudaMemcpyAsync(hostTimestep, timestep, sizeof(REAL), cudaMemcpyDeviceToHost, streams[computationStreams + 0]) != cudaSuccess) goto free;
+
+    if (cudaMalloc(&gamma, sizeof(REAL)) != cudaSuccess) goto free; // Allocate gamma on the device and then calculate it
+    if (ComputeGamma(gamma, streams, threadsPerBlock.x * threadsPerBlock.y, hVel, vVel, iMax, jMax, timestep, delX, delY) != cudaSuccess) goto free;
+
+    if (ComputeFG(streams, threadsPerBlock, hVel, vVel, F, G, devFlags, iMax, jMax, timestep, delX, delY, parameters.bodyForces.x, parameters.bodyForces.y, gamma, parameters.reynoldsNo) != cudaSuccess) goto free;
+    
+    ComputeRHS KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[0]) (F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // ComputeRHS is simple enough not to need a wrapper
+    if (cudaStreamSynchronize(streams[0]) != cudaSuccess) goto free; // Need to synchronise because pressure depends on RHS.
+
+    if (Poisson(streams, threadsPerBlock, pressure, RHS, devFlags, devCoordinates, coordinatesLength, numFluidCells, iMax, jMax, numColoursSOR, delX, delY, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, &pressureResidualNorm) == 0) goto free; // Here 0 is the error case.
+    
+    cudaMemcpy2DAsync(copiedPressure, jMax * sizeof(REAL), pressure.ptr, pressure.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 0]); // Pressure is unchanged after this point, so can copy it async
+
+    if (ComputeVelocities(streams, threadsPerBlock, hVel, vVel, F, G, pressure, devFlags, iMax, jMax, timestep, delX, delY) != cudaSuccess) goto free;
+
+    cudaMemcpy2DAsync(copiedHVel, jMax * sizeof(REAL), hVel.ptr, hVel.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 1]); // Velocities are unchanged after this point, copy them
+    cudaMemcpy2DAsync(copiedVVel, jMax * sizeof(REAL), vVel.ptr, vVel.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 2]);
+
+    ComputeStream KERNEL_ARGS(numBlocksForStreamCalc, threadsPerBlock, 0, streams[0]) (hVel, streamFunction, iMax, jMax, delY);
+
+    cudaMemcpy2DAsync(copiedStream, jMax * sizeof(REAL), streamFunction.ptr, streamFunction.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 3]); // Stream function is the last to be calculated, copy it once it is ready.
+    
+    simulationTime += *hostTimestep; // Only add to the simulation time if the timestep was successful. Error case is therefore simulationTime unchanged after Timestep returns.
+
+free: // Pointers that need to be freed even if timestep is unsuccessful.
     delete hostTimestep;
-
     cudaFree(timestep);
     cudaFree(gamma);
 }

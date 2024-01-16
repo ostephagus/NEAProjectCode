@@ -38,7 +38,7 @@ cudaError_t ComputeGamma(REAL* gamma, cudaStream_t* streams, int threadsPerBlock
     retVal = cudaStreamSynchronize(streams[1]);
     if (retVal != cudaSuccess) goto free;
 
-    FinishComputeGamma KERNEL_ARGS4(1, 1, 0, streams[0]) (gamma, hVelMax, vVelMax, timestep, delX, delY);
+    FinishComputeGamma KERNEL_ARGS(1, 1, 0, streams[0]) (gamma, hVelMax, vVelMax, timestep, delX, delY);
 
     free:
     cudaFree(hVelMax);
@@ -86,7 +86,7 @@ cudaError_t ComputeTimestep(REAL* timestep, cudaStream_t* streams, PointerWithPi
     retVal = cudaStreamSynchronize(streams[1]);
     if (retVal != cudaSuccess) goto free;
 
-    FinishComputeTimestep KERNEL_ARGS4(1, 1, 0, streams[0]) (timestep, hVelMax, vVelMax, delX, delY, reynoldsNo, safetyFactor);
+    FinishComputeTimestep KERNEL_ARGS(1, 1, 0, streams[0]) (timestep, hVelMax, vVelMax, delX, delY, reynoldsNo, safetyFactor);
 
 free:
     cudaFree(hVelMax);
@@ -160,11 +160,11 @@ cudaError_t ComputeFG(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPi
     int numBlocksIMax = INT_DIVIDE_ROUND_UP(iMax, threadsPerBlockFlat);
     int numBlocksJMax = INT_DIVIDE_ROUND_UP(jMax, threadsPerBlockFlat);
 
-    ComputeF KERNEL_ARGS4(numBlocksF, threadsPerBlock, 0, streams[0]) (hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
-    ComputeG KERNEL_ARGS4(numBlocksG, threadsPerBlock, 0, streams[1]) (hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
+    ComputeF KERNEL_ARGS(numBlocksF, threadsPerBlock, 0, streams[0]) (hVel, vVel, F, flags, iMax, jMax, timestep, delX, delY, xForce, gamma, reynoldsNum); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
+    ComputeG KERNEL_ARGS(numBlocksG, threadsPerBlock, 0, streams[1]) (hVel, vVel, G, flags, iMax, jMax, timestep, delX, delY, yForce, gamma, reynoldsNum);
 
-    ComputeFBoundary KERNEL_ARGS4(numBlocksJMax, threadsPerBlockFlat, 0, streams[2]) (hVel, F, iMax, jMax);
-    ComputeGBoundary KERNEL_ARGS4(numBlocksIMax, threadsPerBlockFlat, 0, streams[3]) (vVel, G, iMax, jMax);
+    ComputeFBoundary KERNEL_ARGS(numBlocksJMax, threadsPerBlockFlat, 0, streams[2]) (hVel, F, iMax, jMax);
+    ComputeGBoundary KERNEL_ARGS(numBlocksIMax, threadsPerBlockFlat, 0, streams[3]) (vVel, G, iMax, jMax);
 
     return cudaDeviceSynchronize();
 }
@@ -218,8 +218,8 @@ __global__ void ComputeVVel(PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> 
 cudaError_t ComputeVelocities(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<REAL> F, PointerWithPitch<REAL> G, PointerWithPitch<REAL> pressure, PointerWithPitch<BYTE> flags, int iMax, int jMax, REAL* timestep, REAL delX, REAL delY)
 {
     dim3 numBlocks(INT_DIVIDE_ROUND_UP(iMax, threadsPerBlock.x), INT_DIVIDE_ROUND_UP(jMax, threadsPerBlock.y));
-    ComputeHVel KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[0]) (hVel, F, pressure, flags, iMax, jMax, timestep, delX); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
-    ComputeVVel KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[1]) (vVel, G, pressure, flags, iMax, jMax, timestep, delY);
+    ComputeHVel KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[0]) (hVel, F, pressure, flags, iMax, jMax, timestep, delX); // Launch the kernels in separate streams, to be concurrently executed if the GPU is able to.
+    ComputeVVel KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[1]) (vVel, G, pressure, flags, iMax, jMax, timestep, delY);
     return cudaDeviceSynchronize();
 }
 

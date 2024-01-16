@@ -3,9 +3,6 @@
 #include "ReductionKernels.cuh"
 #include <cmath>
 
-#define BRANCHED 1
-#define BOOLEAN_MULTIPLICATION 2
-#define BOUNDARY_HANDLING_OPTION BRANCHED
 
 /// <summary>
 /// Calculates and validates the coordinates of a thread based on the coloured cell system.
@@ -97,19 +94,12 @@ __global__ void CopyBoundaryPressures(PointerWithPitch<REAL> pressure, uint2* co
     int xShift = ((relevantFlag & EAST) >> EASTSHIFT) - ((relevantFlag & WEST) >> WESTSHIFT); // Relative position of cell to copy in x direction. -1, 0 or 1.
     int yShift = ((relevantFlag & NORTH) >> NORTHSHIFT) - ((relevantFlag & SOUTH) >> SOUTHSHIFT); // Relative position of cell to copy in y direction. -1, 0 or 1.
 
-#if BOUNDARY_HANDLING_OPTION == BRANCHED
     if (GetParity(relevantFlag) == 1) { // Only boundary cells with one edge - copy from that fluid cell
         F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x, coordinate.y) = F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x + xShift, coordinate.y + yShift); // Copy from the cell determined by the shifts.
     }
     else { // These are boundary cells with 2 edges - take the average of the 2 cells with the boundary.
         F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x, coordinate.y) = (F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x + xShift, coordinate.y) + F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x, coordinate.y + yShift)) / (REAL)2; // Take the average of the one above/below and the one left/right by only using one shift for each of the field accesses.
     }
-#else // BOUNDARY_HANDLING_OPTION == BOOLEAN_MULTIPLICATION
-    int flagParity = GetParity(relevantFlag);
-    F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x, coordinate.y) = 
-        flagParity * F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x + xShift, coordinate.y + yShift) // If flagParity is 1, copy from 1 cell
-        + (1 - flagParity) * (F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x + xShift, coordinate.y) + F_PITCHACCESS(pressure.ptr, pressure.pitch, coordinate.x, coordinate.y + yShift)) / (REAL)2; // If flagParity is 0, take the average of the one above/below and the one left/right by only using one shift for each of the field accesses.
-#endif // BOUNDARY_HANDLING_OPTION == BRANCHED
 }
 
 // Could implement this using cuda graphs
@@ -135,9 +125,12 @@ int Poisson(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> 
 
 
     do {
-        *d_residualNorm = 0;
+        *residualNorm = 0; // Set both host and device residual norms to 0.
+        retVal = cudaMemset(d_residualNorm, 0, sizeof(REAL));
+        if (retVal != cudaSuccess) goto free;
+
         for (int colourNum = 0; colourNum < numColours; colourNum++) { // Loop through however many colours and perform SOR.
-            SingleColourSOR KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[0]) (numColours, colourNum, pressure, RHS, flags, residualArray, iMax, jMax, delX, delY, omega, boundaryFraction);
+            SingleColourSOR KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[0]) (numColours, colourNum, pressure, RHS, flags, residualArray, iMax, jMax, delX, delY, omega, boundaryFraction);
         }
 
         retVal = cudaStreamSynchronize(streams[0]);
@@ -147,9 +140,9 @@ int Poisson(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> 
         if (retVal != cudaSuccess) goto free;
 
         // Copy the boundary cell pressures all in different streams
-        CopyHorizontalPressures KERNEL_ARGS4(numBlocksIMax, threadsPerBlockFlattened, 0, streams[0]) (pressure, iMax, jMax);
-        CopyVerticalPressures KERNEL_ARGS4(numBlocksJMax, threadsPerBlockFlattened, 0, streams[1]) (pressure, iMax, jMax);
-        CopyBoundaryPressures KERNEL_ARGS4(numBlocks, threadsPerBlock, 0, streams[2]) (pressure, coordinates, coordinatesLength, flags, iMax, jMax);
+        CopyHorizontalPressures KERNEL_ARGS(numBlocksIMax, threadsPerBlockFlattened, 0, streams[0]) (pressure, iMax, jMax);
+        CopyVerticalPressures KERNEL_ARGS(numBlocksJMax, threadsPerBlockFlattened, 0, streams[1]) (pressure, iMax, jMax);
+        CopyBoundaryPressures KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[2]) (pressure, coordinates, coordinatesLength, flags, iMax, jMax);
 
         retVal = cudaMemcpyAsync(residualNorm, d_residualNorm, sizeof(REAL), cudaMemcpyDeviceToHost, streams[3]); // Also copy residual norm to host for conditional processing
         if (retVal != cudaSuccess) goto free;
@@ -158,7 +151,6 @@ int Poisson(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> 
         if (retVal != cudaSuccess) goto free;
 
         *residualNorm = sqrt(*residualNorm / numFluidCells);
-        
         numIterations++;
     } while ((numIterations < maxIterations && *residualNorm > residualTolerance) || numIterations < minIterations);
 

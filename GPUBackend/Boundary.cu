@@ -80,13 +80,13 @@ cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, Po
     int numBlocksLeftRight = INT_DIVIDE_ROUND_UP(jMax, threadsPerBlock);
     int numBlocksObstacle = INT_DIVIDE_ROUND_UP(coordinatesLength, threadsPerBlock);
     
-    TopBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, jMax);
-    BottomBoundary KERNEL_ARGS4(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel);
-    LeftBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
-    RightBoundary KERNEL_ARGS4(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
+    TopBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, jMax);
+    BottomBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel);
+    LeftBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
+    RightBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
 
     cudaStreamSynchronize(streams[0]);
-    ObstacleBoundary KERNEL_ARGS4(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
+    ObstacleBoundary KERNEL_ARGS(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
 
     return cudaDeviceSynchronize();
 }

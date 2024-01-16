@@ -162,13 +162,13 @@ cudaError_t FieldMax(REAL* max, cudaStream_t streamToUse, PointerWithPitch<REAL>
     }
 
     // Run the GPU kernel:
-    ComputePartialMaxes KERNEL_ARGS4(xLength, (unsigned int)field.pitch / sizeof(REAL), field.pitch, streamToUse) (partialMaxes, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
+    ComputePartialMaxes KERNEL_ARGS(xLength, (unsigned int)field.pitch / sizeof(REAL), field.pitch, streamToUse) (partialMaxes, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
     retVal = cudaStreamSynchronize(streamToUse);
     if (retVal != cudaSuccess) { // Skip the rest of the computation if there was an error
         goto free;
     }
 
-    ComputeFinalMax KERNEL_ARGS4(1, xLength, xLength * sizeof(REAL), streamToUse) (max, partialMaxes, xLength); // 1 block to process all of the partial maxes, number of threads equal to number of partial maxes (xLength is also this)
+    ComputeFinalMax KERNEL_ARGS(1, xLength, xLength * sizeof(REAL), streamToUse) (max, partialMaxes, xLength); // 1 block to process all of the partial maxes, number of threads equal to number of partial maxes (xLength is also this)
     retVal = cudaStreamSynchronize(streamToUse);
 
 
@@ -187,13 +187,13 @@ cudaError_t FieldSum(REAL* sum, cudaStream_t streamToUse, PointerWithPitch<REAL>
     }
 
     // Run the GPU kernel:
-    ComputePartialSums KERNEL_ARGS4(xLength, (unsigned int)field.pitch / sizeof(REAL), field.pitch, streamToUse) (partialSums, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
+    ComputePartialSums KERNEL_ARGS(xLength, (unsigned int)field.pitch / sizeof(REAL), field.pitch, streamToUse) (partialSums, field, yLength); // 1 block per row. Number of threads is equal to column pitch, and each thread has 1 REAL worth of shared memory.
     retVal = cudaStreamSynchronize(streamToUse);
     if (retVal != cudaSuccess) { // Skip the rest of the computation if there was an error
         goto free;
     }
 
-    ComputeFinalSum KERNEL_ARGS4(1, xLength, xLength * sizeof(REAL), streamToUse) (sum, partialSums, xLength); // 1 block to process all of the partial sums, number of threads equal to number of partial sums (xLength is also this)
+    ComputeFinalSum KERNEL_ARGS(1, xLength, xLength * sizeof(REAL), streamToUse) (sum, partialSums, xLength); // 1 block to process all of the partial sums, number of threads equal to number of partial sums (xLength is also this)
     retVal = cudaStreamSynchronize(streamToUse);
 
 free:
