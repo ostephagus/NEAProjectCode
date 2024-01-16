@@ -90,6 +90,8 @@
     <CudaCompile Include="DiscreteDerivatives.cu" />
     <CudaCompile Include="GPUSolver.cu" />
     <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="PressureComputation.cu" />
+    <CudaCompile Include="ReductionKernels.cu" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackendLib\BackendLib.vcxproj">
@@ -102,6 +104,8 @@
     <ClInclude Include="Definitions.cuh" />
     <ClInclude Include="DiscreteDerivatives.cuh" />
     <ClInclude Include="GPUSolver.cuh" />
+    <ClInclude Include="PressureComputation.cuh" />
+    <ClInclude Include="ReductionKernels.cuh" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

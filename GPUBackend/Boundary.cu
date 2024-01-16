@@ -8,40 +8,39 @@ __global__ void SetFlags(PointerWithPitch<bool> obstacles, PointerWithPitch<BYTE
     if (rowNum > iMax) return;
     if (colNum > jMax) return;
 
-    *F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)*B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); //5 bits in the format: self, north, east, south, west.
+    F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); //5 bits in the format: self, north, east, south, west.
 }
-
 
 __global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int jMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
-    *F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax + 1) = *F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax); // Copy hVel from the cell below
-    *F_PITCHACCESS(vVel.ptr, vVel.pitch, index, jMax) = 0; // Set vVel along the top to 0
+    F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax + 1) = F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax); // Copy hVel from the cell below
+    F_PITCHACCESS(vVel.ptr, vVel.pitch, index, jMax) = 0; // Set vVel along the top to 0
 }
 
 __global__ void BottomBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
-    *F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 0) = *F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 1); // Copy hVel from the cell above
-    *F_PITCHACCESS(vVel.ptr, vVel.pitch, index, 0) = 0; // Set vVel along the bottom to 0
+    F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 0) = F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 1); // Copy hVel from the cell above
+    F_PITCHACCESS(vVel.ptr, vVel.pitch, index, 0) = 0; // Set vVel along the bottom to 0
 }
 
 __global__ void LeftBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, REAL inflowVelocity)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
-    *F_PITCHACCESS(hVel.ptr, hVel.pitch, 0, index) = inflowVelocity; // Set hVel to inflow velocity on left boundary
-    *F_PITCHACCESS(vVel.ptr, vVel.pitch, 0, index) = 0; // Set vVel to 0
+    F_PITCHACCESS(hVel.ptr, hVel.pitch, 0, index) = inflowVelocity; // Set hVel to inflow velocity on left boundary
+    F_PITCHACCESS(vVel.ptr, vVel.pitch, 0, index) = 0; // Set vVel to 0
 }
 
 __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
-    *F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax, index) = *F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax - 1, index); // Copy the velocity values from the previous cell (mass flows out at the boundary)
-    *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax + 1, index) = *F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax, index);
+    F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax, index) = F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax - 1, index); // Copy the velocity values from the previous cell (mass flows out at the boundary)
+    F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax + 1, index) = F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax, index);
 }
 
 __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, REAL chi) {
@@ -50,7 +49,7 @@ __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<R
     
     uint2 coordinate = coordinates[index];
 
-    BYTE flag = *B_PITCHACCESS(flags.ptr, flags.pitch, coordinate.x, coordinate.y);
+    BYTE flag = B_PITCHACCESS(flags.ptr, flags.pitch, coordinate.x, coordinate.y);
     int northBit = (flag & NORTH) >> NORTHSHIFT;
     int eastBit  = (flag & EAST)  >> EASTSHIFT;
     int southBit = (flag & SOUTH) >> SOUTHSHIFT;
@@ -58,21 +57,21 @@ __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<R
 
     REAL velocityModifier = 2 * chi - 1; // This converts chi from chi in [0,1] to in [-1,1]
 
-    *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y) = (1 - eastBit) // If the cell is an eastern boudary, hVel is 0
-        * (northBit * velocityModifier * *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y + 1) // For northern boundaries, use the horizontal velocity above...
-            + southBit * velocityModifier * *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y - 1)); // ...and for southern boundaries, use the horizontal velocity below.
+    F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y) = (1 - eastBit) // If the cell is an eastern boudary, hVel is 0
+        * (northBit * velocityModifier * F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y + 1) // For northern boundaries, use the horizontal velocity above...
+            + southBit * velocityModifier * F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x, coordinate.y - 1)); // ...and for southern boundaries, use the horizontal velocity below.
 
-    *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y) = (1 - northBit) // If the cell is a northern boundary, vVel is 0
-        * (eastBit * velocityModifier * *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x + 1, coordinate.y) // For eastern boundaries, use the vertical velocity to the right...
-            + westBit * velocityModifier * *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x - 1, coordinate.y)); // ...and for western boundaries, use the vertical velocity to the left.
+    F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y) = (1 - northBit) // If the cell is a northern boundary, vVel is 0
+        * (eastBit * velocityModifier * F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x + 1, coordinate.y) // For eastern boundaries, use the vertical velocity to the right...
+            + westBit * velocityModifier * F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x - 1, coordinate.y)); // ...and for western boundaries, use the vertical velocity to the left.
 
     // The following lines are unavoidable branches.
     if (southBit != 0) { // If south bit is set,...
-        *F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y - 1) = 0; // ...then set the velocity coming into the boundary to 0.
+        F_PITCHACCESS(vVel.ptr, vVel.pitch, coordinate.x, coordinate.y - 1) = 0; // ...then set the velocity coming into the boundary to 0.
     }
 
     if (westBit != 0) { // If west bit is set,...
-        *F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x - 1, coordinate.y) = 0; // ...then set the velocity coming into the boundary to 0.
+        F_PITCHACCESS(hVel.ptr, hVel.pitch, coordinate.x - 1, coordinate.y) = 0; // ...then set the velocity coming into the boundary to 0.
     }
 }
 

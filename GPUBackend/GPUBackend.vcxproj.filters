@@ -16,6 +16,12 @@
     <CudaCompile Include="DiscreteDerivatives.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="ReductionKernels.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="PressureComputation.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUSolver.cuh">
@@ -31,6 +37,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DiscreteDerivatives.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ReductionKernels.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PressureComputation.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

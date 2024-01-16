@@ -27,6 +27,6 @@ __device__ REAL PpPx(PointerWithPitch<REAL> pressure, int i, int j, REAL delx);
 
 __device__ REAL PpPy(PointerWithPitch<REAL> pressure, int i, int j, REAL dely);
 
-__device__ REAL square(REAL operand);
+__host__ __device__ REAL square(REAL operand);
 
 #endif // !DISCRETE_DERIVATIVES_CUH

@@ -295,13 +295,7 @@ int Poisson(REAL** pressure, REAL** RHS, BYTE** flags, std::pair<int, int>* coor
         }
 #endif // DEBUGOUT
         for (int i = 1; i <= iMax; i++) {
-            if (i == 224) {
-                int bp = 1;
-            }
             for (int j = 1; j <= jMax; j++) {
-                if (j == 250) {
-                    int bp2 = 1;
-                }
                 if (!(flags[i][j] & SELF)) { // Pressure is defined in the middle of cells, so only check the SELF bit
                     continue; // Skip if the cell is not a fluid cell
                 }

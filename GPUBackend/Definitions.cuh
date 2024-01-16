@@ -6,8 +6,10 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#define F_PITCHACCESS(basePtr, pitch, i, j) ((REAL*)((char*)(basePtr) + (i) * (pitch)) + (j)) // Used for accessing a location in a pitched array (F for float, B for byte)
-#define B_PITCHACCESS(basePtr, pitch, i, j) ((basePtr) + (i) * (pitch) + (j)) // Used for accessing a location in a pitched array (F for float, B for byte)
+#define F_PITCHACCESS(basePtr, pitch, i, j) (*((REAL*)((char*)(basePtr) + (i) * (pitch)) + (j))) // Used for accessing a location in a pitched array (F for float, FP for float pointer, B for byte, BP for byte pointer.)
+#define FP_PITCHACCESS(basePtr, pitch, i, j) ((REAL*)((char*)(basePtr) + (i) * (pitch)) + (j)) // Used for accessing a location in a pitched array (F for float, FP for float pointer, B for byte, BP for byte pointer.)
+#define B_PITCHACCESS(basePtr, pitch, i, j) (*((basePtr) + (i) * (pitch) + (j))) // Used for accessing a location in a pitched array (F for float, FP for float pointer, B for byte, BP for byte pointer.)
+#define BP_PITCHACCESS(basePtr, pitch, i, j) ((basePtr) + (i) * (pitch) + (j)) // Used for accessing a location in a pitched array (F for float, FP for float pointer, B for byte, BP for byte pointer.)
 
 // Horrific macros to make intellisense stop complaining about the triple angle bracket syntax for kernel launches
 #ifndef __INTELLISENSE__
