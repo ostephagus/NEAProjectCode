@@ -8,7 +8,7 @@
              xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
              xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=viewmodels:AdvancedParametersVM}"
+             d:DataContext="{d:DesignInstance Type=viewmodels:ConfigScreenVM}"
              d:DesignHeight="400" d:DesignWidth="700">
     <Grid>
         <Grid.RowDefinitions>
@@ -38,16 +38,16 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" />
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" Value="{Binding InVel}" />
             
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" />
+            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Chi}" />
             
             <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" />
+            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Width}"  />
             
             <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" />
+            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Height}" />
 
             <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
             
@@ -61,7 +61,7 @@
             <Button>Select file</Button>
             <TextBlock>No file selected..</TextBlock>
         </StackPanel>
-        <Button Grid.Row="3" Grid.Column="1" Command="{Binding Command_ChangeWindow}">
+        <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindow}">
             <Button.CommandParameter>
                 <helperclasses:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
             </Button.CommandParameter>
