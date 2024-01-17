@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
-             xmlns:HelperClasses="clr-namespace:UserInterface.HelperClasses"
-             xmlns:HelperControls="clr-namespace:UserInterface.HelperControls"
-             mc:Ignorable="d" 
+             xmlns:helperclasses="clr-namespace:UserInterface.HelperClasses"
+             xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
+             xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:AdvancedParametersVM}"
              d:DesignHeight="400" d:DesignWidth="700">
     <Grid>
         <Grid.RowDefinitions>
@@ -19,9 +21,9 @@
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <HelperControls:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Text="Simulation configuration" Grid.ColumnSpan="2" />
-        <HelperControls:ResizableCentredTextBox Grid.Row="1" Grid.Column="0" Text="Parameters" />
-        <HelperControls:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Simulated objects" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Text="Simulation configuration" Grid.ColumnSpan="2" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="0" Text="Parameters" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Simulated objects" />
         <Grid Grid.Row="2" Grid.Column="0" Margin="0 0 10 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -36,22 +38,22 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <HelperControls:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" PropertyChanged="SliderInVel_PropertyChanged"/>
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" />
             
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <HelperControls:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" />
             
             <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <HelperControls:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" PropertyChanged="SliderWidth_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" />
             
             <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <HelperControls:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" PropertyChanged="SliderHeight_PropertyChanged"/>
+            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" />
 
-            <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Click="BtnReset_Click">Reset parameters</Button>
+            <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
             
-            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Command_ChangeWindow}">
+            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ChangeWindow}">
                 <Button.CommandParameter>
-                    <HelperClasses:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
+                    <helperclasses:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
                 </Button.CommandParameter>
                 Advanced parameters</Button>
         </Grid>
@@ -61,7 +63,7 @@
         </StackPanel>
         <Button Grid.Row="3" Grid.Column="1" Command="{Binding Command_ChangeWindow}">
             <Button.CommandParameter>
-                <HelperClasses:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
+                <helperclasses:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
             </Button.CommandParameter>
             Simulate</Button>
     </Grid>

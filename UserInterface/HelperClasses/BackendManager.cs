@@ -23,6 +23,8 @@ namespace UserInterface.HelperClasses
         private ResizableLinearQueue<ParameterChangedEventArgs> parameterSendQueue;
         private ParameterHolder parameterHolder;
 
+        private readonly string pipeName = "NEAFluidDynamicsPipe";
+
         public int FieldLength { get => iMax * jMax; }
         public int IMax { get => iMax; set => iMax = value; }
         public int JMax { get => jMax; set => jMax = value; }
@@ -33,7 +35,7 @@ namespace UserInterface.HelperClasses
             {
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
-                backendProcess.StartInfo.ArgumentList.Add("pipe");
+                backendProcess.StartInfo.ArgumentList.Add(pipeName);
                 //backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 return true;
@@ -47,7 +49,7 @@ namespace UserInterface.HelperClasses
 
         private bool PipeHandshake()
         {
-            pipeManager = new PipeManager("NEAFluidDynamicsPipe");
+            pipeManager = new PipeManager(pipeName);
             pipeManager.WaitForConnection();
             (iMax, jMax) = pipeManager.Handshake();
             return iMax > 0 && jMax > 0; // (0,0) is the error condition
@@ -178,18 +180,26 @@ namespace UserInterface.HelperClasses
             parameterHolder.PropertyChanged += HandleParameterChanged;
 
             parameterSendQueue = new();
-            if (File.Exists(".\\CPUBackend.exe"))
+            if (File.Exists(".\\GPUBackend.exe"))
             {
-                filePath = ".\\CPUBackend.exe"; // Ideally the executables will be in the same directory
+                filePath = ".\\GPUBackend.exe"; // First try to find GPU backend in same directory...
+            }
+            else if (File.Exists(".\\CPUBackend.exe"))
+            {
+                filePath = ".\\CPUBackend.exe"; // ...then look for CPU backend in same directory.
+            }
+            else if (File.Exists("..\\..\\..\\..\\x64\\Debug\\GPUBackend.exe"))
+            {
+                filePath = "..\\..\\..\\..\\x64\\Debug\\GPUBackend.exe"; // When debugging, backend executables are here. Try GPU backend first...
             }
             else if (File.Exists("..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"))
             {
-                filePath = "..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"; // Relative filepath when debugging
+                filePath = "..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"; // ...then try CPU backend.
             }
             else
             {
-                MessageBox.Show("Could not find backend executable. Make sure that CPUBackend.exe is in the same folder as UserInterface.exe");
-                throw new FileNotFoundException("CPUBackend.exe could not be found");
+                MessageBox.Show("Could not find backend executable. Make sure that either GPUBackend.exe or CPUBackend.exe exists in the same folder as UserInterface.exe");
+                throw new FileNotFoundException("Backend executable could not be found");
             }
         }
 

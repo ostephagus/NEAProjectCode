@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Policy;
 using System.Windows.Input;
 using UserInterface.ViewModels;
 using UserInterface.Views;
@@ -7,6 +8,28 @@ namespace UserInterface.HelperClasses
 {
     public class Commands
     {
+        public abstract class ParameterCommandBase<VMType> : ICommand
+        {
+            protected VMType parentViewModel;
+            protected ParameterHolder parameterHolder;
+
+            public event EventHandler? CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
+
+            public bool CanExecute(object? parameter) { return true; }
+
+            public abstract void Execute(object? parameter);
+
+            public ParameterCommandBase(VMType parentViewModel, ParameterHolder parameterHolder)
+            {
+                this.parentViewModel = parentViewModel;
+                this.parameterHolder = parameterHolder;
+            }
+        }
+
         public class ChangeWindow : ICommand
         {
             public event EventHandler? CanExecuteChanged
@@ -39,38 +62,69 @@ namespace UserInterface.HelperClasses
             }
         }
 
-        public class ResetCommand : ICommand
+        public class AdvancedParametersReset : ParameterCommandBase<AdvancedParametersVM>
         {
-            private AdvancedParametersVM parameterVM;
-            private ParameterHolder parameterHolder;
-
-            public event EventHandler? CanExecuteChanged
-            {
-                add { }
-                remove { }
-            }
-
-            public bool CanExecute(object? parameter) { return true; } // Unless app logic changes, this command can always execute.
-
-            public void Execute(object? parameter)
+            public override void Execute(object? parameter)
             {
                 parameterHolder.TimeStepSafetyFactor.Reset();
-                parameterVM.Tau = parameterHolder.TimeStepSafetyFactor.DefaultValue;
+                parentViewModel.Tau = parameterHolder.TimeStepSafetyFactor.DefaultValue;
 
                 parameterHolder.RelaxationParameter.Reset();
-                parameterVM.Omega = parameterHolder.RelaxationParameter.DefaultValue;
+                parentViewModel.Omega = parameterHolder.RelaxationParameter.DefaultValue;
 
                 parameterHolder.PressureResidualTolerance.Reset();
-                parameterVM.RMax = parameterHolder.PressureResidualTolerance.DefaultValue;
+                parentViewModel.RMax = parameterHolder.PressureResidualTolerance.DefaultValue;
 
                 parameterHolder.PressureMaxIterations.Reset();
-                parameterVM.IterMax = parameterHolder.PressureMaxIterations.DefaultValue;
+                parentViewModel.IterMax = parameterHolder.PressureMaxIterations.DefaultValue;
             }
 
-            public ResetCommand(AdvancedParametersVM parameterVM, ParameterHolder parameterHolder)
+            public AdvancedParametersReset(AdvancedParametersVM parentViewModel, ParameterHolder parameterHolder) : base(parentViewModel, parameterHolder) { }
+        }
+
+        public class ConfigScreenReset : ParameterCommandBase<ConfigScreenVM>
+        {
+            public override void Execute(object? parameter)
             {
-                this.parameterVM = parameterVM;
-                this.parameterHolder = parameterHolder;
+                parameterHolder.InflowVelocity.Reset();
+                parentViewModel.InVel = parameterHolder.InflowVelocity.DefaultValue;
+
+                parameterHolder.SurfaceFriction.Reset();
+                parentViewModel.Chi = parameterHolder.SurfaceFriction.DefaultValue;
+
+                parameterHolder.Width.Reset();
+                parentViewModel.Width = parameterHolder.Width.DefaultValue;
+
+                parameterHolder.Height.Reset();
+                parentViewModel.Height = parameterHolder.Height.DefaultValue;
+            }
+            
+            public ConfigScreenReset(ConfigScreenVM parentViewModel, ParameterHolder parameterHolder) : base(parentViewModel, parameterHolder) { }
+        }
+
+        public class SaveCommand : ParameterCommandBase<AdvancedParametersVM>
+        {
+            private readonly ChangeWindow changeWindowCommand;
+
+            private ParameterStruct<T> ModifyParameterValue<T>(ParameterStruct<T> parameterStruct, T newValue)
+            {
+                parameterStruct.Value = newValue;
+                return parameterStruct;
+            }
+
+            public override void Execute(object? parameter)
+            {
+                parameterHolder.TimeStepSafetyFactor = ModifyParameterValue(parameterHolder.TimeStepSafetyFactor, parentViewModel.Tau);
+                parameterHolder.RelaxationParameter = ModifyParameterValue(parameterHolder.RelaxationParameter, parentViewModel.Omega);
+                parameterHolder.PressureResidualTolerance = ModifyParameterValue(parameterHolder.PressureResidualTolerance, parentViewModel.RMax);
+                parameterHolder.PressureMaxIterations = ModifyParameterValue(parameterHolder.PressureMaxIterations, parentViewModel.IterMax);
+
+                changeWindowCommand.Execute(new WindowChangeParameter() { IsPopup = true, NewWindow = typeof(ConfigScreen) });
+            }
+
+            public SaveCommand(AdvancedParametersVM parentViewModel, ParameterHolder parameterHolder, ChangeWindow changeWindowCommand) : base(parentViewModel, parameterHolder)
+            {
+                this.changeWindowCommand = changeWindowCommand;
             }
         }
     }

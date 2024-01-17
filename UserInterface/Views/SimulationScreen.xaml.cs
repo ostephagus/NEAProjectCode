@@ -22,7 +22,7 @@ namespace UserInterface.Views
         private BackendManager? backendManager;
         private VisualisationControl? visualisationControl;
         private MovingAverage<float> visFPSAverage;
-        private const int VIS_FPS_WINDOW_SIZE = 50;
+        private const int VIS_FPS_WINDOW_SIZE = 500;
 
         private float[]? horizontalVelocity;
         private float[]? pressure;

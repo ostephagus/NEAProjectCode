@@ -16,32 +16,5 @@ namespace UserInterface.Views
             InitializeComponent();
             DataContext = new AdvancedParametersVM(parameterHolder);
         }
-
-        public ICommand Command_ChangeWindow { get; } = new Commands.ChangeWindow();
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            parameterHolder.TimeStepSafetyFactor.Reset();
-            sliderTau.Value = parameterHolder.TimeStepSafetyFactor.DefaultValue;
-
-            parameterHolder.RelaxationParameter.Reset();
-            sliderOmega.Value = parameterHolder.RelaxationParameter.DefaultValue;
-
-            parameterHolder.PressureResidualTolerance.Reset();
-            sliderRMax.Value = parameterHolder.PressureResidualTolerance.DefaultValue;
-
-            parameterHolder.PressureMaxIterations.Reset();
-            sliderIterMax.Value = parameterHolder.PressureMaxIterations.DefaultValue;
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            parameterHolder.TimeStepSafetyFactor = ModifyParameterValue(parameterHolder.TimeStepSafetyFactor, (float)sliderTau.Value);
-            parameterHolder.RelaxationParameter = ModifyParameterValue(parameterHolder.RelaxationParameter, (float)sliderOmega.Value);
-            parameterHolder.PressureResidualTolerance = ModifyParameterValue(parameterHolder.PressureResidualTolerance, (float)sliderRMax.Value);
-            parameterHolder.PressureMaxIterations = ModifyParameterValue(parameterHolder.PressureMaxIterations, (float)sliderIterMax.Value);
-
-            Command_ChangeWindow.Execute(new WindowChangeParameter() { IsPopup = true, NewWindow = typeof(ConfigScreen) });
-        }
     }
 }

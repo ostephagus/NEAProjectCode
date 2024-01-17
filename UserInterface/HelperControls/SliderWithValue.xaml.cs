@@ -14,21 +14,38 @@ namespace UserInterface.HelperControls
         {
             InitializeComponent();
             LayoutRoot.DataContext = this;
+
+            // Add event handler to update the Value property when the Slider value changes
+            slider.ValueChanged += Slider_ValueChanged;
         }
         public double Minimum { get; set; } = 0;
         public double Maximum { get; set; } = 100;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue));
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register(
+                "Value",
+                typeof(double),
+                typeof(SliderWithValue),
+                new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnValueChanged));
 
-        public double Value {
-            get => (double)GetValue(ValueProperty);
-            set
-            {
-                SetValue(ValueProperty, value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-            }
+        public double Value
+        {
+            get { return (double)GetValue(ValueProperty); }
+            set { SetValue(ValueProperty, value); }
+        }
+
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            SliderWithValue sliderWithValue = (SliderWithValue)d; // Get the calling instance
+            sliderWithValue.slider.Value = (double)e.NewValue;
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // Update the Value property when the Slider value changes
+            Value = e.NewValue;
         }
 
         public bool ForceIntegers { get; set; } = false;
