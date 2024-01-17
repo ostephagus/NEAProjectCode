@@ -85,21 +85,10 @@ cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, Po
     LeftBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
     RightBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
 
-    cudaStreamSynchronize(streams[0]);
+    cudaError_t retVal = cudaStreamSynchronize(streams[0]);
     ObstacleBoundary KERNEL_ARGS(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
 
     return cudaDeviceSynchronize();
-}
-
-// Counts number of fluid cells in the region [1,iMax]x[1,jMax]
-int CountFluidCells(BYTE** flags, int iMax, int jMax) {
-    int count = 0;
-    for (int i = 0; i <= iMax; i++) {
-        for (int j = 0; j <= jMax; j++) {
-            count += flags[i][j] >> 4; // This will include only the "self" bit, which is one for fluid cells and 0 for boundary and obstacle cells.
-        }
-    }
-    return count;
 }
 
 void FindBoundaryCells(BYTE** flags, uint2*& coordinates, int& coordinatesLength, int iMax, int jMax) {

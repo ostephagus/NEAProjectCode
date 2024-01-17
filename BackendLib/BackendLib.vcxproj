@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="BackendCoordinator.h" />
     <ClInclude Include="Definitions.h" />
+    <ClInclude Include="Flags.h" />
     <ClInclude Include="Init.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PipeConstants.h" />
@@ -150,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="BackendCoordinator.cpp" />
     <ClCompile Include="BackendLib.cpp" />
+    <ClCompile Include="Flags.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

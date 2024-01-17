@@ -51,8 +51,6 @@ __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<R
 /// </summary>
 cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, int iMax, int jMax, REAL inflowVelocity, REAL chi);
 
-int CountFluidCells(BYTE** flags, int iMax, int jMax);
-
 void FindBoundaryCells(BYTE** flags, uint2*& coordinates, int& coordinatesLength, int iMax, int jMax);
 
 #endif // !BOUNDARY_CUH

@@ -29,7 +29,7 @@ public:
 
     ~CPUSolver();
 
-    bool** GetObstacles();
+    bool** GetObstacles() const;
 
     REAL* GetHorizontalVelocity() const;
 

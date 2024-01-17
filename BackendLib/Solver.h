@@ -68,7 +68,7 @@ public:
 
     virtual REAL* GetStreamFunction() const = 0;
 
-    virtual bool** GetObstacles() = 0;
+    virtual bool** GetObstacles() const = 0;
 
     /// <summary>
     /// Embeds obstacles into the simulation domain. Assumes obstacles have already been set

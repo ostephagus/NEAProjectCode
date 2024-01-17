@@ -1,7 +1,8 @@
 #include "CPUSolver.h"
-#include "Init.h" // MatrixMAlloc, FlagMatrixMAlloc, ObstacleMatrixMAlloc, SetFlags
-#include "Boundary.h" // SetBoundaryConditions
-#include "Computation.h" // ComputeTimestep, ComputeFG, ComputeRHS, PoissonMultiThreaded, ComputeVelocities, ComputeStream
+#include "Init.h"
+#include "Boundary.h"
+#include "Flags.h"
+#include "Computation.h"
 
 CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {
     velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -14,6 +15,7 @@ CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     FG.x = MatrixMAlloc(iMax + 2, jMax + 2);
     FG.y = MatrixMAlloc(iMax + 2, jMax + 2);
 
+    obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
     flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
 
     flattenedHVel = new REAL[iMax * jMax];
@@ -24,7 +26,6 @@ CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     coordinates = nullptr;
     coordinatesLength = 0;
     numFluidCells = 0;
-    obstacles = nullptr;
     stepSizes = DoubleReal();
 }
 
@@ -61,10 +62,7 @@ REAL* CPUSolver::GetStreamFunction() const {
     return flattenedStream;
 }
 
-bool** CPUSolver::GetObstacles() {
-    if (obstacles == nullptr) {
-        obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
-    }
+bool** CPUSolver::GetObstacles() const {
     return obstacles;
 }
 

@@ -20,16 +20,15 @@ private:
     PointerWithPitch<REAL> F; // Quantity F, resides on device.
     PointerWithPitch<REAL> G; // Quantity G, resides on device.
     PointerWithPitch<BYTE> devFlags; // Cell flags, resides on device.
-    PointerWithPitch<bool> devObstacles; // Boolean obstacles array, resides on device.
 
+    REAL* transmissionHVel;
+    REAL* transmissionVVel;
+    REAL* transmissionPressure;
+    REAL* transmissionStream;
     REAL* copiedHVel;
     REAL* copiedVVel;
     REAL* copiedPressure;
     REAL* copiedStream;
-    REAL* copiedEnlargedHVel;
-    REAL* copiedEnlargedVVel;
-    REAL* copiedEnlargedPressure;
-    REAL* copiedEnlargedStream;
 
     REAL delX; // Step size in x direction, resides on host.
     REAL delY; // Step size in y direction, resides on host.
@@ -43,11 +42,10 @@ private:
     dim3 numBlocks; // Number of blocks for a grid of iMax x jMax threads.
     dim3 threadsPerBlock; // Maximum number of threads per block in a 2D square allocation.
 
-    bool** hostObstacles; // 2D array of obstacles, resides on host.
-    BYTE** hostFlags; // 2D array of flags, resides on host.
+    bool** obstacles; // 2D array of obstacles, resides on host.
 
     cudaDeviceProp deviceProperties;
-    cudaStream_t* streams; // Streams that can be used. First are the computation streams (0 to the number of computation streams), then are memcpy streams. To access memcpy streams, first add computationStreams then an offset
+    cudaStream_t* streams; // Streams that can be used. First are the computation streams (0 to the number of computation streams), then are memcpy streams. To access memcpy streams, first add computationStreams as an offset
 
     template<typename T>
     cudaError_t CopyFieldToDevice(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength);
@@ -72,7 +70,7 @@ public:
 
     REAL* GetStreamFunction() const;
 
-    bool** GetObstacles();
+    bool** GetObstacles() const;
 
     void ProcessObstacles();
 

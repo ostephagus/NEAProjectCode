@@ -193,7 +193,7 @@ void BackendCoordinator::ReceiveParameters(const BYTE parameterBits, SimulationP
 }
 
 void BackendCoordinator::ReceiveData(BYTE startMarker) {
-    if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Only supported fixed-length field is obstacles
+    if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Obstacles have a separate handler
         ReceiveObstacles();
     }
     else if ((startMarker & ~PipeConstants::Marker::PRMMASK) == PipeConstants::Marker::PRMSTART) { // Check if startMarker is a PRMSTART by ANDing it with the inverse of the parameter mask
@@ -211,7 +211,7 @@ void BackendCoordinator::ReceiveData(BYTE startMarker) {
     }
     else {
         std::cerr << "Server sent unsupported data" << std::endl;
-        pipeManager.SendByte(PipeConstants::Error::BADREQ); // All others not supported at the moment
+        pipeManager.SendByte(PipeConstants::Error::BADREQ); // Error if the start marker was unrecognised.
     }
 }
 
