@@ -41,6 +41,11 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     copiedPressure = new REAL[iMax * jMax];
     copiedStream = new REAL[iMax * jMax];
 
+    copiedEnlargedHVel = new REAL[(iMax + 2) * (jMax + 2)];
+    copiedEnlargedVVel = new REAL[(iMax + 2) * (jMax + 2)];
+    copiedEnlargedPressure = new REAL[(iMax + 2) * (jMax + 2)];
+    copiedEnlargedStream = new REAL[(iMax + 1) * (jMax + 2)];
+
     devCoordinates = nullptr;
     hostObstacles = nullptr;
     hostFlags = nullptr;
@@ -66,44 +71,25 @@ GPUSolver::~GPUSolver() {
 
     FreeMatrix(hostObstacles, iMax + 2);
     FreeMatrix(hostFlags, iMax + 2);
+
     delete[] streams;
 
     delete[] copiedHVel;
     delete[] copiedVVel;
     delete[] copiedPressure;
     delete[] copiedStream;
-}
-template<typename T>
-void GPUSolver::UnflattenArray(T** pointerArray, T* flattenedArray, int length, int divisions) {
-    for (int i = 0; i < length / divisions; i++) {
 
-        memcpy(
-            pointerArray[i],                // Destination address - address at ith pointer
-            flattenedArray + i * divisions, // Source start address - move (i * divisions) each iteration
-            divisions * sizeof(T)           // Bytes to copy - divisions
-        );
-
-    }
-}
-
-template<typename T>
-void GPUSolver::FlattenArray(T** pointerArray, T* flattenedArray, int length, int divisions) {
-    for (int i = 0; i < length / divisions; i++) {
-
-        memcpy(
-            flattenedArray + i * divisions, // Destination address - move (i * divisions) each iteration
-            pointerArray[i],                // Source start address - address at ith pointer
-            divisions * sizeof(T)           // Bytes to copy - divisions
-        );
-
-    }
+    delete[] copiedEnlargedHVel;
+    delete[] copiedEnlargedVVel;
+    delete[] copiedEnlargedPressure;
+    delete[] copiedEnlargedStream;
 }
 
 template<typename T>
 cudaError_t GPUSolver::CopyFieldToDevice(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength)
 {
     T* hostFieldFlattened = new T[xLength * yLength];
-    FlattenArray(hostField, hostFieldFlattened, xLength * yLength, yLength);
+    FlattenArray(hostField, 0, 0, hostFieldFlattened, 0, 0, 0, xLength, yLength);
 
     cudaError_t retVal = cudaMemcpy2D(devField.ptr, devField.pitch, hostFieldFlattened, yLength * sizeof(T), yLength * sizeof(T), xLength, cudaMemcpyHostToDevice);
     delete[] hostFieldFlattened;
@@ -117,7 +103,7 @@ cudaError_t GPUSolver::CopyFieldToHost(PointerWithPitch<T> devField, T** hostFie
 
     cudaError_t retVal = cudaMemcpy2D(hostFieldFlattened, yLength * sizeof(T), devField.ptr, devField.pitch, yLength * sizeof(T), xLength, cudaMemcpyDeviceToHost);
 
-    UnflattenArray(hostField, hostFieldFlattened, xLength * yLength, yLength);
+    UnflattenArray(hostField, 0, 0, hostFieldFlattened, 0, 0, 0, xLength, yLength);
     delete[] hostFieldFlattened;
 
     return retVal;
@@ -139,6 +125,32 @@ void GPUSolver::SetBlockDimensions()
     int blocksForIMax = (int)ceilf((float)iMax / threadsPerBlock.x);
     int blocksForJMax = (int)ceilf((float)jMax / threadsPerBlock.y);
     numBlocks = dim3(blocksForIMax, blocksForJMax);
+}
+
+void GPUSolver::ResizeField(REAL* enlargedField, int enlargedXLength, int enlargedYLength, int xOffset, int yOffset, REAL* transmissionField, int xLength, int yLength) {
+    for (int i = 0; i < xLength; i++) {
+        memcpy(
+            transmissionField + i * yLength,
+            enlargedField + (i + xOffset) * enlargedYLength + yOffset,
+            yLength * sizeof(REAL)
+        );
+    }
+}
+
+REAL* GPUSolver::GetHorizontalVelocity() const {
+    return copiedHVel;
+}
+
+REAL* GPUSolver::GetVerticalVelocity() const {
+    return copiedVVel;
+}
+
+REAL* GPUSolver::GetPressure() const {
+    return copiedPressure;
+}
+
+REAL* GPUSolver::GetStreamFunction() const {
+    return copiedStream;
 }
 
 bool** GPUSolver::GetObstacles() {
@@ -208,18 +220,25 @@ void GPUSolver::Timestep(REAL& simulationTime) {
 
     if (Poisson(streams, threadsPerBlock, pressure, RHS, devFlags, devCoordinates, coordinatesLength, numFluidCells, iMax, jMax, numColoursSOR, delX, delY, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, &pressureResidualNorm) == 0) goto free; // Here 0 is the error case.
     
-    cudaMemcpy2DAsync(copiedPressure, jMax * sizeof(REAL), pressure.ptr, pressure.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 0]); // Pressure is unchanged after this point, so can copy it async
+    cudaMemcpy2DAsync(copiedEnlargedPressure, (jMax + 2) * sizeof(REAL), pressure.ptr, pressure.pitch, (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyDeviceToHost, streams[computationStreams + 0]); // Pressure is unchanged after this point, so can copy it async
 
     if (ComputeVelocities(streams, threadsPerBlock, hVel, vVel, F, G, pressure, devFlags, iMax, jMax, timestep, delX, delY) != cudaSuccess) goto free;
 
-    cudaMemcpy2DAsync(copiedHVel, jMax * sizeof(REAL), hVel.ptr, hVel.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 1]); // Velocities are unchanged after this point, copy them
-    cudaMemcpy2DAsync(copiedVVel, jMax * sizeof(REAL), vVel.ptr, vVel.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 2]);
+    cudaMemcpy2DAsync(copiedEnlargedHVel, (jMax + 2) * sizeof(REAL), hVel.ptr, hVel.pitch, (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyDeviceToHost, streams[computationStreams + 1]); // Velocities are unchanged after this point, copy them
+    cudaMemcpy2DAsync(copiedEnlargedVVel, (jMax + 2) * sizeof(REAL), vVel.ptr, vVel.pitch, (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyDeviceToHost, streams[computationStreams + 2]);
 
     ComputeStream KERNEL_ARGS(numBlocksForStreamCalc, threadsPerBlock, 0, streams[0]) (hVel, streamFunction, iMax, jMax, delY);
 
-    cudaMemcpy2DAsync(copiedStream, jMax * sizeof(REAL), streamFunction.ptr, streamFunction.pitch, jMax * sizeof(REAL), iMax, cudaMemcpyDeviceToHost, streams[computationStreams + 3]); // Stream function is the last to be calculated, copy it once it is ready.
+    cudaMemcpy2DAsync(copiedEnlargedStream, (jMax + 1) * sizeof(REAL), streamFunction.ptr, streamFunction.pitch, (jMax + 1) * sizeof(REAL), iMax + 1, cudaMemcpyDeviceToHost, streams[computationStreams + 3]); // Stream function is the last to be calculated, copy it once it is ready.
     
+    // Resize all of the fields for transmission.
+    ResizeField(copiedEnlargedHVel, iMax + 2, jMax + 2, 1, 1, copiedHVel, iMax, jMax);
+    ResizeField(copiedEnlargedVVel, iMax + 2, jMax + 2, 1, 1, copiedVVel, iMax, jMax);
+    ResizeField(copiedEnlargedPressure, iMax + 2, jMax + 2, 1, 1, copiedPressure, iMax, jMax);
+    ResizeField(copiedEnlargedStream, iMax + 1, jMax + 1, 1, 1, copiedStream, iMax, jMax);
+
     simulationTime += *hostTimestep; // Only add to the simulation time if the timestep was successful. Error case is therefore simulationTime unchanged after Timestep returns.
+
 
 free: // Pointers that need to be freed even if timestep is unsuccessful.
     delete hostTimestep;

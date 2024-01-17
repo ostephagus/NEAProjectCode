@@ -26,6 +26,10 @@ private:
     REAL* copiedVVel;
     REAL* copiedPressure;
     REAL* copiedStream;
+    REAL* copiedEnlargedHVel;
+    REAL* copiedEnlargedVVel;
+    REAL* copiedEnlargedPressure;
+    REAL* copiedEnlargedStream;
 
     REAL delX; // Step size in x direction, resides on host.
     REAL delY; // Step size in y direction, resides on host.
@@ -46,12 +50,6 @@ private:
     cudaStream_t* streams; // Streams that can be used. First are the computation streams (0 to the number of computation streams), then are memcpy streams. To access memcpy streams, first add computationStreams then an offset
 
     template<typename T>
-    void UnflattenArray(T** pointerArray, T* flattenedArray, int length, int divisions);
-
-    template<typename T>
-    void FlattenArray(T** pointerArray, T* flattenedArray, int length, int divisions);
-
-    template<typename T>
     cudaError_t CopyFieldToDevice(PointerWithPitch<T> devField, T** hostField, int xLength, int yLength);
 
     template<typename T>
@@ -59,10 +57,20 @@ private:
 
     void SetBlockDimensions();
 
+    void ResizeField(REAL* enlargedField, int enlargedXLength, int enlargedYLength, int xOffset, int yOffset, REAL* transmissionField, int xLength, int yLength);
+
 public:
     GPUSolver(SimulationParameters parameters, int iMax, int jMax);
 
     ~GPUSolver();
+
+    REAL* GetHorizontalVelocity() const;
+
+    REAL* GetVerticalVelocity() const;
+
+    REAL* GetPressure() const;
+
+    REAL* GetStreamFunction() const;
 
     bool** GetObstacles();
 

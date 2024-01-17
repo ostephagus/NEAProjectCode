@@ -34,7 +34,7 @@ BYTE PipeManager::Read() {
 	return outputByte;
 }
 
-void PipeManager::Write(const BYTE* buffer, int bufferLength)
+void PipeManager::Write(const BYTE* buffer, DWORD bufferLength)
 {
 	if (!WriteFile(pipeHandle, buffer, bufferLength, nullptr, NULL)) {
 		std::cerr << "Failed to write to the named pipe, error code " << GetLastError() << std::endl;
@@ -192,5 +192,9 @@ void PipeManager::SendField(REAL** field, int xLength, int yLength, int xOffset,
 	Write(buffer, xLength * yLength * sizeof(REAL));
 
 	delete[] buffer;
+}
+
+void PipeManager::SendField(REAL* field, int numElements) {
+	Write(reinterpret_cast<BYTE*>(field), numElements * sizeof(REAL));
 }
 #pragma endregion

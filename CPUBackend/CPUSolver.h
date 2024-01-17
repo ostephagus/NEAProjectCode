@@ -12,6 +12,11 @@ private:
     REAL** streamFunction;
     DoubleField FG;
 
+    REAL* flattenedHVel;
+    REAL* flattenedVVel;
+    REAL* flattenedPressure;
+    REAL* flattenedStream;
+
     DoubleReal stepSizes;
 
     bool** obstacles;
@@ -26,13 +31,13 @@ public:
 
     bool** GetObstacles();
 
-    REAL** GetHorizontalVelocity() const;
+    REAL* GetHorizontalVelocity() const;
 
-    REAL** GetVerticalVelocity() const;
+    REAL* GetVerticalVelocity() const;
 
-    REAL** GetPressure() const;
+    REAL* GetPressure() const;
 
-    REAL** GetStreamFunction() const;
+    REAL* GetStreamFunction() const;
 
     void ProcessObstacles();
 

@@ -16,6 +16,11 @@ CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
 
     flags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
 
+    flattenedHVel = new REAL[iMax * jMax];
+    flattenedVVel = new REAL[iMax * jMax];
+    flattenedPressure = new REAL[iMax * jMax];
+    flattenedStream = new REAL[iMax * jMax];
+
     coordinates = nullptr;
     coordinatesLength = 0;
     numFluidCells = 0;
@@ -33,22 +38,27 @@ CPUSolver::~CPUSolver() {
     FreeMatrix(FG.y, iMax + 2);
     FreeMatrix(obstacles, iMax + 2);
     FreeMatrix(flags, iMax + 2);
+
+    delete[] flattenedHVel;
+    delete[] flattenedVVel;
+    delete[] flattenedPressure;
+    delete[] flattenedStream;
 }
 
-REAL** CPUSolver::GetHorizontalVelocity() const {
-    return velocities.x;
+REAL* CPUSolver::GetHorizontalVelocity() const {
+    return flattenedHVel;
 }
 
-REAL** CPUSolver::GetVerticalVelocity() const {
-    return velocities.y;
+REAL* CPUSolver::GetVerticalVelocity() const {
+    return flattenedVVel;
 }
 
-REAL** CPUSolver::GetPressure() const {
-    return pressure;
+REAL* CPUSolver::GetPressure() const {
+    return flattenedPressure;
 }
 
-REAL** CPUSolver::GetStreamFunction() const {
-    return streamFunction;
+REAL* CPUSolver::GetStreamFunction() const {
+    return flattenedStream;
 }
 
 bool** CPUSolver::GetObstacles() {
@@ -89,4 +99,11 @@ void CPUSolver::Timestep(REAL& simulationTime) {
 
     ComputeVelocities(velocities, FG, pressure, flags, iMax, jMax, timestep, stepSizes);
     ComputeStream(velocities, streamFunction, iMax, jMax, stepSizes);
+
+    // Copy all of the 2D arrays to flattened arrays.
+    // Parameters:     2D array        2D array offsets|flattened array and offsets|size of copy domain    
+    FlattenArray<REAL>(velocities.x,   1, 1,            flattenedHVel,     0, 0, 0, iMax, jMax);
+    FlattenArray<REAL>(velocities.y,   1, 1,            flattenedVVel,     0, 0, 0, iMax, jMax);
+    FlattenArray<REAL>(pressure,       1, 1,            flattenedPressure, 0, 0, 0, iMax, jMax);
+    FlattenArray<REAL>(streamFunction, 0, 0,            flattenedStream,   0, 0, 0, iMax, jMax);
 }

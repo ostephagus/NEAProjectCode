@@ -13,7 +13,7 @@ private:
 	void ReadToNull(BYTE* outBuffer);
 	bool Read(BYTE* outBuffer, int bytesToRead);
 	BYTE Read();
-	void Write(const BYTE* buffer, int bufferLength);
+	void Write(const BYTE* buffer, DWORD bufferLength);
 	void Write(BYTE byte);
 
 	/// <summary>
@@ -99,6 +99,13 @@ public:
 	/// <param name="xOffset">The x-index of the first value to be transmitted.</param>
 	/// <param name="yOffset">The y-index of the first value to be transmitted.</param>
 	void SendField(REAL** field, int xLength, int yLength, int xOffset, int yOffset);
+
+	/// <summary>
+	/// Sends the contents of a field through the pipe.
+	/// </summary>
+	/// <param name="field">The field to transmit as a flattened array.</param>
+	/// <param name="numElements">The number of elements in the field, <c>height * width</c>.</param>
+	void SendField(REAL* field, int numElements);
 };
 
 #endif // !PIPE_MANAGER_H

@@ -92,22 +92,22 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
 
             if (hVelWanted) {
                 pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::HVEL);
-                pipeManager.SendField(solver->GetHorizontalVelocity(), iMax, jMax, 1, 1); // Set the offsets to 1 and the length to iMax / jMax to exclude boundary cells at cells 0 and max
+                pipeManager.SendField(solver->GetHorizontalVelocity(), iMax * jMax);
                 pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::HVEL);
             }
             if (vVelWanted) {
                 pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::VVEL);
-                pipeManager.SendField(solver->GetVerticalVelocity(), iMax, jMax, 1, 1);
+                pipeManager.SendField(solver->GetVerticalVelocity(), iMax * jMax);
                 pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::VVEL);
             }
             if (pressureWanted) {
                 pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::PRES);
-                pipeManager.SendField(solver->GetPressure(), iMax, jMax, 1, 1);
+                pipeManager.SendField(solver->GetPressure(), iMax * jMax);
                 pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::PRES);
             }
             if (streamWanted) {
                 pipeManager.SendByte(PipeConstants::Marker::FLDSTART | PipeConstants::Marker::STRM);
-                pipeManager.SendField(solver->GetStreamFunction(), iMax, jMax, 0, 0); // Stream function does not include boundary cells
+                pipeManager.SendField(solver->GetStreamFunction(), iMax * jMax);
                 pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::STRM);
             }
 
