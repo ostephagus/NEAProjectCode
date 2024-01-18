@@ -9,7 +9,7 @@ namespace UserInterface.HelperClasses
 
         private T currentSum = default; // Contains the sum of all the current data points
 
-        public T Average { get; private set; }
+        public T Average { get; private set; } = default;
 
         public MovingAverage(int windowSize)
         {

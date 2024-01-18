@@ -46,25 +46,6 @@ namespace UserInterface
             }
         }
 
-        private void SetDefaultParameters()
-        {
-            const float width = 1f;
-            const float height = 1f;
-            const float timeStepSafetyFactor = 0.8f;
-            const float relaxationParameter = 1.7f;
-            const float pressureResidualTolerance = 2f;
-            const float pressureMaxIterations = 1000f;
-            const float reynoldsNumber = 2000f;
-            const float fluidVelocity = 1f;
-            const float surfaceFriction = 0f;
-            FieldParameters initialFieldParams = new();
-            const bool drawContours = true;
-            const float contourTolerance = 0.01f;
-            const float contourSpacing = 0.05f;
-
-            parameterHolder = new(width, height, timeStepSafetyFactor, relaxationParameter, pressureResidualTolerance, pressureMaxIterations, reynoldsNumber, fluidVelocity, surfaceFriction, initialFieldParams, drawContours, contourTolerance, contourSpacing);
-        }
-
         public static void RaiseUserControlChanged(object? sender, UserControlChangeEventArgs e) // Static method for other classes to invoke the UserControlChanged event
         {
             UserControlChanged.Invoke(sender, e);
@@ -75,7 +56,7 @@ namespace UserInterface
             fullScreenWindowContainer = new MainWindow(); // Initialise container windows
             popupWindowContainer = new PopupWindow();
 
-            SetDefaultParameters();
+            parameterHolder = new(DefaultParameters.WIDTH, DefaultParameters.HEIGHT, DefaultParameters.TIMESTEP_SAFETY_FACTOR, DefaultParameters.RELAXATION_PARAMETER, DefaultParameters.PRESSURE_RESIDUAL_TOLERANCE, DefaultParameters.PRESSURE_MAX_ITERATIONS, DefaultParameters.REYNOLDS_NUMBER, DefaultParameters.FLUID_VELOCITY, DefaultParameters.SURFACE_FRICTION, new FieldParameters(), DefaultParameters.DRAW_CONTOURS, DefaultParameters.CONTOUR_TOLERANCE, DefaultParameters.CONTOUR_SPACING); // Use the defaults from DefaultParameters constant holder
 
             currentUserControl = new ConfigScreen(parameterHolder);
             currentWindow = popupWindowContainer;
