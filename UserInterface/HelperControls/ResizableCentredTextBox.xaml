@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Viewbox HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Viewbox HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="LayoutRoot">
         <TextBlock Margin="10 0 10 0" Text="{Binding Text}" />
     </Viewbox>
 </UserControl>

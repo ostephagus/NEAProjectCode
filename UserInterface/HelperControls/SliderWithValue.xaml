@@ -24,7 +24,7 @@
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.Column="0" Content="{Binding Minimum}" />
         <Label Grid.Row="0" Grid.Column="2" Content="{Binding Maximum}" />
-        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" x:Name="slider" Margin="10 0 10 0" Ticks="{Binding ForceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding ForceIntegers}" />
-        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding ElementName=slider, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Right" Width="40" />
+        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Value="{Binding Value}"  x:Name="slider" Margin="10 0 10 0" Ticks="{Binding ForceIntegers, Converter={StaticResource Converter_BoolToTickPlacement}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding ForceIntegers}" />
+        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Value}" TextAlignment="Right" Width="40" />
     </Grid>
 </UserControl>

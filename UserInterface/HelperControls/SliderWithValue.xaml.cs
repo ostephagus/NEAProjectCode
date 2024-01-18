@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
@@ -8,44 +7,38 @@ namespace UserInterface.HelperControls
     /// <summary>
     /// Interaction logic for SliderWithValue.xaml
     /// </summary>
-    public partial class SliderWithValue : UserControl, INotifyPropertyChanged
+    public partial class SliderWithValue : UserControl
     {
-        public SliderWithValue()
-        {
-            InitializeComponent();
-            LayoutRoot.DataContext = this;
-
-            // Add event handler to update the Value property when the Slider value changes
-            slider.ValueChanged += Slider_ValueChanged;
-        }
-        public double Minimum { get; set; } = 0;
-        public double Maximum { get; set; } = 100;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register(
-                "Value",
-                typeof(double),
-                typeof(SliderWithValue),
-                new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnValueChanged));
+        // Dependency properties are used extensively here to allow for bindings on Value, Minimum and Maximum.
 
         public double Value
         {
             get { return (double)GetValue(ValueProperty); }
             set { SetValue(ValueProperty, value); }
         }
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)); // Value is two-way: changes to the slider must be passed to the source that uses this UserControl.
 
-        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public double Minimum
         {
-            SliderWithValue sliderWithValue = (SliderWithValue)d; // Get the calling instance
-            sliderWithValue.slider.Value = (double)e.NewValue;
+            get { return (double)GetValue(MinimumProperty); }
+            set { SetValue(MinimumProperty, value); }
         }
+        public static readonly DependencyProperty MinimumProperty =
+            DependencyProperty.Register("Minimum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(0d));
 
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        public double Maximum
         {
-            // Update the Value property when the Slider value changes
-            Value = e.NewValue;
+            get { return (double)GetValue(MaximumProperty); }
+            set { SetValue(MaximumProperty, value); }
+        }
+        public static readonly DependencyProperty MaximumProperty =
+            DependencyProperty.Register("Maximum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(1d));
+
+        public SliderWithValue()
+        {
+            InitializeComponent();
+            LayoutRoot.DataContext = this;
         }
 
         public bool ForceIntegers { get; set; } = false;
