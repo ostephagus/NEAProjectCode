@@ -35,7 +35,6 @@ namespace UserInterface.ViewModels
         }
 
         public Commands.ConfigScreenReset ResetCommand { get; set; }
-
         public Commands.ChangeWindow ChangeWindow { get; set; }
 
         public ConfigScreenVM(ParameterHolder parameterHolder) : base(parameterHolder)

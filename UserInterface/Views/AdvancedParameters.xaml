@@ -31,7 +31,7 @@
         <Label Grid.Row="3" Grid.Column="0">Pressure residual tolerance r</Label>
         <helpercontrols:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="10" Value="{Binding RMax}" />
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" Value="{Binding IterMax}" />
+        <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" ForceIntegers="True" Value="{Binding IterMax}" />
         <Label Grid.Row="5" Grid.Column="0">Grid cells per compute unit</Label>
         <helpercontrols:SliderWithValue Grid.Row="5" Grid.Column="1" Maximum="10" ForceIntegers="True"/>
         <Button x:Name="ResetButton" Grid.Row="6" Grid.Column="0" FontSize="16" Command="{Binding ResetCommand}">Reset values</Button>

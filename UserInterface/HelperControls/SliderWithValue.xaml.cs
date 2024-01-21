@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using UserInterface.HelperClasses;
 
 namespace UserInterface.HelperControls
 {
@@ -9,6 +10,7 @@ namespace UserInterface.HelperControls
     /// </summary>
     public partial class SliderWithValue : UserControl
     {
+
         // Dependency properties are used extensively here to allow for bindings on Value, Minimum and Maximum.
 
         public double Value

@@ -2,9 +2,10 @@
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 
-namespace UserInterface.HelperClasses
+namespace UserInterface.Converters
 {
-    public class BoolToTickPlacementConverter : IValueConverter
+    [ValueConversion(typeof(bool), typeof(TickPlacement))]
+    public class BoolToTickPlacement : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
