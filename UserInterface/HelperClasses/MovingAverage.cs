@@ -17,7 +17,7 @@ namespace UserInterface.HelperClasses
             dataPoints = new CircularQueue<T>(windowSize);
         }
 
-        public T UpdateAverage(T newValue)
+        public T UpdateAverage(T newValue) // TODO: Consider not returning average once MVVM is complete.
         {
             if (dataPoints.Count == windowSize)
             {

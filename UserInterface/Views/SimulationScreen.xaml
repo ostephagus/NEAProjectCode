@@ -4,9 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
-             xmlns:HelperControls="clr-namespace:UserInterface.HelperControls"
+             xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
+             xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
+             xmlns:converters="clr-namespace:UserInterface.Converters"
+             d:DataContext="{d:DesignInstance Type=viewmodels:SimulationScreenVM}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <local:SwappableScreen.Resources>
+        <ResourceDictionary>
+            <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
+        </ResourceDictionary>
+    </local:SwappableScreen.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MaxHeight="150"/>
@@ -20,7 +28,7 @@
             <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
 
-        <HelperControls:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulating" MaxWidth="300" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulating" MaxWidth="300" />
 
         <StackPanel Grid.Row="1" Grid.Column="0">
             <StackPanel.Resources>
@@ -28,7 +36,7 @@
                     <Setter Property="Margin" Value="0 0 0 0" />
                 </Style>
             </StackPanel.Resources>
-            <Button x:Name="BtnParametersSelect" Click="PanelButton_Click">
+            <Button x:Name="BtnParametersSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"> <!-- Test this! -->
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
@@ -41,7 +49,7 @@
                 </Button.Style>
                 <Image Source="/Images/ParametersIcon.png" />
             </Button>
-            <Button x:Name="BtnUnitsSelect" Click="PanelButton_Click">
+            <Button x:Name="BtnUnitsSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
@@ -54,7 +62,7 @@
                 </Button.Style>
                 <Image Source="/Images/UnitsIcon.png" />
             </Button>
-            <Button x:Name="BtnVisualisationSettingsSelect" Click="PanelButton_Click">
+            <Button x:Name="BtnVisualisationSettingsSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
@@ -67,7 +75,7 @@
                 </Button.Style>
                 <Image Source="/Images/VisualisationIcon.png" />
             </Button>
-            <Button x:Name="BtnRecordingSelect" Click="PanelButton_Click">
+            <Button x:Name="BtnRecordingSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
@@ -94,9 +102,9 @@
                 </Style>
             </StackPanel.Style>
             <Label>Fluid Velocity</Label>
-            <HelperControls:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="40" PropertyChanged="SliderInVel_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="40" Value="{Binding InVel}" />
             <Label>Material Friction</Label>
-            <HelperControls:SliderWithValue x:Name="SliderChi" Minimum="0" Maximum="1" PropertyChanged="SliderChi_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderChi" Minimum="0" Maximum="1" Value="{Binding Chi}" />
         </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
@@ -123,21 +131,20 @@
                 </Style>
             </StackPanel.Style>
             <Label>Field to visualise</Label>
-            <RadioButton x:Name="RBPressure" GroupName="FieldSelector" IsChecked="True">Pressure</RadioButton>
-            <RadioButton x:Name="RBVelocity" GroupName="FieldSelector">Velocity</RadioButton>
+            <RadioButton x:Name="RBPressure" GroupName="FieldSelector" IsChecked="{Binding PressureChecked}">Pressure</RadioButton>
+            <RadioButton x:Name="RBVelocity" GroupName="FieldSelector" IsChecked="{Binding VelocityChecked}">Velocity</RadioButton>
             <Label>Minimum value</Label>
-            <HelperControls:SliderWithValue x:Name="SliderMin" Minimum="0" Maximum="2000" />
+            <helpercontrols:SliderWithValue x:Name="SliderMin" Minimum="{Binding VisLowerBound, Mode=OneWay}" Maximum="{Binding VisUpperBound, Mode=OneWay}" Value="{Binding VisMin}"/>
             <Label>Maximum value</Label>
-            <HelperControls:SliderWithValue x:Name="SliderMax" Minimum="0" Maximum="2000" />
-            <Button x:Name="BtnFieldParamsSave" Click="BtnFieldParamsSave_Click">Save field parameters</Button>
+            <helpercontrols:SliderWithValue x:Name="SliderMax" Minimum="{Binding VisLowerBound, Mode=OneWay}" Maximum="{Binding VisUpperBound, Mode=OneWay}" Value="{Binding VisMax}" />
             <StackPanel Orientation="Horizontal">
                 <Label>Streamlines</Label>
-                <CheckBox x:Name="CBContourLines" IsChecked="True" Click="CBContourLines_Click" />
+                <CheckBox x:Name="CBContourLines" IsChecked="{Binding StreamlinesEnabled}" />
             </StackPanel>
             <Label>Streamline contour tolerance</Label>
-            <HelperControls:SliderWithValue x:Name="SliderContourTolerance" Minimum="0" Maximum="0.05" PropertyChanged="SliderContourTolerance_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderContourTolerance" Minimum="0" Maximum="0.05" Value="{Binding ContourTolerance}" />
             <Label>Streamline contour spacing</Label>
-            <HelperControls:SliderWithValue x:Name="SliderContourSpacing" Minimum="0" Maximum="0.5" PropertyChanged="SliderContourSpacing_PropertyChanged" />
+            <helpercontrols:SliderWithValue x:Name="SliderContourSpacing" Minimum="0" Maximum="0.5" Value="{Binding ContourSpacing}" />
         </StackPanel>
         <Label Grid.Row="2" Grid.Column="1">
             <Label.Style>
@@ -152,19 +159,19 @@
             </Label.Style>
             This is the recording settings panel
         </Label>
-        <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" x:Name="VisualisationControlHolder" />
+        <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}" />
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Margin" Value="2.5 0 2.5 5" />
                 </Style>
             </StackPanel.Resources>
-            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS}" /><Run Text=" FPS."/></TextBlock>
+            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" /><Run Text=" FPS."/></TextBlock>
             <Button>Edit simulation structure</Button>
             <Button>Advanced parameters</Button>
             <Button>Save as image</Button>
             <Button>Save as video</Button>
-            <Button Command="{Binding Command_StopBackendExecuting}">Stop simulating</Button>
+            <Button Command="{Binding StopBackendCommand}">Stop simulating</Button>
         </StackPanel>
     </Grid>
 </local:SwappableScreen>

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define NO_GPU_BACKEND
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -7,19 +9,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
+
 namespace UserInterface.HelperClasses
 {
-
     /// <summary>
     /// Handler class for dealing with the backend
     /// </summary>
-    public class BackendManager
+    public class BackendManager : INotifyPropertyChanged
     {
         private Process? backendProcess;
         private string filePath;
         private PipeManager? pipeManager;
         private int iMax;
         private int jMax;
+
+        private float framesPerSecond;
+        private Stopwatch frameTimer;
+
         private ResizableLinearQueue<ParameterChangedEventArgs> parameterSendQueue;
         private ParameterHolder parameterHolder;
 
@@ -28,6 +34,18 @@ namespace UserInterface.HelperClasses
         public int FieldLength { get => iMax * jMax; }
         public int IMax { get => iMax; set => iMax = value; }
         public int JMax { get => jMax; set => jMax = value; }
+
+        public float FramesPerSecond
+        {
+            get => framesPerSecond;
+            private set
+            {
+                framesPerSecond = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FramesPerSecond)));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private bool StartBackend()
         {
@@ -180,6 +198,24 @@ namespace UserInterface.HelperClasses
             parameterHolder.PropertyChanged += HandleParameterChanged;
 
             parameterSendQueue = new();
+
+            frameTimer = new Stopwatch();
+
+#if NO_GPU_BACKEND
+            if (File.Exists(".\\CPUBackend.exe"))
+            {
+                filePath = ".\\CPUBackend.exe"; // Look for CPUBackend in same directory...
+            }
+            else if (File.Exists("..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"))
+            {
+                filePath = "..\\..\\..\\..\\x64\\Debug\\CPUBackend.exe"; // ...then look in debug directory.
+            }
+            else
+            {
+                MessageBox.Show("Could not find backend executable. Make sure that CPUBackend.exe exists in the same folder as UserInterface.exe");
+                throw new FileNotFoundException("Backend executable could not be found");
+            }
+#else // ^^ NO_GPU_BACKEND ^^ / vv !NO_GPU_BACKEND vv
             if (File.Exists(".\\GPUBackend.exe"))
             {
                 filePath = ".\\GPUBackend.exe"; // First try to find GPU backend in same directory...
@@ -201,6 +237,7 @@ namespace UserInterface.HelperClasses
                 MessageBox.Show("Could not find backend executable. Make sure that either GPUBackend.exe or CPUBackend.exe exists in the same folder as UserInterface.exe");
                 throw new FileNotFoundException("Backend executable could not be found");
             }
+#endif // !NO_GPU_BACKEND
         }
 
         public BackendManager(string executableFilePath, ParameterHolder parameterHolder)
@@ -210,6 +247,8 @@ namespace UserInterface.HelperClasses
 
             parameterSendQueue = new();
             filePath = executableFilePath;
+
+            frameTimer = new Stopwatch();
         }
 
         /// <summary>
@@ -281,6 +320,9 @@ namespace UserInterface.HelperClasses
 
             byte[] tmpByteBuffer = new byte[FieldLength * sizeof(float)]; // Temporary buffer for pipe output
 
+            frameTimer.Start(); // Start the timer and create a variable to hold the previous time.
+            TimeSpan iterationStartTime = frameTimer.Elapsed;
+
             bool cancellationRequested = token.IsCancellationRequested;
 
             while (!cancellationRequested) // Repeat until the task is cancelled
@@ -312,6 +354,10 @@ namespace UserInterface.HelperClasses
                     SendParameters();
                     SendControlByte(PipeConstants.Status.OK);
                 }
+                TimeSpan iterationLength = frameTimer.Elapsed - iterationStartTime;
+                FramesPerSecond = 1 / (float)iterationLength.TotalSeconds;
+
+                iterationStartTime = frameTimer.Elapsed; // Set the new iteration start time once FPS processing is done.
             }
 
             SendControlByte(PipeConstants.Status.STOP); // Send a request to stop the backend, and make sure its stops ok

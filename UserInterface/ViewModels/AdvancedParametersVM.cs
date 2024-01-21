@@ -35,7 +35,7 @@ namespace UserInterface.ViewModels
 
         public Commands.AdvancedParametersReset ResetCommand { get; set; }
 
-        public Commands.SaveCommand SaveCommand { get; set; }
+        public Commands.SaveParameters SaveCommand { get; set; }
         #endregion
 
         public AdvancedParametersVM(ParameterHolder parameterHolder) : base(parameterHolder)
@@ -46,7 +46,7 @@ namespace UserInterface.ViewModels
             IterMax = parameterHolder.PressureMaxIterations.Value;
 
             ResetCommand = new Commands.AdvancedParametersReset(this, parameterHolder);
-            SaveCommand = new Commands.SaveCommand(this, parameterHolder, new Commands.ChangeWindow());
+            SaveCommand = new Commands.SaveParameters(this, parameterHolder, new Commands.ChangeWindow());
         }
     }
 }

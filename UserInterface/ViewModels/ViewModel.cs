@@ -12,7 +12,7 @@ namespace UserInterface.ViewModels
             PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected ParameterHolder? parameterHolder;
+        protected ParameterHolder parameterHolder;
 
         protected ParameterStruct<T> ModifyParameterValue<T>(ParameterStruct<T> parameterStruct, T newValue)
         {
@@ -20,16 +20,11 @@ namespace UserInterface.ViewModels
             return parameterStruct;
         }
 
-        public ParameterHolder? ParameterHolder { get => parameterHolder; set => parameterHolder = value; }
-
-        public ViewModel()
-        {
-            ParameterHolder = null;
-        }
+        public ParameterHolder ParameterHolder { get => parameterHolder; set => parameterHolder = value; }
 
         public ViewModel(ParameterHolder parameterHolder)
         {
-            ParameterHolder = parameterHolder;
+            this.parameterHolder = parameterHolder;
         }
     }
 }
