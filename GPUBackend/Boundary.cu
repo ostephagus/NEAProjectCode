@@ -11,33 +11,41 @@ __global__ void SetFlags(PointerWithPitch<bool> obstacles, PointerWithPitch<BYTE
     F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); //5 bits in the format: self, north, east, south, west.
 }
 
-__global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int jMax)
+__global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
+
+    if (index > iMax) return;
 
     F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax + 1) = F_PITCHACCESS(hVel.ptr, hVel.pitch, index, jMax); // Copy hVel from the cell below
     F_PITCHACCESS(vVel.ptr, vVel.pitch, index, jMax) = 0; // Set vVel along the top to 0
 }
 
-__global__ void BottomBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel)
+__global__ void BottomBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
+
+    if (index > iMax) return;
 
     F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 0) = F_PITCHACCESS(hVel.ptr, hVel.pitch, index, 1); // Copy hVel from the cell above
     F_PITCHACCESS(vVel.ptr, vVel.pitch, index, 0) = 0; // Set vVel along the bottom to 0
 }
 
-__global__ void LeftBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, REAL inflowVelocity)
+__global__ void LeftBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax, REAL inflowVelocity)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
+
+    if (index > jMax) return;
 
     F_PITCHACCESS(hVel.ptr, hVel.pitch, 0, index) = inflowVelocity; // Set hVel to inflow velocity on left boundary
     F_PITCHACCESS(vVel.ptr, vVel.pitch, 0, index) = 0; // Set vVel to 0
 }
 
-__global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax)
+__global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x + 1;
+
+    if (index > jMax) return;
 
     F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax, index) = F_PITCHACCESS(hVel.ptr, hVel.pitch, iMax - 1, index); // Copy the velocity values from the previous cell (mass flows out at the boundary)
     F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax + 1, index) = F_PITCHACCESS(vVel.ptr, vVel.pitch, iMax, index);
@@ -45,7 +53,8 @@ __global__ void RightBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL
 
 __global__ void ObstacleBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, PointerWithPitch<BYTE> flags, uint2* coordinates, int coordinatesLength, REAL chi) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
-    if (index > coordinatesLength) return;
+    if (index >= coordinatesLength) return;
+
     
     uint2 coordinate = coordinates[index];
 
@@ -79,15 +88,19 @@ cudaError_t SetBoundaryConditions(cudaStream_t* streams, int threadsPerBlock, Po
     int numBlocksTopBottom = INT_DIVIDE_ROUND_UP(iMax, threadsPerBlock);
     int numBlocksLeftRight = INT_DIVIDE_ROUND_UP(jMax, threadsPerBlock);
     int numBlocksObstacle = INT_DIVIDE_ROUND_UP(coordinatesLength, threadsPerBlock);
+
+    uint2* testingCoordinates = new uint2[coordinatesLength];
+    cudaMemcpy(testingCoordinates, coordinates, coordinatesLength * sizeof(uint2), cudaMemcpyDeviceToHost);
     
-    TopBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, jMax);
-    BottomBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel);
-    LeftBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, inflowVelocity);
-    RightBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax);
+    TopBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[0]) (hVel, vVel, iMax, jMax);
+    BottomBoundary KERNEL_ARGS(numBlocksTopBottom, threadsPerBlock, 0, streams[1]) (hVel, vVel, iMax, jMax);
+    LeftBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[2]) (hVel, vVel, iMax, jMax, inflowVelocity);
+    RightBoundary KERNEL_ARGS(numBlocksLeftRight, threadsPerBlock, 0, streams[3]) (hVel, vVel, iMax, jMax);
 
     cudaError_t retVal = cudaStreamSynchronize(streams[0]);
+    if (retVal != cudaSuccess) return retVal;
     ObstacleBoundary KERNEL_ARGS(numBlocksObstacle, threadsPerBlock, 0, streams[0]) (hVel, vVel, flags, coordinates, coordinatesLength, chi);
-
+    
     return cudaDeviceSynchronize();
 }
 

@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
     int iMax = 100;
     int jMax = 100;
     SimulationParameters parameters = SimulationParameters();
-    if (argc == 1) { // Not linked to a frontend.
+    if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
         parameters.width = 1;
         parameters.height = 1;
         parameters.timeStepSafetyFactor = (REAL)0.5;
@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
         bool** obstacles = solver.GetObstacles();
         for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } // Set all the cells to fluid
 
-        int boundaryLeft = (int)(0.45 * iMax);
-        int boundaryRight = (int)(0.55 * iMax);
+        int boundaryLeft = (int)(0.25 * iMax);
+        int boundaryRight = (int)(0.35 * iMax);
         int boundaryBottom = (int)(0.45 * jMax);
         int boundaryTop = (int)(0.55 * jMax);
         for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
