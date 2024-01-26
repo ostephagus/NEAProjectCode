@@ -20,19 +20,6 @@
 
 #define INT_DIVIDE_ROUND_UP(numerator, denominator) (((numerator) + (denominator) - 1) / (denominator))
 
-// Constants used for parsing of flags.
-constexpr BYTE SELF  = 0b00010000; // SELF bit
-constexpr BYTE NORTH = 0b00001000; // NORTH bit
-constexpr BYTE EAST  = 0b00000100; // EAST bit
-constexpr BYTE SOUTH = 0b00000010; // SOUTH bit
-constexpr BYTE WEST  = 0b00000001; // WEST bit
-
-constexpr BYTE SELFSHIFT  = 4; // Amount to shift for SELF bit at LSB.
-constexpr BYTE NORTHSHIFT = 3; // Amount to shift for NORTH bit at LSB.
-constexpr BYTE EASTSHIFT  = 2; // Amount to shift for EAST bit at LSB.
-constexpr BYTE SOUTHSHIFT = 1; // Amount to shift for SOUTH bit at LSB.
-constexpr BYTE WESTSHIFT  = 0; // Amount to shift for WEST bit at LSB.
-
 template <typename T>
 struct PointerWithPitch
 {

@@ -1,5 +1,5 @@
 #include "Boundary.cuh"
-#include "math.h"
+#include <cmath>
 #include <vector>
 
 __global__ void SetFlags(PointerWithPitch<bool> obstacles, PointerWithPitch<BYTE> flags, int iMax, int jMax) {

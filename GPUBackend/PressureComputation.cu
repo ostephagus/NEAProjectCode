@@ -36,7 +36,7 @@ __host__ __device__ BYTE GetParity(BYTE input) {
     input ^= input >> 4; // Repeatedly shift-XOR to end up with the XOR of all of the bits in the LSB.
     input ^= input >> 2;
     input ^= input >> 1;
-    return (~input) & 1; // Flib the bits and AND the last bit with 1 to get the parity (1 or 0).
+    return input & 1; // The parity is stored in the last bit, so XOR the result with 1 and return.
 }
 
 
@@ -47,16 +47,18 @@ __global__ void SingleColourSOR(int numberOfColours, int colourNum, PointerWithP
 {
     int rowNum, colNum;
     bool validCell = CalculateColouredCoordinates(&rowNum, &colNum, blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y, colourNum, numberOfColours, iMax, jMax);
-    if (!validCell) return; // If the cell is not valid, return without freeing because nothing is yet allocated.
 
-    if ((B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) == 0) return; // If the cell is not a fluid cell, do not perform the computation.
+    if (!validCell) return; // If the cell is not valid, do not perform the computation
+
+    if ((B_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) & SELF) == 0) return; // If the cell is not a fluid cell, also do not perform the computation.
 
     REAL relaxedPressure = (1 - omega) * F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum);
     REAL pressureAverages = ((F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum + 1, colNum) + F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum - 1, colNum)) / square(delX)) + ((F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum + 1) + F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum - 1)) / square(delY)) - F_PITCHACCESS(RHS.ptr, RHS.pitch, rowNum, colNum);
-
     F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum) = relaxedPressure + boundaryFraction * pressureAverages;
 
-    F_PITCHACCESS(residualArray.ptr, residualArray.pitch, rowNum - 1, colNum - 1) = square(pressureAverages - (2 * F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum)) / square(delX) - (2 * F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum)) / square(delY)); // Residual array is shifted down and left 1 so less memory is needed.
+    REAL currentResidual = pressureAverages - (2 * F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum)) / square(delX) - (2 * F_PITCHACCESS(pressure.ptr, pressure.pitch, rowNum, colNum)) / square(delY);
+
+    F_PITCHACCESS(residualArray.ptr, residualArray.pitch, rowNum - 1, colNum - 1) = square(currentResidual); // Residual array is shifted down and left 1 so less memory is needed.
 }
 
 /// <summary>

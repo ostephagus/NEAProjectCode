@@ -59,7 +59,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <Include>..\BackendLib\</Include>
+      <Include>..\BackendLib\;..\CPUBackend\;..\GPUBackend\</Include>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemDefinitionGroup>
@@ -80,7 +80,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <Include>..\BackendLib\</Include>
+      <Include>..\BackendLib\;..\CPUBackend\;..\GPUBackend\</Include>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemDefinitionGroup>

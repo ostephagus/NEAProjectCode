@@ -29,7 +29,7 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     cudaMallocPitch(&G.ptr, &G.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
 
     streamFunction = PointerWithPitch<REAL>();
-    cudaMallocPitch(&streamFunction.ptr, &streamFunction.pitch, (jMax + 2) * sizeof(REAL), iMax + 2);
+    cudaMallocPitch(&streamFunction.ptr, &streamFunction.pitch, (jMax + 1) * sizeof(REAL), iMax + 1);
 
     devFlags = PointerWithPitch<BYTE>();
     cudaMallocPitch(&devFlags.ptr, &devFlags.pitch, (jMax + 2) * sizeof(BYTE), iMax + 2);
@@ -44,7 +44,7 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     copiedHVel = new REAL[(iMax + 2) * (jMax + 2)];
     copiedVVel = new REAL[(iMax + 2) * (jMax + 2)];
     copiedPressure = new REAL[(iMax + 2) * (jMax + 2)];
-    copiedStream = new REAL[(iMax + 1) * (jMax + 2)];
+    copiedStream = new REAL[(iMax + 1) * (jMax + 1)];
 
     devCoordinates = nullptr; // Initialised in ProcessObstacles.
     streams = nullptr; // Initialised in PerformSetup.
@@ -166,7 +166,7 @@ void GPUSolver::ProcessObstacles() { // When this function is called, no streams
     cudaMalloc(&devCoordinates, coordinatesLength * sizeof(uint2));
 
     cudaMemcpy(devCoordinates, hostCoordinates, coordinatesLength * sizeof(uint2), cudaMemcpyHostToDevice); // Copy the flags and coordinates arrays to the device.
-    cudaMemcpy2D(devFlags.ptr, devFlags.pitch, hostFlags, (jMax + 2) * sizeof(REAL), (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyHostToDevice);
+    CopyFieldToDevice(devFlags, hostFlags, iMax + 2, jMax + 2);
 
     FreeMatrix(hostFlags, iMax + 2);
     delete[] hostCoordinates;
@@ -191,6 +191,7 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     REAL* timestep = nullptr;
     REAL* gamma = nullptr;
     REAL pressureResidualNorm = 0;
+    int pressureIterations = 0;
     dim3 numBlocksForStreamCalc(INT_DIVIDE_ROUND_UP(iMax + 1, threadsPerBlock.x), INT_DIVIDE_ROUND_UP(jMax + 1, threadsPerBlock.y));
 
     // Perform computations
@@ -211,7 +212,10 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     ComputeRHS KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[0]) (F, G, RHS, devFlags, iMax, jMax, timestep, delX, delY); // ComputeRHS is simple enough not to need a wrapper
     if (cudaStreamSynchronize(streams[0]) != cudaSuccess) goto free; // Need to synchronise because pressure depends on RHS.
 
-    if (Poisson(streams, threadsPerBlock, pressure, RHS, devFlags, devCoordinates, coordinatesLength, numFluidCells, iMax, jMax, numColoursSOR, delX, delY, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, &pressureResidualNorm) == 0) goto free; // Here 0 is the error case.
+    pressureIterations = Poisson(streams, threadsPerBlock, pressure, RHS, devFlags, devCoordinates, coordinatesLength, numFluidCells, iMax, jMax, numColoursSOR, delX, delY, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, &pressureResidualNorm);
+    if (pressureIterations == 0) goto free; // Here 0 is the error case.
+
+    printf("Number of iterations: %i, residual norm: %f.\n", pressureIterations, pressureResidualNorm);
     
     cudaMemcpy2DAsync(copiedPressure, (jMax + 2) * sizeof(REAL), pressure.ptr, pressure.pitch, (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyDeviceToHost, streams[computationStreams + 0]); // Pressure is unchanged after this point, so can copy it async
 
