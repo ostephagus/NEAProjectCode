@@ -221,11 +221,11 @@ namespace UserInterface.HelperClasses
             this.pressureMaxIterations = new ParameterStruct<float>(pressureMaxIterations, ParameterUsage.Backend, true);
             this.reynoldsNumber = new ParameterStruct<float>(reynoldsNumber, ParameterUsage.Backend, false);
             this.fluidVelocity = new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
-            this.surfaceFriction = new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, false);
+            this.surfaceFriction = new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, true);
             this.fieldParameters = new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
             this.drawContours = new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
             this.contourTolerance = new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
-            this.contourSpacing = new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, false);
+            this.contourSpacing = new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, true);
         }
 
         private void OnPropertyChanged(float value, [CallerMemberName] string name = "")
