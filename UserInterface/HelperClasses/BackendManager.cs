@@ -1,4 +1,4 @@
-﻿#define NO_GPU_BACKEND
+﻿//#define NO_GPU_BACKEND
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace UserInterface.HelperClasses
         private int iMax;
         private int jMax;
 
-        private float framesPerSecond;
+        private float frameTime;
         private Stopwatch frameTimer;
 
         private ResizableLinearQueue<ParameterChangedEventArgs> parameterSendQueue;
@@ -35,13 +35,13 @@ namespace UserInterface.HelperClasses
         public int IMax { get => iMax; set => iMax = value; }
         public int JMax { get => jMax; set => jMax = value; }
 
-        public float FramesPerSecond
+        public float FrameTime
         {
-            get => framesPerSecond;
+            get => frameTime;
             private set
             {
-                framesPerSecond = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FramesPerSecond)));
+                frameTime = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FrameTime)));
             }
         }
 
@@ -332,7 +332,8 @@ namespace UserInterface.HelperClasses
                 for (int fieldNum = 0; fieldNum < fields.Length; fieldNum++)
                 {
                     byte fieldBits = (byte)namedFields[fieldNum];
-                    if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDSTART with the relevant field bits
+                    byte fieldStart = await pipeManager.ReadAsync();
+                    if (fieldStart != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException($"Backend did not send data correctly. Bits were {fieldStart}"); } // Each field should start with a FLDSTART with the relevant field bits
 
                     await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * sizeof(float)); // Read the stream of bytes into the temporary buffer
                     Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
@@ -355,7 +356,7 @@ namespace UserInterface.HelperClasses
                     SendControlByte(PipeConstants.Status.OK);
                 }
                 TimeSpan iterationLength = frameTimer.Elapsed - iterationStartTime;
-                FramesPerSecond = 1 / (float)iterationLength.TotalSeconds;
+                FrameTime = (float)iterationLength.TotalSeconds;
 
                 iterationStartTime = frameTimer.Elapsed; // Set the new iteration start time once FPS processing is done.
             }

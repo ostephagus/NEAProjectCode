@@ -17,7 +17,7 @@ namespace UserInterface.HelperClasses
             dataPoints = new CircularQueue<T>(windowSize);
         }
 
-        public T UpdateAverage(T newValue) // TODO: Consider not returning average once MVVM is complete.
+        public void UpdateAverage(T newValue)
         {
             if (dataPoints.Count == windowSize)
             {
@@ -28,7 +28,6 @@ namespace UserInterface.HelperClasses
             dataPoints.Enqueue(newValue);
 
             Average = currentSum / (T)Convert.ChangeType(dataPoints.Count, typeof(T)); // Divide the current sum by the number of data points. Conversion between int and generic T had to use ChangeType
-            return Average;
         }
     }
 }

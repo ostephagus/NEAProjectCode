@@ -40,12 +40,12 @@ namespace UserInterface
         private int dataWidth;
         private int dataHeight;
 
-        private float framesPerSecond;
+        private float frameTime;
 
         public int DataWidth { get => dataWidth; set => dataWidth = value; }
         public int DataHeight { get => dataHeight; set => dataHeight = value; }
         public float[] StreamFunction { get => streamFunction; set => streamFunction = value; }
-        public float FramesPerSecond { get => framesPerSecond; }
+        public float FrameTime { get => frameTime; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -155,8 +155,8 @@ namespace UserInterface
                 GLHelper.Draw(contourIndices, PrimitiveType.LineStrip);
             }
 
-            framesPerSecond = 1 / (float)delta.TotalSeconds;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FramesPerSecond)));
+            frameTime = (float)delta.TotalSeconds;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FrameTime)));
 
             ErrorCode errorCode = GL.GetError();
             if (errorCode != ErrorCode.NoError)

@@ -215,10 +215,10 @@ namespace UserInterface.HelperClasses
 
             this.width = new ParameterStruct<float>(width, ParameterUsage.Backend, false);
             this.height = new ParameterStruct<float>(height, ParameterUsage.Backend, false);
-            this.timeStepSafetyFactor = new ParameterStruct<float>(timeStepSafetyFactor, ParameterUsage.Backend, false);
+            this.timeStepSafetyFactor = new ParameterStruct<float>(timeStepSafetyFactor, ParameterUsage.Backend, true);
             this.relaxationParameter = new ParameterStruct<float>(relaxationParameter, ParameterUsage.Backend, false);
-            this.pressureResidualTolerance = new ParameterStruct<float>(pressureResidualTolerance, ParameterUsage.Backend, false);
-            this.pressureMaxIterations = new ParameterStruct<float>(pressureMaxIterations, ParameterUsage.Backend, false);
+            this.pressureResidualTolerance = new ParameterStruct<float>(pressureResidualTolerance, ParameterUsage.Backend, true);
+            this.pressureMaxIterations = new ParameterStruct<float>(pressureMaxIterations, ParameterUsage.Backend, true);
             this.reynoldsNumber = new ParameterStruct<float>(reynoldsNumber, ParameterUsage.Backend, false);
             this.fluidVelocity = new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
             this.surfaceFriction = new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, false);

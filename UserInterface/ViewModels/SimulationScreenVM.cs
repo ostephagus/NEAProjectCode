@@ -27,8 +27,8 @@ namespace UserInterface.ViewModels
         private BackendManager backendManager;
         private CancellationTokenSource backendCTS;
         private VisualisationControl visualisationControl;
-        private MovingAverage<float> visFPSAverage;
-        private MovingAverage<float> backFPSAverage;
+        private MovingAverage<float> visFrameTimeAverage;
+        private MovingAverage<float> backFrameTimeAverage;
 
         private int dataWidth;
         private int dataHeight;
@@ -182,9 +182,9 @@ namespace UserInterface.ViewModels
 
         public VisualisationControl VisualisationControl { get => visualisationControl; }
 
-        public float VisFPS { get => visFPSAverage.Average; }
+        public float VisFPS { get => 1 / visFrameTimeAverage.Average; }
 
-        public float BackFPS { get => backFPSAverage.Average; }
+        public float BackFPS { get => 1 / backFrameTimeAverage.Average; }
 
         public Commands.SwitchPanel SwitchPanelCommand { get; set; }
         public Commands.StopBackend StopBackendCommand { get; set; }
@@ -238,7 +238,7 @@ namespace UserInterface.ViewModels
             SendObstacles();
 
             Task.Run(StartComputation);
-            backFPSAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
+            backFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
             backendManager.PropertyChanged += BackFPSUpdate;
             #endregion
 
@@ -249,7 +249,7 @@ namespace UserInterface.ViewModels
 
             visualisationControl = new VisualisationControl(parameterHolder, streamFunction, dataWidth, dataHeight); // Content of VisualisationControlHolder is bound to this.
             visualisationControl.PropertyChanged += VisFPSUpdate; // FPS updating method
-            visFPSAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
+            visFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
             #endregion
         }
 
@@ -347,13 +347,13 @@ namespace UserInterface.ViewModels
 
         private void VisFPSUpdate(object? sender, PropertyChangedEventArgs e)
         {
-            visFPSAverage.UpdateAverage(visualisationControl.FramesPerSecond);
+            visFrameTimeAverage.UpdateAverage(visualisationControl.FrameTime);
             OnPropertyChanged(this, nameof(VisFPS));
         }
 
         private void BackFPSUpdate(object? sender, PropertyChangedEventArgs e)
         {
-            backFPSAverage.UpdateAverage(backendManager.FramesPerSecond);
+            backFrameTimeAverage.UpdateAverage(backendManager.FrameTime);
             OnPropertyChanged(this, nameof(BackFPS));
         }
     }
