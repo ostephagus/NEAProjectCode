@@ -13,6 +13,7 @@
     <local:SwappableScreen.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
+            <converters:RelativeDimension x:Key="RelativeDimensionConverter" />
         </ResourceDictionary>
     </local:SwappableScreen.Resources>
     <Grid>
@@ -159,7 +160,11 @@
             </Label.Style>
             This is the recording settings panel
         </Label>
-        <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}" />
+        <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="SimulationCanvas" >
+            <ContentControl Width="{Binding ActualWidth, ElementName=SimulationCanvas, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=SimulationCanvas, Mode=OneWay}" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}" />
+            <Rectangle Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualWidth, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.1}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualHeight, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.094}" Canvas.Left="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualWidth, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.0904}" Canvas.Top="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualHeight, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.4077}" Fill="Black">
+            </Rectangle>
+        </Canvas>
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
                 <Style TargetType="Button">
