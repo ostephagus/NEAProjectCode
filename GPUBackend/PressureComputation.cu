@@ -126,9 +126,9 @@ int Poisson(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> 
     if (retVal != cudaSuccess) goto free;
 
 
+    *residualNorm = 0; // Set both host and device residual norms to 0.
+    retVal = cudaMemset(d_residualNorm, 0, sizeof(REAL));
     do {
-        *residualNorm = 0; // Set both host and device residual norms to 0.
-        retVal = cudaMemset(d_residualNorm, 0, sizeof(REAL));
         if (retVal != cudaSuccess) goto free;
 
         for (int colourNum = 0; colourNum < numColours; colourNum++) { // Loop through however many colours and perform SOR.
@@ -138,21 +138,19 @@ int Poisson(cudaStream_t* streams, dim3 threadsPerBlock, PointerWithPitch<REAL> 
         retVal = cudaStreamSynchronize(streams[0]);
         if (retVal != cudaSuccess) goto free;
 
-        retVal = FieldSum(d_residualNorm, streams[0], residualArray, iMax, jMax);
-        if (retVal != cudaSuccess) goto free;
-
         // Copy the boundary cell pressures all in different streams
         CopyHorizontalPressures KERNEL_ARGS(numBlocksIMax, threadsPerBlockFlattened, 0, streams[0]) (pressure, iMax, jMax);
         CopyVerticalPressures KERNEL_ARGS(numBlocksJMax, threadsPerBlockFlattened, 0, streams[1]) (pressure, iMax, jMax);
         CopyBoundaryPressures KERNEL_ARGS(numBlocks, threadsPerBlock, 0, streams[2]) (pressure, coordinates, coordinatesLength, flags, iMax, jMax);
 
-        retVal = cudaMemcpyAsync(residualNorm, d_residualNorm, sizeof(REAL), cudaMemcpyDeviceToHost, streams[3]); // Also copy residual norm to host for conditional processing
-        if (retVal != cudaSuccess) goto free;
+        if (numIterations % 10 == 0) { // Only calculate the residual every 10 iterations
+            retVal = FieldSum(d_residualNorm, streams[0], residualArray, iMax, jMax);
+            if (retVal != cudaSuccess) goto free;
+            retVal = cudaMemcpy(residualNorm, d_residualNorm, sizeof(REAL), cudaMemcpyDeviceToHost); // Copy residual norm to host for processing and use in condition
+            if (retVal != cudaSuccess) goto free;
 
-        retVal = cudaStreamSynchronize(streams[3]);
-        if (retVal != cudaSuccess) goto free;
-
-        *residualNorm = sqrt(*residualNorm / numFluidCells);
+            *residualNorm = sqrt(*residualNorm / numFluidCells);
+        }
         numIterations++;
     } while ((numIterations < maxIterations && *residualNorm > residualTolerance) || numIterations < minIterations);
 

@@ -3,17 +3,19 @@
 #include "GPUSolver.cuh"
 #include "BackendCoordinator.h"
 #include <iostream>
+#include <chrono>
 
 int main(int argc, char** argv) {
     int iMax = 200;
     int jMax = 200;
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
+        std::cout << "Running without a fronted attached." << std::endl;
         parameters.width = 1;
         parameters.height = 1;
         parameters.timeStepSafetyFactor = (REAL)0.5;
         parameters.relaxationParameter = (REAL)1.7;
-        parameters.pressureResidualTolerance = 1;
+        parameters.pressureResidualTolerance = 35;
         parameters.pressureMinIterations = 10;
         parameters.pressureMaxIterations = 1000;
         parameters.reynoldsNo = 1000;
@@ -44,14 +46,25 @@ int main(int argc, char** argv) {
 
         REAL cumulativeTimestep = 0;
 
-        int numIterations = 1;
-        //std::cout << "Enter number of iterations: ";
-        //std::cin >> numIterations;
+        int numIterations = 10;
+        std::cerr << "2 seconds to attach profiler / debugger" << std::endl;
+        Sleep(2000);
+        /*std::cout << "Enter number of iterations: ";
+        std::cin >> numIterations;*/
+
+        float timeTakenSum = 0;
 
         for (int i = 0; i < numIterations; i++) {
+            auto startTime = std::chrono::high_resolution_clock::now();
             solver.Timestep(cumulativeTimestep);
-            std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << "." << std::endl;
+            auto endTime = std::chrono::high_resolution_clock::now();
+            float millisecondsDuration = (endTime - startTime).count() / 1000000.0f;
+            timeTakenSum += millisecondsDuration;
+            std::cout << "Iteration " << i << ", cumulative timestep: " << cumulativeTimestep << ", time to execute:" << millisecondsDuration << " ms." << std::endl;
         }
+
+        std::cout << std::endl << "Average over " << numIterations << " iterations: " << timeTakenSum / numIterations << " ms." << std::endl;
+
         return 0;
     }
     else if (argc == 2) { // Linked to a frontend.
