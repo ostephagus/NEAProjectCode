@@ -35,6 +35,6 @@
         <Label Grid.Row="5" Grid.Column="0">Grid cells per compute unit</Label>
         <helpercontrols:SliderWithValue Grid.Row="5" Grid.Column="1" Maximum="10" ForceIntegers="True"/>
         <Button x:Name="ResetButton" Grid.Row="6" Grid.Column="0" FontSize="16" Command="{Binding ResetCommand}">Reset values</Button>
-        <Button x:Name="SaveButton" Grid.Row="6" Grid.Column="1" FontSize="16" Command="{Binding SaveCommand}">Save and return to parameter setup...</Button>
+        <Button x:Name="SaveButton" Grid.Row="6" Grid.Column="1" FontSize="16" Command="{Binding SaveCommand}">Save and return</Button>
     </Grid>
 </local:SwappableScreen>

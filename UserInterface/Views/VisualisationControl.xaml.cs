@@ -140,7 +140,7 @@ namespace UserInterface
             GL.BindVertexArray(hFieldVAO);
             GLHelper.BufferSubData(fieldParameters.field, vertices.Length); // Update the field values
 
-            GLHelper.Draw(fieldIndices, PrimitiveType.Triangles);
+            GLHelper.Draw(fieldIndices, PrimitiveType.LineStrip); // TESTING ONLY
 
             // Drawing contour lines over the top
             if (parameterHolder.DrawContours.Value)

@@ -35,7 +35,8 @@ namespace UserInterface.ViewModels
         }
 
         public Commands.ConfigScreenReset ResetCommand { get; set; }
-        public Commands.ChangeWindow ChangeWindow { get; set; }
+        public Commands.ChangeWindow ChangeWindowCommand { get; set; }
+        public Commands.CreatePopup CreatePopupCommand { get; set; }
 
         public ConfigScreenVM(ParameterHolder parameterHolder) : base(parameterHolder)
         {
@@ -44,7 +45,8 @@ namespace UserInterface.ViewModels
             Width = parameterHolder.Width.Value;
             Height = parameterHolder.Height.Value;
             ResetCommand = new Commands.ConfigScreenReset(this, parameterHolder);
-            ChangeWindow = new Commands.ChangeWindow();
+            ChangeWindowCommand = new Commands.ChangeWindow();
+            CreatePopupCommand = new Commands.CreatePopup();
         }
     }
 }

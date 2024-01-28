@@ -51,20 +51,12 @@
 
             <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
             
-            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ChangeWindow}">
-                <Button.CommandParameter>
-                    <helperclasses:WindowChangeParameter NewWindow="{x:Type local:AdvancedParameters}" IsPopup="True" />
-                </Button.CommandParameter>
-                Advanced parameters</Button>
+            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
         </Grid>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <Button>Select file</Button>
             <TextBlock>No file selected..</TextBlock>
         </StackPanel>
-        <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindow}">
-            <Button.CommandParameter>
-                <helperclasses:WindowChangeParameter NewWindow="{x:Type local:SimulationScreen}" IsPopup="False" />
-            </Button.CommandParameter>
-            Simulate</Button>
+        <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindowCommand}" CommandParameter="{x:Type local:SimulationScreen}">Simulate</Button>
     </Grid>
 </local:SwappableScreen>

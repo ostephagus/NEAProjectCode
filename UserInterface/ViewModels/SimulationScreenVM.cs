@@ -33,6 +33,11 @@ namespace UserInterface.ViewModels
         private int dataWidth;
         private int dataHeight;
 
+        const float boundaryTop = 0.55f;
+        const float boundaryLeft = 0.15f;
+        const float boundaryHeight = 0.1f;
+        const float boundaryWidth = 0.1f;
+
 
         public string? CurrentButton //Conversion between string and internal enum value done in property
         {
@@ -55,9 +60,7 @@ namespace UserInterface.ViewModels
             }
         }
 
-        // Option for Properties that are in ParameterHolder:
-        // Property is just an accessor for the ParameterHolder property.
-        // Needs to then update with NotifyPropertyChanged.
+        public double ObstacleLeft { get; set; } = 0.15;
 
         public float InVel
         {
@@ -188,6 +191,8 @@ namespace UserInterface.ViewModels
 
         public Commands.SwitchPanel SwitchPanelCommand { get; set; }
         public Commands.StopBackend StopBackendCommand { get; set; }
+        public Commands.ChangeWindow ChangeWindowCommand { get; set; }
+        public Commands.CreatePopup CreatePopupCommand { get; set; }
         public CancellationTokenSource BackendCTS { get => backendCTS; set => backendCTS = value; }
 
         private enum SidePanelButton //Different side panels on SimluationScreen
@@ -215,6 +220,8 @@ namespace UserInterface.ViewModels
 
             SwitchPanelCommand = new Commands.SwitchPanel(this);
             StopBackendCommand = new Commands.StopBackend(this);
+            ChangeWindowCommand = new Commands.ChangeWindow();
+            CreatePopupCommand = new Commands.CreatePopup();
             #endregion
 
             #region Parameters related to Backend
@@ -312,16 +319,16 @@ namespace UserInterface.ViewModels
                 }
             }
 
-            int boundaryLeft = (int)(0.15 * dataWidth);
-            int boundaryRight = (int)(0.25 * dataWidth);
-            int boundaryBottom = (int)(0.45 * dataHeight);
-            int boundaryTop = (int)(0.55 * dataHeight);
+            int leftCell = (int)(boundaryLeft * dataWidth);
+            int rightCell = (int)((boundaryLeft + boundaryWidth) * dataWidth);
+            int bottomCell = (int)((boundaryTop - boundaryHeight) * dataHeight);
+            int topCell = (int)(boundaryTop * dataHeight);
 
-            for (int i = boundaryLeft; i < boundaryRight; i++)
+            for (int i = leftCell; i < rightCell; i++)
             { // Create a square of boundary cells
-                for (int j = boundaryBottom; j < boundaryTop; j++)
+                for (int j = bottomCell; j < topCell; j++)
                 {
-                    obstacles[i * (dataHeight + 2) + j] = false;
+                    obstacles[(i + 1) * (dataHeight + 2) + j + 1] = false;
                 }
             }
 

@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
              xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
+             xmlns:helperclasses="clr-namespace:UserInterface.HelperClasses"
              xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
              xmlns:converters="clr-namespace:UserInterface.Converters"
              d:DataContext="{d:DesignInstance Type=viewmodels:SimulationScreenVM}"
@@ -13,7 +14,10 @@
     <local:SwappableScreen.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
-            <converters:RelativeDimension x:Key="RelativeDimensionConverter" />
+            <converters:VisualisationXCoordinate x:Key="XCoordinateConverter" />
+            <converters:VisualisationYCoordinate x:Key="YCoordinateConverter" />
+            <converters:XCoordinateDifference x:Key="XCoordinateDifferenceConverter" />
+            <converters:YCoordinateDifference x:Key="YCoordinateDifferenceConverter" />
         </ResourceDictionary>
     </local:SwappableScreen.Resources>
     <Grid>
@@ -37,7 +41,7 @@
                     <Setter Property="Margin" Value="0 0 0 0" />
                 </Style>
             </StackPanel.Resources>
-            <Button x:Name="BtnParametersSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"> <!-- Test this! -->
+            <Button x:Name="BtnParametersSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="LightGray" />
@@ -162,7 +166,19 @@
         </Label>
         <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="SimulationCanvas" >
             <ContentControl Width="{Binding ActualWidth, ElementName=SimulationCanvas, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=SimulationCanvas, Mode=OneWay}" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}" />
-            <Rectangle Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualWidth, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.1}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualHeight, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.094}" Canvas.Left="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualWidth, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.0904}" Canvas.Top="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Canvas}, Path=ActualHeight, Converter={StaticResource RelativeDimensionConverter}, ConverterParameter=0.4077}" Fill="Black">
+            <Rectangle Fill="Black">
+                <Canvas.Left>
+                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" Converter="{StaticResource XCoordinateConverter}" ConverterParameter="0.14" />
+                </Canvas.Left>
+                <Canvas.Top>
+                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" Converter="{StaticResource YCoordinateConverter}" ConverterParameter="0.55" />
+                </Canvas.Top>
+                <Rectangle.Width>
+                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" Converter="{StaticResource XCoordinateDifferenceConverter}" ConverterParameter="0.14,0.24" />
+                </Rectangle.Width>
+                <Rectangle.Height>
+                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" Converter="{StaticResource YCoordinateDifferenceConverter}" ConverterParameter="0.55,0.45" />
+                </Rectangle.Height>
             </Rectangle>
         </Canvas>
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -173,7 +189,7 @@
             </StackPanel.Resources>
             <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" /><Run Text=" FPS."/></TextBlock>
             <Button>Edit simulation structure</Button>
-            <Button>Advanced parameters</Button>
+            <Button Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
             <Button>Save as image</Button>
             <Button>Save as video</Button>
             <Button Command="{Binding StopBackendCommand}">Stop simulating</Button>

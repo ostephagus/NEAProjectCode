@@ -88,8 +88,6 @@ namespace UserInterface.HelperClasses
 
         public class SaveParameters : ParameterCommandBase<AdvancedParametersVM>
         {
-            private readonly ChangeWindow changeWindowCommand;
-
             private ParameterStruct<T> ModifyParameterValue<T>(ParameterStruct<T> parameterStruct, T newValue)
             {
                 parameterStruct.Value = newValue;
@@ -103,13 +101,10 @@ namespace UserInterface.HelperClasses
                 parameterHolder.PressureResidualTolerance = ModifyParameterValue(parameterHolder.PressureResidualTolerance, parentViewModel.RMax);
                 parameterHolder.PressureMaxIterations = ModifyParameterValue(parameterHolder.PressureMaxIterations, parentViewModel.IterMax);
 
-                changeWindowCommand.Execute(new WindowChangeParameter() { IsPopup = true, NewWindow = typeof(ConfigScreen) });
+                App.RaisePopupDeleted(this, new EventArgs());
             }
 
-            public SaveParameters(AdvancedParametersVM parentViewModel, ParameterHolder parameterHolder, ChangeWindow changeWindowCommand) : base(parentViewModel, parameterHolder)
-            {
-                this.changeWindowCommand = changeWindowCommand;
-            }
+            public SaveParameters(AdvancedParametersVM parentViewModel, ParameterHolder parameterHolder, ChangeWindow changeWindowCommand) : base(parentViewModel, parameterHolder) { }
         }
 
         public class SwitchPanel : VMCommandBase<SimulationScreenVM>
@@ -139,9 +134,24 @@ namespace UserInterface.HelperClasses
             public void Execute(object? parameter)
             {
                 if (parameter == null) { return; }
-                App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((WindowChangeParameter)parameter));
+                App.RaiseUserControlChanged(this, new UserControlChangeEventArgs((Type)parameter));
             }
         }
+
+        public class CreatePopup : ICommand
+        {
+            public event EventHandler? CanExecuteChanged;
+
+            public bool CanExecute(object? parameter) { return true; }
+
+            public void Execute(object? parameter)
+            {
+                if (parameter == null) return;
+                App.RaisePopupCreated(this, new UserControlChangeEventArgs((Type)parameter));
+            }
+        }
+
+
         public class StopBackend : VMCommandBase<SimulationScreenVM>
         {
             public override void Execute(object? parameter)
@@ -151,11 +161,5 @@ namespace UserInterface.HelperClasses
 
             public StopBackend(SimulationScreenVM parentViewModel) : base(parentViewModel) { }
         }
-    }
-
-    public struct WindowChangeParameter
-    {
-        public Type NewWindow { get; set; }
-        public bool IsPopup { get; set; }
     }
 }
