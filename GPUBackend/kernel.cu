@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     int jMax = 100;
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
-        std::cout << "Running without a fronted attached." << std::endl;
+        std::cout << "Running without a fronted attached.\n";
         parameters.width = 1;
         parameters.height = 1;
         parameters.timeStepSafetyFactor = (REAL)0.5;
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
         REAL cumulativeTimestep = 0;
 
         int numIterations = 10;
-        std::cerr << "2 seconds to attach profiler / debugger" << std::endl;
+        std::cerr << "2 seconds to attach profiler / debugger\n";
         Sleep(2000);
         /*std::cout << "Enter number of iterations: ";
         std::cin >> numIterations;*/
@@ -60,10 +60,10 @@ int main(int argc, char** argv) {
             auto endTime = std::chrono::high_resolution_clock::now();
             float millisecondsDuration = (endTime - startTime).count() / 1000000.0f;
             timeTakenSum += millisecondsDuration;
-            std::cout << "Iteration " << i << ", cumulative timestep: " << cumulativeTimestep << ", time to execute:" << millisecondsDuration << " ms." << std::endl;
+            std::cout << "Iteration " << i << ", cumulative timestep: " << cumulativeTimestep << ", time to execute:" << millisecondsDuration << " ms.\n";
         }
 
-        std::cout << std::endl << "Average over " << numIterations << " iterations: " << timeTakenSum / numIterations << " ms." << std::endl;
+        std::cout << std::endl << "Average over " << numIterations << " iterations: " << timeTakenSum / numIterations << " ms.\n";
 
         return 0;
     }
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         return retValue;
     }
     else {
-        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name to connect to a frontend, or without to run without a frontend." << std::endl;
+        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name to connect to a frontend, or without to run without a frontend.\n";
         return -1;
     }
 }

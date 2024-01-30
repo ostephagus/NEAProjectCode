@@ -4,7 +4,7 @@
 #include "BackendCoordinator.h"
 #include <iostream>
 
-#define WAIT_FOR_DEBUGGER_ATTACH
+//#define WAIT_FOR_DEBUGGER_ATTACH
 
 int main(int argc, char** argv) {
 #ifdef WAIT_FOR_DEBUGGER_ATTACH
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
         for (int i = 0; i < numIterations; i++) {
             solver.Timestep(cumulativeTimestep);
-            std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << "." << std::endl;
+            std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << ".\n";
         }
         return 0;
     }
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
         return retValue;
     }
     else {
-        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name to connect to a frontend, or without to run without a frontend." << std::endl;
+        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name to connect to a frontend, or without to run without a frontend.\n";
         return -1;
     }
 }

@@ -126,13 +126,13 @@ void PoissonSubset(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int y
 
 void ThreadLoop(REAL** pressure, REAL** RHS, BYTE** flags, int xOffset, int yOffset, int iMax, int jMax, DoubleReal stepSizes, REAL omega, REAL boundaryFraction, REAL& residualNormSquare, ThreadStatus& threadStatus) {
     while (!threadStatus.stopRequested) { // Condition to stop the thread entirely
-        std::cout << "Thread waiting" << std::endl;
+        std::cout << "Thread waiting\n";
         while (!threadStatus.startNextIterationRequested) { // Wait until the next iteration is requested
             if (threadStatus.stopRequested) { // If a request to stop occurs in this loop, do not complete another iteration.
                 return;
             }
         }
-        std::cout << "Thread running" << std::endl;
+        std::cout << "Thread running\n";
         threadStatus.running = true;
         threadStatus.startNextIterationRequested = false; // Set it to false so that only 1 iteration occurs if there is no input from thread owner
         for (int i = xOffset + 1; i <= iMax; i++) {

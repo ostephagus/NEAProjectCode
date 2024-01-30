@@ -17,7 +17,7 @@ void BackendCoordinator::UnflattenArray(bool** pointerArray, bool* flattenedArra
 }
 
 void BackendCoordinator::HandleRequest(BYTE requestByte) {
-    std::cout << "Starting execution of timestepping loop" << std::endl;
+    std::cout << "Starting execution of timestepping loop\n";
     if ((requestByte & ~PipeConstants::Request::PARAMMASK) == PipeConstants::Request::CONTREQ) {
         if (requestByte == PipeConstants::Request::CONTREQ) {
             pipeManager.SendByte(PipeConstants::Error::BADPARAM);
@@ -37,7 +37,7 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
         REAL cumulativeTimestep = 0;
         solver->PerformSetup();
         while (!closeRequested) {
-            std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. " << std::endl;
+            std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. \n";
             pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
             solver->Timestep(cumulativeTimestep);
@@ -71,7 +71,7 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
             BYTE receivedByte = pipeManager.ReadByte();
             if (receivedByte == PipeConstants::Status::STOP) { // Stop means just wait for the next read
                 pipeManager.SendByte(PipeConstants::Status::OK);
-                std::cout << "Backend paused." << std::endl;
+                std::cout << "Backend paused.\n";
                 receivedByte = pipeManager.ReadByte();
             }
             if (receivedByte == PipeConstants::Status::CLOSE || receivedByte == PipeConstants::Error::INTERNAL) {
@@ -83,20 +83,20 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
                     receivedByte = pipeManager.ReadByte(); // ...then read the next byte
                 }
                 if (receivedByte != PipeConstants::Status::OK) { // Require an OK at the end, whether parameters were sent or not
-                    std::cerr << "Server sent malformed data" << std::endl;
+                    std::cerr << "Server sent malformed data\n";
                     pipeManager.SendByte(PipeConstants::Error::BADREQ);
                 }
             }
 
             iteration++;
         }
-        std::cout << "Backend stopped." << std::endl;
+        std::cout << "Backend stopped.\n";
 
         pipeManager.SendByte(PipeConstants::Status::OK); // Send OK then stop executing
 
     }
     else { // Only continuous requests are supported
-        std::cerr << "Server sent an unsupported request" << std::endl;
+        std::cerr << "Server sent an unsupported request\n";
         pipeManager.SendByte(PipeConstants::Error::BADREQ);
     }
 }
@@ -163,7 +163,7 @@ void BackendCoordinator::ReceiveData(BYTE startMarker) {
         ReceiveParameters(parameterBits, parameters);
 
         if (pipeManager.ReadByte() != (PipeConstants::Marker::PRMEND | parameterBits)) { // Need to receive the corresponding PRMEND
-            std::cerr << "Server sent malformed data" << std::endl;
+            std::cerr << "Server sent malformed data\n";
             pipeManager.SendByte(PipeConstants::Error::BADREQ);
         }
 
@@ -171,7 +171,7 @@ void BackendCoordinator::ReceiveData(BYTE startMarker) {
         pipeManager.SendByte(PipeConstants::Status::OK); // Send an OK to say parameters were received correctly
     }
     else {
-        std::cerr << "Server sent unsupported data" << std::endl;
+        std::cerr << "Server sent unsupported data\n";
         pipeManager.SendByte(PipeConstants::Error::BADREQ); // Error if the start marker was unrecognised.
     }
 }
@@ -201,16 +201,12 @@ BackendCoordinator::BackendCoordinator(int iMax, int jMax, std::string pipeName,
 
 int BackendCoordinator::Run() {
     pipeManager.Handshake(solver->GetIMax(), solver->GetJMax());
-    std::cout << "Handshake completed ok" << std::endl;
-
-    /*std::cout << "Enter a character and press enter: ";
-    char nonsense;
-    std::cin >> nonsense;*/
+    std::cout << "Handshake completed ok\n";
 
     bool closeRequested = false;
 
     while (!closeRequested) {
-        std::cout << "In read loop" << std::endl;
+        std::cout << "In read loop\n";
         BYTE receivedByte = pipeManager.ReadByte();
         switch (receivedByte & PipeConstants::CATEGORYMASK) { // Gets the category of control byte
         case PipeConstants::Status::GENERIC: // Status bytes
@@ -219,16 +215,16 @@ int BackendCoordinator::Run() {
             case PipeConstants::Status::BUSY:
             case PipeConstants::Status::OK:
             case PipeConstants::Status::STOP:
-                std::cerr << "Server sent a status byte out of sequence, request not understood" << std::endl;
+                std::cerr << "Server sent a status byte out of sequence, request not understood\n";
                 pipeManager.SendByte(PipeConstants::Error::BADREQ);
                 break;
             case PipeConstants::Status::CLOSE:
                 closeRequested = true;
                 pipeManager.SendByte(PipeConstants::Status::OK);
-                std::cout << "Backend closing..." << std::endl;
+                std::cout << "Backend closing...\n";
                 break;
             default:
-                std::cerr << "Server sent a malformed status byte, request not understood" << std::endl;
+                std::cerr << "Server sent a malformed status byte, request not understood\n";
                 pipeManager.SendByte(PipeConstants::Error::BADREQ);
                 break;
             }

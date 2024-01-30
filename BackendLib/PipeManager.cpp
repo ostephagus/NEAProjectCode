@@ -69,7 +69,7 @@ void PipeManager::SerialiseField(BYTE* buffer, REAL** field, int xLength, int yL
 // Constructor for a named pipe, yet to be connected to
 PipeManager::PipeManager(std::string pipeName) {
 	pipeHandle = CreateFile(WidenString("\\\\.\\pipe\\" + pipeName).c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	std::cout << "File opened" << std::endl;
+	std::cout << "File opened\n";
 }
 
 // Constructor for if the named pipe has already been connected to
@@ -143,7 +143,6 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int xLength, int yLength) {
 	int byteNumber = 0;
 	for (int i = 0; i < fieldLength; i++) {
 		obstacles[byteNumber * 8 + (i % 8)] = (((buffer[byteNumber] >> (i % 8)) & 1) == 0) ? false : true; // Due to the way bits are shifted into the bytes by the server, they must be shifted off in the opposite order hence the complicated expression for obstacles[...]. Right shift and AND with 1 takes that bit only
-		
 
 		if (i % 8 == 7) {
 			byteNumber++;
