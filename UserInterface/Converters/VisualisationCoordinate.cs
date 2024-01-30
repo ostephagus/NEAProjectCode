@@ -10,6 +10,12 @@ namespace UserInterface.Converters
 
         public abstract double TranslateVisualisationCoordinate(double p);
 
+        /// <summary>
+        /// Converts a canvas dimension and fraction to a coordinate as displayed by the visualisation.
+        /// </summary>
+        /// <param name="value">The canvas dimension.</param>
+        /// <param name="parameter">The fraction of the canvas to use.</param>
+        /// <returns></returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (parameter is not string || !double.TryParse((string)parameter, out double fractionOfCanvas))

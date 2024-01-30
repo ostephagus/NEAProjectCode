@@ -18,6 +18,7 @@
             <converters:VisualisationYCoordinate x:Key="YCoordinateConverter" />
             <converters:XCoordinateDifference x:Key="XCoordinateDifferenceConverter" />
             <converters:YCoordinateDifference x:Key="YCoordinateDifferenceConverter" />
+            <converters:PolarListToRectList x:Key="PolarListToRectListConverter" />
         </ResourceDictionary>
     </local:SwappableScreen.Resources>
     <Grid>
@@ -165,21 +166,27 @@
             This is the recording settings panel
         </Label>
         <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="SimulationCanvas" >
-            <ContentControl Width="{Binding ActualWidth, ElementName=SimulationCanvas, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=SimulationCanvas, Mode=OneWay}" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}" />
-            <Rectangle Fill="Black">
-                <Canvas.Left>
-                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" Converter="{StaticResource XCoordinateConverter}" ConverterParameter="0.14" />
-                </Canvas.Left>
-                <Canvas.Top>
-                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" Converter="{StaticResource YCoordinateConverter}" ConverterParameter="0.55" />
-                </Canvas.Top>
-                <Rectangle.Width>
-                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" Converter="{StaticResource XCoordinateDifferenceConverter}" ConverterParameter="0.14,0.24" />
-                </Rectangle.Width>
-                <Rectangle.Height>
-                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" Converter="{StaticResource YCoordinateDifferenceConverter}" ConverterParameter="0.55,0.45" />
-                </Rectangle.Height>
-            </Rectangle>
+            <ContentControl Width="{Binding ActualWidth, ElementName=SimulationCanvas, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=SimulationCanvas, Mode=OneWay}" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="Opacity" Value="1" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding EditingObstacles}" Value="True">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+            <Polygon x:Name="ObstaclePolygon" Fill="Black">
+                <Polygon.Points>
+                    <MultiBinding Converter="{StaticResource PolarListToRectListConverter}" ConverterParameter="0.5,0.5">
+                        <Binding Path="ObstaclePoints" />
+                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" />
+                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" />
+                    </MultiBinding>
+                </Polygon.Points>
+            </Polygon>
         </Canvas>
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
@@ -188,11 +195,11 @@
                 </Style>
             </StackPanel.Resources>
             <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" /><Run Text=" FPS."/></TextBlock>
-            <Button>Edit simulation structure</Button>
+            <Button Command="{Binding EditObstaclesCommand}">Edit simulation structure</Button>
             <Button Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
             <Button>Save as image</Button>
             <Button>Save as video</Button>
-            <Button Command="{Binding StopBackendCommand}">Stop simulating</Button>
+            <Button Content="{Binding BackendButtonText}" Command="{Binding BackendCommand}" />
         </StackPanel>
     </Grid>
 </local:SwappableScreen>

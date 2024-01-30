@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UserInterface.Converters
 {
-    internal class YCoordinateDifference : CoordinateDifference
+    public class YCoordinateDifference : CoordinateDifference
     {
         /// <summary>
         /// Translates a y coordinate from [0, 1] to the precise point as rendered by <see cref="VisualisationControl" />.

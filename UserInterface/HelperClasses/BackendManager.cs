@@ -12,6 +12,29 @@ using System.Windows;
 
 namespace UserInterface.HelperClasses
 {
+    public enum BackendStatus
+    {
+        /// <summary>
+        /// Process created but not yet executing.
+        /// </summary>
+        NotStarted,
+
+        /// <summary>
+        /// Currently executing
+        /// </summary>
+        Running,
+
+        /// <summary>
+        /// Not executing, but in a paused state.
+        /// </summary>
+        Stopped,
+
+        /// <summary>
+        /// Not executing and the process has been destroyed or not yet created.
+        /// </summary>
+        Closed
+    }
+
     /// <summary>
     /// Handler class for dealing with the backend
     /// </summary>
@@ -22,6 +45,11 @@ namespace UserInterface.HelperClasses
         private PipeManager? pipeManager;
         private int iMax;
         private int jMax;
+
+        private BackendStatus backendStatus;
+
+        private float[][]? fields;
+        private FieldType[]? namedFields;
 
         private float frameTime;
         private Stopwatch frameTimer;
@@ -45,9 +73,19 @@ namespace UserInterface.HelperClasses
             }
         }
 
+        public BackendStatus BackendStatus
+        {
+            get => backendStatus;
+            private set
+            {
+                backendStatus = value;
+                PropertyChanged?.Invoke(value, new PropertyChangedEventArgs(nameof(BackendStatus)));
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private bool StartBackend()
+        private bool CreateBackend()
         {
             try
             {
@@ -56,6 +94,7 @@ namespace UserInterface.HelperClasses
                 backendProcess.StartInfo.ArgumentList.Add(pipeName);
                 //backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
+                BackendStatus = BackendStatus.NotStarted;
                 return true;
             }
             catch (Exception ex)
@@ -78,7 +117,10 @@ namespace UserInterface.HelperClasses
             return pipeManager.WriteByte(controlByte);
         }
 
-        private (byte, float[][], FieldType[]) CheckFieldParameters(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction)
+        /// <summary>
+        /// Initialises field arrays and constructs a request byte based on the null-ness of the field arguments.
+        /// </summary>
+        private byte CheckFieldParameters(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction)
         {
             if (pipeManager == null)
             {
@@ -96,9 +138,9 @@ namespace UserInterface.HelperClasses
             }
 
             byte requestByte = PipeConstants.Request.CONTREQ;
-            float[][] fields = new float[requestedFields][]; // A container for references to all the different fields
+            fields = new float[requestedFields][]; // A container for references to all the different fields
             int fieldNumber = 0;
-            List<FieldType> namedFields = new List<FieldType>();
+            List<FieldType> namedFieldsList = new List<FieldType>();
 
             if (horizontalVelocity != null)
             {
@@ -108,7 +150,7 @@ namespace UserInterface.HelperClasses
                 }
                 requestByte += PipeConstants.Request.HVEL;
                 fields[fieldNumber] = horizontalVelocity;
-                namedFields.Add(FieldType.HorizontalVelocity);
+                namedFieldsList.Add(FieldType.HorizontalVelocity);
                 fieldNumber++;
             }
             if (verticalVelocity != null)
@@ -119,7 +161,7 @@ namespace UserInterface.HelperClasses
                 }
                 requestByte += PipeConstants.Request.VVEL;
                 fields[fieldNumber] = verticalVelocity;
-                namedFields.Add(FieldType.VerticalVelocity);
+                namedFieldsList.Add(FieldType.VerticalVelocity);
                 fieldNumber++;
             }
             if (pressure != null)
@@ -130,7 +172,7 @@ namespace UserInterface.HelperClasses
                 }
                 requestByte += PipeConstants.Request.PRES;
                 fields[fieldNumber] = pressure;
-                namedFields.Add(FieldType.Pressure);
+                namedFieldsList.Add(FieldType.Pressure);
                 fieldNumber++;
             }
             if (streamFunction != null)
@@ -141,9 +183,10 @@ namespace UserInterface.HelperClasses
                 }
                 requestByte += PipeConstants.Request.STRM;
                 fields[fieldNumber] = streamFunction;
-                namedFields.Add(FieldType.StreamFunction);
+                namedFieldsList.Add(FieldType.StreamFunction);
             }
-            return (requestByte, fields, namedFields.ToArray());
+            namedFields = namedFieldsList.ToArray();
+            return requestByte;
         }
 
         private async void SendParameters()
@@ -197,6 +240,9 @@ namespace UserInterface.HelperClasses
             this.parameterHolder = parameterHolder;
             parameterHolder.PropertyChanged += HandleParameterChanged;
 
+            fields = null;
+            namedFields = null;
+
             parameterSendQueue = new();
 
             frameTimer = new Stopwatch();
@@ -238,17 +284,8 @@ namespace UserInterface.HelperClasses
                 throw new FileNotFoundException("Backend executable could not be found");
             }
 #endif // !NO_GPU_BACKEND
-        }
 
-        public BackendManager(string executableFilePath, ParameterHolder parameterHolder)
-        {
-            this.parameterHolder = parameterHolder;
-            parameterHolder.PropertyChanged += HandleParameterChanged;
-
-            parameterSendQueue = new();
-            filePath = executableFilePath;
-
-            frameTimer = new Stopwatch();
+            BackendStatus = BackendStatus.Closed;
         }
 
         /// <summary>
@@ -257,7 +294,7 @@ namespace UserInterface.HelperClasses
         /// <returns>Boolean result indicating whether the connection was successful</returns>
         public bool ConnectBackend()
         {
-            return StartBackend() && PipeHandshake(); // Return true only if both were successful. Also doesn't attempt handshake if backend did not start correctly
+            return CreateBackend() && PipeHandshake(); // Return true only if both were successful. Also doesn't attempt handshake if backend did not start correctly
         }
 
         public async void SendAllParameters()
@@ -303,19 +340,41 @@ namespace UserInterface.HelperClasses
         /// <exception cref="IOException">Thrown when backend does not respond as expected</exception>
         public async void GetFieldStreamsAsync(float[]? horizontalVelocity, float[]? verticalVelocity, float[]? pressure, float[]? streamFunction, CancellationToken token)
         {
-            (byte requestByte, float[][] fields, FieldType[] namedFields) = CheckFieldParameters(horizontalVelocity, verticalVelocity, pressure, streamFunction); // Abstract the parameter checking into its own function
-
-            SendParameters(); // Send the parameters that were set before the simulation started
-
-            SendControlByte(requestByte); // Start the backend executing
-            byte receivedByte = await pipeManager.ReadAsync();
-            if (receivedByte != PipeConstants.Status.OK) // Should receive OK, then the backend will start executing
+            switch (BackendStatus)
             {
-                if ((receivedByte & PipeConstants.CATEGORYMASK) == PipeConstants.Error.GENERIC) // Throw an exception with the provided error code
-                {
-                    throw new IOException($"Backend did not receive data correctly. Exception code {receivedByte}.");
-                }
-                throw new IOException("Result from backend not understood"); // Throw a generic error if it was not understood at all
+                case BackendStatus.NotStarted:
+                    byte requestByte = CheckFieldParameters(horizontalVelocity, verticalVelocity, pressure, streamFunction); // Abstract the parameter checking into its own function
+
+                    SendParameters(); // Send the parameters that were set before the simulation started
+
+                    SendControlByte(requestByte); // Start the backend executing
+                    byte receivedByte = await pipeManager.ReadAsync();
+                    if (receivedByte != PipeConstants.Status.OK) // Should receive OK, then the backend will start executing
+                    {
+                        if ((receivedByte & PipeConstants.CATEGORYMASK) == PipeConstants.Error.GENERIC) // Throw an exception with the provided error code
+                        {
+                            throw new IOException($"Backend did not receive data correctly. Exception code {receivedByte}.");
+                        }
+                        throw new IOException("Result from backend not understood"); // Throw a generic error if it was not understood at all
+                    }
+
+                    break;
+
+                case BackendStatus.Stopped: // Resuming from a paused state
+                    if (parameterSendQueue.IsEmpty)
+                    {
+                        SendControlByte(PipeConstants.Status.OK);
+                    }
+                    else
+                    {
+                        SendParameters();
+                        SendControlByte(PipeConstants.Status.OK);
+                    }
+                    break;
+                case BackendStatus.Closed:
+                    throw new IOException("Backend must be created and connected before calling GetFieldStreamsAsync.");
+                default:
+                    break;
             }
 
             byte[] tmpByteBuffer = new byte[FieldLength * sizeof(float)]; // Temporary buffer for pipe output
@@ -324,6 +383,7 @@ namespace UserInterface.HelperClasses
             TimeSpan iterationStartTime = frameTimer.Elapsed;
 
             bool cancellationRequested = token.IsCancellationRequested;
+            BackendStatus = BackendStatus.Running;
 
             while (!cancellationRequested) // Repeat until the task is cancelled
             {
@@ -361,18 +421,13 @@ namespace UserInterface.HelperClasses
                 iterationStartTime = frameTimer.Elapsed; // Set the new iteration start time once FPS processing is done.
             }
 
-            SendControlByte(PipeConstants.Status.STOP); // Send a request to stop the backend, and make sure its stops ok
+            SendControlByte(PipeConstants.Status.STOP); // Upon cancellation, stop (pause) the backend.
+            BackendStatus = BackendStatus.Stopped;
 
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
             {
                 throw new IOException("Backend did not stop correctly");
             }
-
-            if (!await CloseBackend())
-            {
-                ForceCloseBackend();
-            }
-            // Backend stopped correctly, so exit.
         }
 
         public bool SendObstacles(bool[] obstacles)
@@ -380,10 +435,10 @@ namespace UserInterface.HelperClasses
             return pipeManager.SendObstacles(obstacles);
         }
 
-        public async Task<bool> CloseBackend()
+        public bool CloseBackend()
         {
             SendControlByte(PipeConstants.Status.CLOSE);
-            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
+            if (pipeManager.AttemptRead().data[0] != PipeConstants.Status.OK)
             {
                 return false;
             }
@@ -397,7 +452,7 @@ namespace UserInterface.HelperClasses
 
         public void ForceCloseBackend()
         {
-            backendProcess.Close();
+            backendProcess.Kill();
         }
     }
 }

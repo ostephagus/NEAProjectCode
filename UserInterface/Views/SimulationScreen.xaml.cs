@@ -8,10 +8,16 @@ namespace UserInterface.Views
     /// </summary>
     public partial class SimulationScreen : SwappableScreen
     {
+        private readonly SimulationScreenVM viewModel;
+
+        public SimulationScreenVM ViewModel => viewModel;
+
         public SimulationScreen(ParameterHolder parameterHolder) : base(parameterHolder)
         {
             InitializeComponent();
-            DataContext = new SimulationScreenVM(parameterHolder);
+            viewModel = new SimulationScreenVM(parameterHolder);
+            DataContext = viewModel;
         }
+
     }
 }

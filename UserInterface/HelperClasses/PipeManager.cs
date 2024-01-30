@@ -137,7 +137,7 @@ namespace UserInterface.HelperClasses
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Trace.WriteLine(e.Message);
                 return false;
             }
         }
@@ -261,13 +261,11 @@ namespace UserInterface.HelperClasses
                 }
             }
             buffer[^1] = (byte)(PipeConstants.Marker.FLDEND | PipeConstants.Marker.OBST); // And put a FLDEND at the end (^1 gets the last element of the array)
-            Trace.WriteLine($"Sending {buffer.Length} bytes of data.");
 
             pipeStream.Write(buffer, 0, buffer.Length);
 
             ReadResults readResults = AttemptRead();
 
-            Trace.WriteLine("SendObstacles finished executing");
             return readResults.anythingRead && readResults.data[0] == PipeConstants.Status.OK;
         }
 

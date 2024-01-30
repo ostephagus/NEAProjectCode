@@ -12,7 +12,6 @@ private:
 	Solver* solver;
 
 	void UnflattenArray(bool** pointerArray, bool* flattenedArray, int length, int divisions);
-	void PrintFlagsArrows(BYTE** flags, int xLength, int yLength);
 	void HandleRequest(BYTE requestByte);
 	void ReceiveObstacles();
 	void ReceiveParameters(const BYTE parameterBits, SimulationParameters& parameters);

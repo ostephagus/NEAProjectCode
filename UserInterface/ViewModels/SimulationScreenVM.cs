@@ -1,10 +1,13 @@
-﻿using System;
+﻿using OpenTK.Graphics.OpenGL;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Navigation;
+using System.Windows.Media;
+using UserInterface.Converters;
 using UserInterface.HelperClasses;
 
 namespace UserInterface.ViewModels
@@ -33,6 +36,11 @@ namespace UserInterface.ViewModels
         private int dataWidth;
         private int dataHeight;
 
+        private List<PolarPoint> obstaclePoints;
+        private PolarSplineCalculator obstaclePointCalculator;
+        private bool editingObstacles;
+
+        const int numObstaclePoints = 40;
         const float boundaryTop = 0.55f;
         const float boundaryLeft = 0.15f;
         const float boundaryHeight = 0.1f;
@@ -71,7 +79,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(InVel));
             }
         }
-
         public float Chi
         {
             get => parameterHolder.SurfaceFriction.Value;
@@ -81,7 +88,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(Chi));
             }
         }
-
         public float VisMin
         {
             get => parameterHolder.FieldParameters.Value.min;
@@ -91,7 +97,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(VisMin));
             }
         }
-
         public float VisMax
         {
             get => parameterHolder.FieldParameters.Value.max;
@@ -101,7 +106,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(VisMax));
             }
         }
-
         public float VisLowerBound
         {
             get => visLowerBound;
@@ -111,7 +115,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(VisLowerBound));
             }
         }
-
         public float VisUpperBound
         {
             get => visUpperBound;
@@ -121,7 +124,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(VisUpperBound));
             }
         }
-
         public float ContourSpacing
         {
             get => parameterHolder.ContourSpacing.Value;
@@ -131,7 +133,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(ContourSpacing));
             }
         }
-
         public float ContourTolerance
         {
             get => parameterHolder.ContourTolerance.Value;
@@ -141,7 +142,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(ContourTolerance));
             }
         }
-
         public bool PressureChecked
         {
             get { return selectedField == SelectedField.Pressure; }
@@ -160,7 +160,6 @@ namespace UserInterface.ViewModels
                 SwitchFieldParameters();
             }
         }
-
         public bool VelocityChecked
         {
             get { return selectedField == SelectedField.Velocity; }
@@ -172,7 +171,6 @@ namespace UserInterface.ViewModels
                 SwitchFieldParameters();
             }
         }
-
         public bool StreamlinesEnabled
         {
             get => parameterHolder.DrawContours.Value;
@@ -183,17 +181,47 @@ namespace UserInterface.ViewModels
             }
         }
 
+        public bool EditingObstacles
+        {
+            get => editingObstacles;
+            set
+            {
+                editingObstacles = value;
+                OnPropertyChanged(this, nameof(EditingObstacles));
+            }
+        }
+        public List<PolarPoint> ObstaclePoints { get => obstaclePoints; set => obstaclePoints = value; }
+
         public VisualisationControl VisualisationControl { get => visualisationControl; }
-
+        
         public float VisFPS { get => 1 / visFrameTimeAverage.Average; }
-
         public float BackFPS { get => 1 / backFrameTimeAverage.Average; }
+        
+        public CancellationTokenSource BackendCTS { get => backendCTS; set => backendCTS = value; }
+
+        public string BackendButtonText
+        {
+            get
+            {
+                return BackendStatus switch
+                {
+                    BackendStatus.Running => "Pause simulation",
+                    BackendStatus.Stopped => "Resume simulation",
+                    _ => string.Empty,
+                };
+            }
+        }
+
+        public BackendStatus BackendStatus
+        {
+            get => backendManager.BackendStatus;
+        }
 
         public Commands.SwitchPanel SwitchPanelCommand { get; set; }
-        public Commands.StopBackend StopBackendCommand { get; set; }
+        public Commands.PauseResumeBackend BackendCommand { get; set; }
         public Commands.ChangeWindow ChangeWindowCommand { get; set; }
         public Commands.CreatePopup CreatePopupCommand { get; set; }
-        public CancellationTokenSource BackendCTS { get => backendCTS; set => backendCTS = value; }
+        public Commands.EditObstacles EditObstaclesCommand { get; set; }
 
         private enum SidePanelButton //Different side panels on SimluationScreen
         {
@@ -207,19 +235,25 @@ namespace UserInterface.ViewModels
             Pressure,
             Velocity
         }
-        #endregion
 
         public event CancelEventHandler StopBackendExecuting;
+        #endregion
 
         public SimulationScreenVM(ParameterHolder parameterHolder) : base(parameterHolder)
         {
             #region Parameters related to View
             currentButton = null; // Initially no panel selected
+            obstaclePoints = new List<PolarPoint>();
+            obstaclePointCalculator = new PolarSplineCalculator();
+            editingObstacles = false;
             InVel = parameterHolder.InflowVelocity.Value;
             Chi = parameterHolder.SurfaceFriction.Value;
 
+            CreateDefaultObstacle();
+
             SwitchPanelCommand = new Commands.SwitchPanel(this);
-            StopBackendCommand = new Commands.StopBackend(this);
+            BackendCommand = new Commands.PauseResumeBackend(this);
+            EditObstaclesCommand = new Commands.EditObstacles(this);
             ChangeWindowCommand = new Commands.ChangeWindow();
             CreatePopupCommand = new Commands.CreatePopup();
             #endregion
@@ -246,7 +280,7 @@ namespace UserInterface.ViewModels
 
             Task.Run(StartComputation);
             backFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
-            backendManager.PropertyChanged += BackFPSUpdate;
+            backendManager.PropertyChanged += HandleBackendPropertyChanged;
             #endregion
 
             #region Parameters related to Visualisation
@@ -336,10 +370,11 @@ namespace UserInterface.ViewModels
             return backendManager.SendObstacles(obstacles);
         }
 
-        private void StartComputation()
+        public void StartComputation()
         {
             try
             {
+                backendCTS = new CancellationTokenSource();
                 backendManager.GetFieldStreamsAsync(velocity, null, pressure, streamFunction, backendCTS.Token);
             }
             catch (IOException e)
@@ -352,13 +387,53 @@ namespace UserInterface.ViewModels
             }
         }
 
+        private void CreateDefaultObstacle()
+        {
+            double scale = 0.15;
+            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, Math.PI / 4));
+            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 3 * Math.PI / 4));
+            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 5 * Math.PI / 4));
+            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 7 * Math.PI / 4));
+            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale / Math.Sqrt(2), Math.PI / 2));
+            for (double i = 0; i < numObstaclePoints; i++)
+            {
+                ObstaclePoints.Add(new PolarPoint(obstaclePointCalculator.CalculatePoint(i / 40 * 2 * Math.PI), i / 40 * 2 * Math.PI));
+            }
+        }
+
+        public void EmbedObstacles()
+        {
+            // Here need to take the positions of the objects on the canvas and use them to populate the Obstacles array, then send it to backend.
+        }
+
+        public void CloseBackend()
+        {
+            if (!backendManager.CloseBackend())
+            {
+                backendManager.ForceCloseBackend();
+            }
+        }
+
         private void VisFPSUpdate(object? sender, PropertyChangedEventArgs e)
         {
             visFrameTimeAverage.UpdateAverage(visualisationControl.FrameTime);
             OnPropertyChanged(this, nameof(VisFPS));
         }
 
-        private void BackFPSUpdate(object? sender, PropertyChangedEventArgs e)
+        private void HandleBackendPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(backendManager.BackendStatus))
+            {
+                OnPropertyChanged(sender, nameof(BackendStatus));
+                OnPropertyChanged(this, nameof(BackendButtonText));
+            } 
+            else if (e.PropertyName == nameof(backendManager.FrameTime))
+            {
+                BackFPSUpdate();
+            }
+        }
+
+        private void BackFPSUpdate()
         {
             backFrameTimeAverage.UpdateAverage(backendManager.FrameTime);
             OnPropertyChanged(this, nameof(BackFPS));

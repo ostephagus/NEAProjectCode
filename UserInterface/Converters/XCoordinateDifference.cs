@@ -1,6 +1,6 @@
 ﻿namespace UserInterface.Converters
 {
-    internal class XCoordinateDifference : CoordinateDifference
+    public class XCoordinateDifference : CoordinateDifference
     {
         /// <summary>
         /// Translates an x coordinate from [0, 1] to the precise point as rendered by <see cref="VisualisationControl" />.

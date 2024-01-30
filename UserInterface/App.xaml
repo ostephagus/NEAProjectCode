@@ -2,7 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:UserInterface"
-             Startup="Start">
+             Startup="Start"
+             ShutdownMode="OnMainWindowClose"
+             Exit="Application_Exit">
     <Application.Resources>
         <Style TargetType="Label">
             <Setter Property="FontSize" Value="16" />

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -7,6 +6,7 @@ using System.Windows.Data;
 
 namespace UserInterface.Converters
 {
+    [ValueConversion(typeof(double), typeof(double))]
     public abstract class CoordinateDifference : IValueConverter
     {
         protected readonly VisualisationCoordinate VisualisationCoordinateConverter;

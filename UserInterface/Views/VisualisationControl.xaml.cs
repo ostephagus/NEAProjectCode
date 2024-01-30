@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿#define HOLLOW_TRIANGLES
+
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Wpf;
 using System;
 using System.ComponentModel;
@@ -140,7 +142,11 @@ namespace UserInterface
             GL.BindVertexArray(hFieldVAO);
             GLHelper.BufferSubData(fieldParameters.field, vertices.Length); // Update the field values
 
-            GLHelper.Draw(fieldIndices, PrimitiveType.LineStrip); // TESTING ONLY
+#if HOLLOW_TRIANGLES
+            GLHelper.Draw(fieldIndices, PrimitiveType.LineStrip); // For alignment testing - don't fill in triangles.
+#else
+            GLHelper.Draw(fieldIndices, PrimitiveType.Triangles);
+#endif
 
             // Drawing contour lines over the top
             if (parameterHolder.DrawContours.Value)

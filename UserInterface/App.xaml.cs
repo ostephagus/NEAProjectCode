@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using UserInterface.HelperClasses;
+using UserInterface.ViewModels;
 using UserInterface.Views;
 
 #pragma warning disable CS8618 // Compiler doesn't understand that Start() is functionally the constructor for this class.
@@ -78,6 +79,14 @@ namespace UserInterface
             UserControlChanged += ChangeUserControl;
             PopupCreated += CreatePopup;
             PopupDeleted += DeletePopup;
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            if (currentUserControl is SimulationScreen simulationScreen) // Close the backend if it is running when application exits (current screen will be SimulationScreen).
+            {
+                simulationScreen.ViewModel.CloseBackend();
+            }
         }
 
         //public void StartVisualisationDebugging(object sender, StartupEventArgs e)

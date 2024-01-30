@@ -16,49 +16,6 @@ void BackendCoordinator::UnflattenArray(bool** pointerArray, bool* flattenedArra
     }
 }
 
-void BackendCoordinator::PrintFlagsArrows(BYTE** flags, int xLength, int yLength) {
-    for (int i = xLength - 1; i >= 0; i--) {
-        for (int j = 0; j < yLength; j++) {
-            switch (flags[j][i]) {
-            case B_N:
-                std::cout << "^^";
-                break;
-            case B_NE:
-                std::cout << "^>";
-                break;
-            case B_E:
-                std::cout << ">>";
-                break;
-            case B_SE:
-                std::cout << "v>";
-                break;
-            case B_S:
-                std::cout << "vv";
-                break;
-            case B_SW:
-                std::cout << "<v";
-                break;
-            case B_W:
-                std::cout << "<<";
-                break;
-            case B_NW:
-                std::cout << "<^";
-                break;
-            case OBS:
-                std::cout << "()";
-                break;
-            case FLUID:
-                std::cout << "  ";
-                break;
-            default:
-                std::cout << "  ";
-                break;
-            }
-        }
-        std::cout << std::endl;
-    }
-}
-
 void BackendCoordinator::HandleRequest(BYTE requestByte) {
     std::cout << "Starting execution of timestepping loop" << std::endl;
     if ((requestByte & ~PipeConstants::Request::PARAMMASK) == PipeConstants::Request::CONTREQ) {
@@ -68,20 +25,18 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
             return;
         }
 
-        solver->ProcessObstacles();
-
         bool hVelWanted = requestByte & PipeConstants::Request::HVEL;
         bool vVelWanted = requestByte & PipeConstants::Request::VVEL;
         bool pressureWanted = requestByte & PipeConstants::Request::PRES;
         bool streamWanted = requestByte & PipeConstants::Request::STRM;
 
-        bool stopRequested = false;
+        bool closeRequested = false;
         pipeManager.SendByte(PipeConstants::Status::OK); // Send OK to say backend is set up and about to start executing
 
         int iteration = 0;
         REAL cumulativeTimestep = 0;
         solver->PerformSetup();
-        while (!stopRequested) {
+        while (!closeRequested) {
             std::cout << "Iteration " << iteration << ", " << cumulativeTimestep << " seconds passed. " << std::endl;
             pipeManager.SendByte(PipeConstants::Marker::ITERSTART);
 
@@ -114,13 +69,18 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
             pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
             BYTE receivedByte = pipeManager.ReadByte();
-            if (receivedByte == PipeConstants::Status::STOP || receivedByte == PipeConstants::Error::INTERNAL) {
-                stopRequested = true; // Stop if requested or the frontend fatally errors
+            if (receivedByte == PipeConstants::Status::STOP) { // Stop means just wait for the next read
+                pipeManager.SendByte(PipeConstants::Status::OK);
+                std::cout << "Backend paused." << std::endl;
+                receivedByte = pipeManager.ReadByte();
             }
-            else { // If stop was requested, skip parameter reading.
-                while ((receivedByte & ~PipeConstants::Marker::PRMMASK) == PipeConstants::Marker::PRMSTART) { // While the received byte is a PRMSTART
-                    ReceiveData(receivedByte);
-                    receivedByte = pipeManager.ReadByte(); // And read the next byte
+            if (receivedByte == PipeConstants::Status::CLOSE || receivedByte == PipeConstants::Error::INTERNAL) {
+                closeRequested = true; // Stop if requested or the frontend fatally errors
+            }
+            else { // Anything other than a CLOSE request
+                while ((receivedByte & ~PipeConstants::Marker::PRMMASK) == PipeConstants::Marker::PRMSTART) { // While the received byte is a PRMSTART...
+                    ReceiveData(receivedByte); // ...pass the received byte to ReceiveData to handle parameter reading...
+                    receivedByte = pipeManager.ReadByte(); // ...then read the next byte
                 }
                 if (receivedByte != PipeConstants::Status::OK) { // Require an OK at the end, whether parameters were sent or not
                     std::cerr << "Server sent malformed data" << std::endl;
@@ -195,6 +155,7 @@ void BackendCoordinator::ReceiveParameters(const BYTE parameterBits, SimulationP
 void BackendCoordinator::ReceiveData(BYTE startMarker) {
     if (startMarker == (PipeConstants::Marker::FLDSTART | PipeConstants::Marker::OBST)) { // Obstacles have a separate handler
         ReceiveObstacles();
+        solver->ProcessObstacles();
     }
     else if ((startMarker & ~PipeConstants::Marker::PRMMASK) == PipeConstants::Marker::PRMSTART) { // Check if startMarker is a PRMSTART by ANDing it with the inverse of the parameter mask
         BYTE parameterBits = startMarker & PipeConstants::Marker::PRMMASK;
