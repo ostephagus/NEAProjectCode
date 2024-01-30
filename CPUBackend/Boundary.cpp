@@ -95,7 +95,7 @@ void CopyBoundaryPressures(REAL** pressure, std::pair<int,int>* coordinates, int
     }
     for (int coord = 0; coord < numCoords; coord++) {
         BYTE relevantFlag = flags[coordinates[coord].first][coordinates[coord].second];
-        int numEdges = std::bitset<8>(relevantFlag).count();
+        int numEdges = (int)std::bitset<8>(relevantFlag).count();
         if (numEdges == 1) {
             pressure[coordinates[coord].first][coordinates[coord].second] = pressure[coordinates[coord].first + ((relevantFlag & RIGHTMASK) >> RIGHTSHIFT) - (relevantFlag & LEFTMASK)][coordinates[coord].second + ((relevantFlag & TOPMASK) >> TOPSHIFT) - ((relevantFlag & BOTTOMMASK) >> BOTTOMSHIFT)]; // Copying pressure from the relevant cell. Using anding with bit masks to do things like [i+1][j] using single bits
         }
