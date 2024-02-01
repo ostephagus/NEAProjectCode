@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -154,6 +155,11 @@ namespace UserInterface.HelperClasses
 
         public class PauseResumeBackend : VMCommandBase<SimulationScreenVM>
         {
+            public override bool CanExecute(object? parameter)
+            {
+                return !parentViewModel.EditingObstacles; // Cannot execute when editing obstacles.
+            }
+
             public override void Execute(object? parameter)
             {
                 switch (parentViewModel.BackendStatus)
@@ -168,7 +174,15 @@ namespace UserInterface.HelperClasses
                         break;
                 }
             }
-            public PauseResumeBackend(SimulationScreenVM parentViewModel) : base(parentViewModel) { }
+            public PauseResumeBackend(SimulationScreenVM parentViewModel) : base(parentViewModel)
+            {
+                parentViewModel.PropertyChanged += VMPropertyChanged;
+            }
+
+            private void VMPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(parentViewModel.EditingObstacles)) OnCanExecuteChanged(sender, e);
+            }
         }
 
         public class EditObstacles : VMCommandBase<SimulationScreenVM>
@@ -184,8 +198,8 @@ namespace UserInterface.HelperClasses
                 }
                 else // Obstacle editing has started, need to stop backend and allow obstacles to be edited.
                 {
-                    parentViewModel.EditingObstacles = true;
                     BackendCommand.Execute(null);
+                    parentViewModel.EditingObstacles = true;
                 }
             }
             public EditObstacles(SimulationScreenVM parentViewModel) : base(parentViewModel)

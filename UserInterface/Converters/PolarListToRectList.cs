@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -13,7 +13,7 @@ namespace UserInterface.Converters
         /// <summary>
         /// Converts a list of polar coordinates to a list of rectangular coordinates with a specified origin.
         /// </summary>
-        /// <param name="values">An array of: polar point list, parent width, parent height.</param>
+        /// <param name="values">An array of: polar point observable collection, parent width, parent height.</param>
         /// <param name="parameter">The origin, as fractions of the canvas size. Either a <see cref="Point"/> or <see cref="string"/> that can be converted to a point.</param>
         /// <returns>A <see cref="PointCollection"/> of rectangular points.</returns>
         /// <exception cref="NotImplementedException"></exception>
@@ -23,11 +23,11 @@ namespace UserInterface.Converters
             VisualisationXCoordinate XCoordConverter = new VisualisationXCoordinate();
             VisualisationYCoordinate YCoordConverter = new VisualisationYCoordinate();
 
-            if (values[0] is not List<PolarPoint> || values[1] is not double || values[2] is not double)
+            if (values[0] is not ObservableCollection<PolarPoint> || values[1] is not double || values[2] is not double)
             {
                 return DependencyProperty.UnsetValue;
             }
-            List<PolarPoint> polarPoints = (List<PolarPoint>)values[0];
+            ObservableCollection<PolarPoint> polarPoints = (ObservableCollection<PolarPoint>)values[0];
             double parentWidth = (double)values[1];
             double parentHeight = (double)values[2];
 

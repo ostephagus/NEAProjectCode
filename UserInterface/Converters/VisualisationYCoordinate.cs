@@ -13,5 +13,15 @@ namespace UserInterface.Converters
         {
             return 1.009 - 1.0099 * p;
         }
+
+        /// <summary>
+        /// Translates a y coordinate from the precise point as rendered by <see cref="VisualisationControl" /> to [0, 1].
+        /// </summary>
+        /// <param name="p">The point that maps to the <see cref="VisualisationControl"/> space to translate.</param>
+        /// <returns>A y coordinate in [0, 1].</returns>
+        public override double TranslateCanvasCoordinate(double p)
+        {
+            return (1.009 - p) / 1.0099;
+        }
     }
 }

@@ -88,7 +88,19 @@ namespace UserInterface.HelperClasses
         /// <param name="point">The point to add.</param>
         public void AddControlPoint(PolarPoint point)
         {
+            
             controlPoints.Add(point);
+            controlPoints.Sort();
+            if (controlPoints.Count >= 3)
+            {
+                CalculateSplineFunction();
+            }
+        }
+
+        public void ModifyControlPoint(PolarPoint oldPoint, PolarPoint newPoint)
+        {
+            controlPoints.Remove(oldPoint);
+            controlPoints.Add(newPoint);
             controlPoints.Sort();
             if (controlPoints.Count >= 3)
             {

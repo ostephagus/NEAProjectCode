@@ -13,5 +13,10 @@ namespace UserInterface.Converters
         {
             return -0.0009 + 1.0099 * p;
         }
+
+        public override double TranslateCanvasCoordinate(double p)
+        {
+            return (p + 0.0009) / 1.0099;
+        }
     }
 }

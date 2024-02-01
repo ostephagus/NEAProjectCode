@@ -165,7 +165,7 @@
             </Label.Style>
             This is the recording settings panel
         </Label>
-        <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="SimulationCanvas" >
+        <Canvas Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="SimulationCanvas" MouseLeftButtonDown="CanvasMouseLeftButtonDown" MouseRightButtonDown="CanvasMouseRightButtonDown" MouseLeftButtonUp="CanvasMouseLeftButtonUp" MouseMove="CanvasMouseMove">
             <ContentControl Width="{Binding ActualWidth, ElementName=SimulationCanvas, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=SimulationCanvas, Mode=OneWay}" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}">
                 <ContentControl.Style>
                     <Style TargetType="ContentControl">

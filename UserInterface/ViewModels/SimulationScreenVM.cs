@@ -1,13 +1,12 @@
-﻿using OpenTK.Graphics.OpenGL;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
-using UserInterface.Converters;
 using UserInterface.HelperClasses;
 
 namespace UserInterface.ViewModels
@@ -36,15 +35,17 @@ namespace UserInterface.ViewModels
         private int dataWidth;
         private int dataHeight;
 
-        private List<PolarPoint> obstaclePoints;
+        private ObservableCollection<PolarPoint> obstaclePoints;
+        private ObservableCollection<PolarPoint> controlPoints;
         private PolarSplineCalculator obstaclePointCalculator;
         private bool editingObstacles;
+        private Point obstacleCentre;
 
-        const int numObstaclePoints = 40;
-        const float boundaryTop = 0.55f;
-        const float boundaryLeft = 0.15f;
-        const float boundaryHeight = 0.1f;
-        const float boundaryWidth = 0.1f;
+        private const int numObstaclePoints = 40;
+        private const float boundaryTop = 0.55f;
+        private const float boundaryLeft = 0.15f;
+        private const float boundaryHeight = 0.1f;
+        private const float boundaryWidth = 0.1f;
 
 
         public string? CurrentButton //Conversion between string and internal enum value done in property
@@ -67,8 +68,6 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(currentButton));
             }
         }
-
-        public double ObstacleLeft { get; set; } = 0.15;
 
         public float InVel
         {
@@ -190,7 +189,10 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(EditingObstacles));
             }
         }
-        public List<PolarPoint> ObstaclePoints { get => obstaclePoints; set => obstaclePoints = value; }
+        public ObservableCollection<PolarPoint> ObstaclePoints { get => obstaclePoints; }
+
+        public ObservableCollection<PolarPoint> ControlPoints { get => controlPoints; }
+        public Point ObstacleCentre { get => obstacleCentre; set => obstacleCentre = value; }
 
         public VisualisationControl VisualisationControl { get => visualisationControl; }
         
@@ -243,13 +245,16 @@ namespace UserInterface.ViewModels
         {
             #region Parameters related to View
             currentButton = null; // Initially no panel selected
-            obstaclePoints = new List<PolarPoint>();
+            obstaclePoints = new ObservableCollection<PolarPoint>();
+            controlPoints = new ObservableCollection<PolarPoint>();
+            obstacleCentre = new Point(0.5, 0.5);
             obstaclePointCalculator = new PolarSplineCalculator();
+            CreateDefaultObstacle();
+            controlPoints.CollectionChanged += OnControlPointsChanged;
             editingObstacles = false;
             InVel = parameterHolder.InflowVelocity.Value;
             Chi = parameterHolder.SurfaceFriction.Value;
 
-            CreateDefaultObstacle();
 
             SwitchPanelCommand = new Commands.SwitchPanel(this);
             BackendCommand = new Commands.PauseResumeBackend(this);
@@ -292,6 +297,46 @@ namespace UserInterface.ViewModels
             visualisationControl.PropertyChanged += VisFPSUpdate; // FPS updating method
             visFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
             #endregion
+        }
+
+        private void OnControlPointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (object? point in e.NewItems)
+                    {
+                        if (point is not PolarPoint polarPoint)
+                        {
+                            throw new ArgumentException("The item added to the collection was not valid.");
+                        }
+                        obstaclePointCalculator.AddControlPoint(polarPoint);
+                    }
+                    break;
+                    
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (object? point in e.OldItems)
+                    {
+                        if (point is not PolarPoint polarPoint)
+                        {
+                            throw new ArgumentException("The item removed from the collection was not valid");
+                        }
+                        obstaclePointCalculator.RemoveControlPoint(polarPoint);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    if (e.OldItems[0] is not PolarPoint oldPoint || e.NewItems[0] is not PolarPoint newPoint)
+                    {
+                        throw new ArgumentException("The item removed from the collection was not valid");
+                    }
+                    obstaclePointCalculator.ModifyControlPoint(oldPoint, newPoint); // Check if NewItems contains the new item here.
+                    break;
+                default:
+                    throw new InvalidOperationException("Only add, modify and remove are supported for obstacle points collection.");
+            }
+            // If control has reached this point, a valid modification has been made to the control points collection
+            PlotObstaclePoints();
         }
 
         private void SetFieldDefaults()
@@ -390,15 +435,33 @@ namespace UserInterface.ViewModels
         private void CreateDefaultObstacle()
         {
             double scale = 0.15;
-            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, Math.PI / 4));
-            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 3 * Math.PI / 4));
-            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 5 * Math.PI / 4));
-            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale, 7 * Math.PI / 4));
-            obstaclePointCalculator.AddControlPoint(new PolarPoint(scale / Math.Sqrt(2), Math.PI / 2));
+
+            // Define the bean.
+            controlPoints.Add(new PolarPoint(scale, Math.PI / 4));
+            controlPoints.Add(new PolarPoint(scale, 3 * Math.PI / 4));
+            controlPoints.Add(new PolarPoint(scale, 5 * Math.PI / 4));
+            controlPoints.Add(new PolarPoint(scale, 7 * Math.PI / 4));
+            controlPoints.Add(new PolarPoint(scale / Math.Sqrt(2), Math.PI / 2));
+
+            foreach (PolarPoint controlPoint in controlPoints)
+            {
+                obstaclePointCalculator.AddControlPoint(controlPoint);
+            }
+
+            PlotObstaclePoints();
+        }
+
+        /// <summary>
+        /// Wipes the <see cref="ObstaclePoints"/> collection and plots new points based on the <see cref="obstaclePointCalculator"/> function.
+        /// </summary>
+        private void PlotObstaclePoints()
+        {
+            ObstaclePoints.Clear();
             for (double i = 0; i < numObstaclePoints; i++)
             {
                 ObstaclePoints.Add(new PolarPoint(obstaclePointCalculator.CalculatePoint(i / 40 * 2 * Math.PI), i / 40 * 2 * Math.PI));
             }
+            OnPropertyChanged(this, nameof(ObstaclePoints));
         }
 
         public void EmbedObstacles()

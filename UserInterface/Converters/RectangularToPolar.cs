@@ -49,7 +49,13 @@ namespace UserInterface.Converters
 
             Vector distFromOrigin = point - origin;
 
-            return new PolarPoint(distFromOrigin.Length, Math.Atan2(distFromOrigin.Y, distFromOrigin.X)); // This is the only line that actually converts a rectangular coordinate to a polar one.
+            double angle = Math.Atan2(distFromOrigin.Y, distFromOrigin.X); // Range -pi to pi.
+            if (angle < 0) // Make the range 0 to 2 pi
+            {
+                angle += 2 * Math.PI;
+            }
+
+            return new PolarPoint(distFromOrigin.Length, angle); // This is the only line that actually converts a rectangular coordinate to a polar one.
         }
 
         /// <summary>
