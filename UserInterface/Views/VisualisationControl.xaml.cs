@@ -76,8 +76,8 @@ namespace UserInterface
             GLWpfControlSettings settings = new() { MajorVersion = 3, MinorVersion = 1 };
             GLControl.Start(settings);
 
-            fieldShaderManager = new ShaderManager(new (string, ShaderType)[] { ("fieldShader.frag", ShaderType.FragmentShader), ("fieldShader.vert", ShaderType.VertexShader) });
-            contourShaderManager = new ShaderManager(new (string, ShaderType)[] { ("contourShader.frag", ShaderType.FragmentShader), ("contourShader.vert", ShaderType.VertexShader) });
+            fieldShaderManager = new ShaderManager([("fieldShader.frag", ShaderType.FragmentShader), ("fieldShader.vert", ShaderType.VertexShader)]);
+            contourShaderManager = new ShaderManager([("contourShader.frag", ShaderType.FragmentShader), ("contourShader.vert", ShaderType.VertexShader)]);
             //computeShaderManager = new ComputeShaderManager("shader.comp");
 
             GL.Enable(EnableCap.PrimitiveRestart);

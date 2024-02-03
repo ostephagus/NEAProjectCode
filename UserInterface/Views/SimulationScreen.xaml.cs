@@ -34,20 +34,20 @@ namespace UserInterface.Views
         {
             foreach (PolarPoint polarPoint in ViewModel.ControlPoints)
             {
-                SimulationCanvas.Children.Add(new VisualPoint((Point)PolToRecConverter.Convert(new object[] { polarPoint, SimulationCanvas.ActualWidth, SimulationCanvas.ActualHeight }, typeof(Point), ViewModel.ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture)));
+                SimulationCanvas.Children.Add(new VisualPoint((Point)PolToRecConverter.Convert([polarPoint, SimulationCanvas.ActualWidth, SimulationCanvas.ActualHeight], typeof(Point), ViewModel.ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture)));
             }
         }
 
         private void AddPoint(VisualPoint point)
         {
             SimulationCanvas.Children.Add(point);
-            ViewModel.ControlPoints.Add((PolarPoint)RecToPolConverter.Convert(new object[] { point.Point, SimulationCanvas.ActualWidth, SimulationCanvas.ActualHeight }, typeof(PolarPoint), new Point(0.5, 0.5), System.Globalization.CultureInfo.CurrentCulture));
+            ViewModel.ControlPoints.Add(ConvertToPolar(point.Point));
         }
 
         private void RemovePoint(VisualPoint point)
         {
             SimulationCanvas.Children.Remove(point);
-            ViewModel.ControlPoints.Remove((PolarPoint)RecToPolConverter.Convert(new object[] {point.Point, SimulationCanvas.ActualWidth, SimulationCanvas.ActualHeight}, typeof(PolarPoint), new Point(0.5, 0.5), System.Globalization.CultureInfo.CurrentCulture));
+            ViewModel.ControlPoints.Remove(ConvertToPolar(point.Point));
         }
 
         private void CanvasMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -74,6 +74,16 @@ namespace UserInterface.Views
                 Panel.SetZIndex(draggedPoint, 0);
                 draggedPoint = null;
             }
+        }
+
+        /// <summary>
+        /// Fills in the common parameters and calls <see cref="AbsoluteRectToRelativePol.Convert(object[], Type, object, System.Globalization.CultureInfo)"/>, like a partial function application.
+        /// </summary>
+        /// <param name="rectangularPoint">The absolute rectangular point to convert</param>
+        /// <returns>A relative polar coordinate.</returns>
+        private PolarPoint ConvertToPolar(Point rectangularPoint)
+        {
+            return (PolarPoint)RecToPolConverter.Convert([rectangularPoint, SimulationCanvas.ActualWidth, SimulationCanvas.ActualHeight], typeof(PolarPoint), new Point(0.5, 0.5), System.Globalization.CultureInfo.CurrentCulture);
         }
 
         private void CanvasMouseRightButtonDown(object sender, MouseButtonEventArgs e)

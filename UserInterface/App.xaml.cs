@@ -25,7 +25,7 @@ namespace UserInterface
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, new object?[] {parameterHolder}); // Use the Type parameter to create a new instance
+            currentUserControl = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]); // Use the Type parameter to create a new instance
 
             fullScreenWindowContainer.Content = currentUserControl;
 
@@ -33,7 +33,7 @@ namespace UserInterface
 
         private void CreatePopup(object? sender, UserControlChangeEventArgs e)
         {
-            currentPopup = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, new object?[] {parameterHolder});
+            currentPopup = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]);
             popupWindowContainer.Content = currentPopup;
 
             popupWindowContainer.Show();
@@ -66,9 +66,11 @@ namespace UserInterface
         public void Start(object Sender, StartupEventArgs e)
         {
             fullScreenWindowContainer = new MainWindow(); // Initialise container windows
-            popupWindowContainer = new PopupWindow();
-            popupWindowContainer.Height = 400;
-            popupWindowContainer.Width = 700;
+            popupWindowContainer = new PopupWindow
+            {
+                Height = 400,
+                Width = 700
+            };
 
             parameterHolder = new(DefaultParameters.WIDTH, DefaultParameters.HEIGHT, DefaultParameters.TIMESTEP_SAFETY_FACTOR, DefaultParameters.RELAXATION_PARAMETER, DefaultParameters.PRESSURE_RESIDUAL_TOLERANCE, DefaultParameters.PRESSURE_MAX_ITERATIONS, DefaultParameters.REYNOLDS_NUMBER, DefaultParameters.FLUID_VELOCITY, DefaultParameters.SURFACE_FRICTION, new FieldParameters(), DefaultParameters.DRAW_CONTOURS, DefaultParameters.CONTOUR_TOLERANCE, DefaultParameters.CONTOUR_SPACING); // Use the defaults from DefaultParameters constant holder
 
@@ -100,7 +102,7 @@ namespace UserInterface
     public class UserControlChangeEventArgs : EventArgs // EventArgs derivative containing the typename of the new user control
     {
         public Type NewUserControlType { get; }
-        public UserControlChangeEventArgs(Type newUserControlType)
+        public UserControlChangeEventArgs(Type newUserControlType) : base()
         {
             NewUserControlType = newUserControlType;
         }
