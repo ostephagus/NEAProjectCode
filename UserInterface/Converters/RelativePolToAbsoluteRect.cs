@@ -50,9 +50,11 @@ namespace UserInterface.Converters
             }
 
             Point relativePoint = (Point)RecToPolConverter.ConvertBack(point, targetType, origin, culture);
-            return new Point(
-                (double)CoordinateConverter.ConvertBack(canvasWidth, targetType, relativePoint.X.ToString(), culture),
-                (double)CoordinateConverter.ConvertBack(canvasHeight, targetType, relativePoint.Y.ToString(), culture));
+            Point absolutePoint =  new Point(
+                (double)CoordinateConverter.Convert(canvasWidth, targetType, relativePoint.X.ToString(), culture),
+                (double)CoordinateConverter.Convert(canvasHeight, targetType, (1 - relativePoint.Y).ToString(), culture));
+
+            return new Point(absolutePoint.X / 2, absolutePoint.Y / 2);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

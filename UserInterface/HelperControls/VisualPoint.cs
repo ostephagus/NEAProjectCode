@@ -42,6 +42,8 @@ namespace UserInterface.HelperControls
             Point = point;
         }
 
+        public VisualPoint() : this(new Point(0, 0)) { }
+
         public override string ToString()
         {
             return point.ToString();

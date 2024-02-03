@@ -19,6 +19,7 @@
             <converters:XCoordinateDifference x:Key="XCoordinateDifferenceConverter" />
             <converters:YCoordinateDifference x:Key="YCoordinateDifferenceConverter" />
             <converters:PolarListToRectList x:Key="PolarListToRectListConverter" />
+            <converters:AbsoluteToRelativeRect x:Key="CoordinateConverter" />
         </ResourceDictionary>
     </local:SwappableScreen.Resources>
     <Grid>
@@ -178,12 +179,14 @@
                     </Style>
                 </ContentControl.Style>
             </ContentControl>
+
             <Polygon x:Name="ObstaclePolygon" Fill="Black">
                 <Polygon.Points>
-                    <MultiBinding Converter="{StaticResource PolarListToRectListConverter}" ConverterParameter="0.5,0.5">
+                    <MultiBinding Converter="{StaticResource PolarListToRectListConverter}">
                         <Binding Path="ObstaclePoints" />
                         <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualWidth" />
                         <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Canvas}" Path="ActualHeight" />
+                        <Binding Path="ObstacleCentre" />
                     </MultiBinding>
                 </Polygon.Points>
             </Polygon>

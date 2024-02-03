@@ -41,7 +41,7 @@ namespace UserInterface.ViewModels
         private bool editingObstacles;
         private Point obstacleCentre;
 
-        private const int numObstaclePoints = 40;
+        private const int numObstaclePoints = 80;
         private const float boundaryTop = 0.55f;
         private const float boundaryLeft = 0.15f;
         private const float boundaryHeight = 0.1f;
@@ -192,7 +192,15 @@ namespace UserInterface.ViewModels
         public ObservableCollection<PolarPoint> ObstaclePoints { get => obstaclePoints; }
 
         public ObservableCollection<PolarPoint> ControlPoints { get => controlPoints; }
-        public Point ObstacleCentre { get => obstacleCentre; set => obstacleCentre = value; }
+        public Point ObstacleCentre
+        {
+            get => obstacleCentre;
+            set
+            {
+                obstacleCentre = value;
+                OnPropertyChanged(this, nameof(ObstacleCentre));
+            }
+        }
 
         public VisualisationControl VisualisationControl { get => visualisationControl; }
         
@@ -459,7 +467,7 @@ namespace UserInterface.ViewModels
             ObstaclePoints.Clear();
             for (double i = 0; i < numObstaclePoints; i++)
             {
-                ObstaclePoints.Add(new PolarPoint(obstaclePointCalculator.CalculatePoint(i / 40 * 2 * Math.PI), i / 40 * 2 * Math.PI));
+                ObstaclePoints.Add(new PolarPoint(obstaclePointCalculator.CalculatePoint(i / numObstaclePoints * 2 * Math.PI), i / numObstaclePoints * 2 * Math.PI));
             }
             OnPropertyChanged(this, nameof(ObstaclePoints));
         }
