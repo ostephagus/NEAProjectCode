@@ -24,11 +24,11 @@ The GPU backend is working, although some profiling and optimisation would be ve
 The visualiusation is complete.
 
 ### User Interface
-The User Interface is now able to change and send parameters, although key areas still to work on are adding tooltips, click-and-drag node system for defining obstacles and reading in a file for obstacles.
+The User Interface is now able to change and send parameters and the click-and-drag node system works, although key areas still to work on are adding tooltips, and reading in a file for obstacles.
 
 ## Current areas of work (Jan/Feb 2024)
 ### GPU Backend
 Profiling and optimisation (via Nsight profiler).
 
 ### User Interface
-Click-and-drag node system.
+User requirements.
