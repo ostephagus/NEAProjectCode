@@ -14,12 +14,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
-            <converters:VisualisationXCoordinate x:Key="XCoordinateConverter" />
-            <converters:VisualisationYCoordinate x:Key="YCoordinateConverter" />
-            <converters:XCoordinateDifference x:Key="XCoordinateDifferenceConverter" />
-            <converters:YCoordinateDifference x:Key="YCoordinateDifferenceConverter" />
             <converters:PolarListToRectList x:Key="PolarListToRectListConverter" />
-            <converters:AbsoluteToRelativeRect x:Key="CoordinateConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
