@@ -55,6 +55,7 @@ struct SimulationParameters
 	int pressureMinIterations;
 	int pressureMaxIterations;
 	REAL reynoldsNo;
+	REAL dynamicViscosity;
 	REAL inflowVelocity;
 	REAL surfaceFrictionalPermissibility;
 	DoubleReal bodyForces;

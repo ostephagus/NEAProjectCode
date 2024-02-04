@@ -1,4 +1,5 @@
-﻿using UserInterface.HelperClasses;
+﻿using System.Windows.Controls;
+using UserInterface.HelperClasses;
 using UserInterface.ViewModels;
 
 namespace UserInterface.Views
@@ -6,9 +7,9 @@ namespace UserInterface.Views
     /// <summary>
     /// Interaction logic for ConfigScreen.xaml
     /// </summary>
-    public partial class ConfigScreen : SwappableScreen
+    public partial class ConfigScreen : UserControl
     {
-        public ConfigScreen(ParameterHolder parameterHolder) : base(parameterHolder)
+        public ConfigScreen(ParameterHolder parameterHolder)
         {
             InitializeComponent();
             DataContext = new ConfigScreenVM(parameterHolder);

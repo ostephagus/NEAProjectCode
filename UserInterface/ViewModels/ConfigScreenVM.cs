@@ -8,7 +8,8 @@ namespace UserInterface.ViewModels
         private float chi;
         private float width;
         private float height;
-
+        private float reynoldsNo;
+        private float viscosity;
 
         public float InVel
         {
@@ -34,7 +35,20 @@ namespace UserInterface.ViewModels
             set { height = value; OnPropertyChanged(this, nameof(Height)); parameterHolder.Height = ModifyParameterValue(parameterHolder.Height, height); }
         }
 
+        public float ReynoldsNo
+        {
+            get => reynoldsNo;
+            set { reynoldsNo = value; OnPropertyChanged(this, nameof(ReynoldsNo)); parameterHolder.ReynoldsNumber = ModifyParameterValue(parameterHolder.ReynoldsNumber, reynoldsNo); }
+        }
+
+        public float Viscosity
+        {
+            get => viscosity;
+            set { viscosity = value; OnPropertyChanged(this, nameof(Viscosity)); parameterHolder.FluidViscosity = ModifyParameterValue(parameterHolder.FluidViscosity, viscosity); }
+        }
+
         public Commands.ConfigScreenReset ResetCommand { get; set; }
+        public Commands.SetAirParameters SetAirCommand { get; set; }
         public Commands.ChangeWindow ChangeWindowCommand { get; set; }
         public Commands.CreatePopup CreatePopupCommand { get; set; }
 
@@ -45,6 +59,7 @@ namespace UserInterface.ViewModels
             Width = parameterHolder.Width.Value;
             Height = parameterHolder.Height.Value;
             ResetCommand = new Commands.ConfigScreenReset(this, parameterHolder);
+            SetAirCommand = new Commands.SetAirParameters(this);
             ChangeWindowCommand = new Commands.ChangeWindow();
             CreatePopupCommand = new Commands.CreatePopup();
         }

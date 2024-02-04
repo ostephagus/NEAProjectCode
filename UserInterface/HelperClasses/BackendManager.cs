@@ -207,6 +207,7 @@ namespace UserInterface.HelperClasses
                     "ReynoldsNumber" => PipeConstants.Marker.REYNOLDS,
                     "InflowVelocity" => PipeConstants.Marker.INVEL,
                     "SurfaceFriction" => PipeConstants.Marker.CHI,
+                    "FluidViscosity" => PipeConstants.Marker.MU,
                     _ => 0,
                 };
 
@@ -326,6 +327,8 @@ namespace UserInterface.HelperClasses
             pipeManager.SendParameter(parameterHolder.SurfaceFriction.Value, PipeConstants.Marker.CHI);
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
 
+            pipeManager.SendParameter(parameterHolder.FluidViscosity.Value, PipeConstants.Marker.MU);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace UserInterface.Views
     /// <summary>
     /// Interaction logic for SimulationScreen.xaml
     /// </summary>
-    public partial class SimulationScreen : SwappableScreen
+    public partial class SimulationScreen : UserControl
     {
         private readonly SimulationScreenVM viewModel;
         private readonly RectangularToPolar RecToPolConverter;
@@ -27,9 +27,10 @@ namespace UserInterface.Views
 
         private static readonly double POINT_TOLERANCE = 0.1f;
 
-        public SimulationScreen(ParameterHolder parameterHolder) : base(parameterHolder)
+        public SimulationScreen(ParameterHolder parameterHolder)
         {
             InitializeComponent();
+
             viewModel = new SimulationScreenVM(parameterHolder);
             DataContext = viewModel;
 

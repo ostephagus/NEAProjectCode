@@ -1,21 +1,20 @@
-﻿<local:SwappableScreen x:Class="UserInterface.Views.ConfigScreen"
+﻿<UserControl x:Class="UserInterface.Views.ConfigScreen"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
-             xmlns:helperclasses="clr-namespace:UserInterface.HelperClasses"
              xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
              xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:ConfigScreenVM}"
-             d:DesignHeight="400" d:DesignWidth="700">
+             d:DesignHeight="630" d:DesignWidth="1120">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="2*" MaxHeight="100" />
+            <RowDefinition Height="*" MaxHeight="50" />
             <RowDefinition Height="8*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MaxHeight="50" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
@@ -26,6 +25,10 @@
         <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Simulated objects" />
         <Grid Grid.Row="2" Grid.Column="0" Margin="0 0 10 0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -52,6 +55,12 @@
             <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
             
             <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
+            <helpercontrols:ResizableCentredTextBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="50" Text="Fluid parameters" />
+            <Label Grid.Row="7" Grid.Column="0">Reynolds number</Label>
+            <helpercontrols:SliderWithValue x:Name="SliderReynoldsNo" Grid.Row="7" Grid.Column="1" Value="{Binding ReynoldsNo}" Minimum="1000" Maximum="100000" />
+            <Label Grid.Row="8" Grid.Column="0">Viscosity</Label>
+            <helpercontrols:SliderWithValue x:Name="SliderViscosity" Grid.Row="8" Grid.Column="1" Value="{Binding Viscosity}" Minimum="2E-5" Maximum="1" />
+            <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding SetAirCommand}">Reset to air at room temperature (20°C)</Button>
         </Grid>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <Button>Select file</Button>
@@ -59,4 +68,4 @@
         </StackPanel>
         <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindowCommand}" CommandParameter="{x:Type local:SimulationScreen}">Simulate</Button>
     </Grid>
-</local:SwappableScreen>
+</UserControl>

@@ -61,6 +61,7 @@ namespace PipeConstants {
         constexpr BYTE REYNOLDS = 0b00001001;
         constexpr BYTE INVEL = 0b00001010;
         constexpr BYTE CHI = 0b00001011;
+        constexpr BYTE MU = 0b00001100;
     }
     namespace Error
     {

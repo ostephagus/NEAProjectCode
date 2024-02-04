@@ -146,6 +146,8 @@ void BackendCoordinator::ReceiveParameters(const BYTE parameterBits, SimulationP
         case PipeConstants::Marker::CHI:
             parameters.surfaceFrictionalPermissibility = parameterValue;
             break;
+        case PipeConstants::Marker::MU:
+            parameters.dynamicViscosity = parameterValue;
         default:
             break;
         }
@@ -184,7 +186,8 @@ void BackendCoordinator::SetDefaultParameters(SimulationParameters& parameters) 
     parameters.pressureResidualTolerance = 2;
     parameters.pressureMinIterations = 5;
     parameters.pressureMaxIterations = 1000;
-    parameters.reynoldsNo = 1000;
+    parameters.reynoldsNo = 2000;
+    parameters.dynamicViscosity = (REAL)0.00001983;
     parameters.inflowVelocity = 1;
     parameters.surfaceFrictionalPermissibility = 0;
     parameters.bodyForces.x = 0;

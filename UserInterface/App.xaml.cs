@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using UserInterface.HelperClasses;
 using UserInterface.ViewModels;
 using UserInterface.Views;
@@ -13,8 +14,8 @@ namespace UserInterface
     /// </summary>
     public partial class App : Application
     {
-        private SwappableScreen currentUserControl;
-        private SwappableScreen? currentPopup;
+        private UserControl currentUserControl;
+        private UserControl? currentPopup;
         private MainWindow fullScreenWindowContainer; // 2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
         private PopupWindow popupWindowContainer;
         private ParameterHolder parameterHolder;
@@ -25,7 +26,7 @@ namespace UserInterface
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]); // Use the Type parameter to create a new instance
+            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]); // Use the Type parameter to create a new instance
 
             fullScreenWindowContainer.Content = currentUserControl;
 
@@ -33,7 +34,7 @@ namespace UserInterface
 
         private void CreatePopup(object? sender, UserControlChangeEventArgs e)
         {
-            currentPopup = (SwappableScreen)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]);
+            currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]);
             popupWindowContainer.Content = currentPopup;
 
             popupWindowContainer.Show();
@@ -72,7 +73,7 @@ namespace UserInterface
                 Width = 700
             };
 
-            parameterHolder = new(DefaultParameters.WIDTH, DefaultParameters.HEIGHT, DefaultParameters.TIMESTEP_SAFETY_FACTOR, DefaultParameters.RELAXATION_PARAMETER, DefaultParameters.PRESSURE_RESIDUAL_TOLERANCE, DefaultParameters.PRESSURE_MAX_ITERATIONS, DefaultParameters.REYNOLDS_NUMBER, DefaultParameters.FLUID_VELOCITY, DefaultParameters.SURFACE_FRICTION, new FieldParameters(), DefaultParameters.DRAW_CONTOURS, DefaultParameters.CONTOUR_TOLERANCE, DefaultParameters.CONTOUR_SPACING); // Use the defaults from DefaultParameters constant holder
+            parameterHolder = new(DefaultParameters.WIDTH, DefaultParameters.HEIGHT, DefaultParameters.TIMESTEP_SAFETY_FACTOR, DefaultParameters.RELAXATION_PARAMETER, DefaultParameters.PRESSURE_RESIDUAL_TOLERANCE, DefaultParameters.PRESSURE_MAX_ITERATIONS, DefaultParameters.REYNOLDS_NUMBER, DefaultParameters.FLUID_VISCOSITY, DefaultParameters.FLUID_VELOCITY, DefaultParameters.SURFACE_FRICTION, new FieldParameters(), DefaultParameters.DRAW_CONTOURS, DefaultParameters.CONTOUR_TOLERANCE, DefaultParameters.CONTOUR_SPACING); // Use the defaults from DefaultParameters constant holder
 
             currentUserControl = new ConfigScreen(parameterHolder);
             fullScreenWindowContainer.Content = currentUserControl;

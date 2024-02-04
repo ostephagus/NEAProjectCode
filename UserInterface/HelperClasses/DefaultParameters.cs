@@ -9,6 +9,7 @@
         public static readonly float PRESSURE_RESIDUAL_TOLERANCE = 2f;
         public static readonly float PRESSURE_MAX_ITERATIONS = 1000f;
         public static readonly float REYNOLDS_NUMBER = 2000f;
+        public static readonly float FLUID_VISCOSITY = 1.983E-5f;
         public static readonly float FLUID_VELOCITY = 1f;
         public static readonly float SURFACE_FRICTION = 0f;
 

@@ -1,4 +1,4 @@
-﻿<local:SwappableScreen x:Class="UserInterface.Views.SimulationScreen"
+﻿<UserControl x:Class="UserInterface.Views.SimulationScreen"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,12 +6,12 @@
              xmlns:local="clr-namespace:UserInterface.Views"
              xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
              xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
-             xmlns:viewmodels="clr-namespace:UserInterface.ViewModels"
+             xmlns:viewmodels="clr-namespace:UserInterface.ViewModels;assembly=UserInterface"
              xmlns:converters="clr-namespace:UserInterface.Converters"
              d:DataContext="{d:DesignInstance Type=viewmodels:SimulationScreenVM}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <local:SwappableScreen.Resources>
+    <UserControl.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
             <converters:VisualisationXCoordinate x:Key="XCoordinateConverter" />
@@ -21,7 +21,7 @@
             <converters:PolarListToRectList x:Key="PolarListToRectListConverter" />
             <converters:AbsoluteToRelativeRect x:Key="CoordinateConverter" />
         </ResourceDictionary>
-    </local:SwappableScreen.Resources>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MaxHeight="150"/>
@@ -196,12 +196,12 @@
                     <Setter Property="Margin" Value="2.5 0 2.5 5" />
                 </Style>
             </StackPanel.Resources>
-            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}"/><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" /><Run Text=" FPS."/></TextBlock>
-            <Button Command="{Binding EditObstaclesCommand}" Content="{Binding EditObstaclesButtonText}" />
+            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS."/></TextBlock>
+            <Button Command="{Binding EditObstaclesCommand}" Content="{Binding EditObstaclesButtonText}" d:Content="Edit simulation obstacles" />
             <Button Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
             <Button>Save as image</Button>
             <Button>Save as video</Button>
-            <Button Content="{Binding BackendButtonText}" Command="{Binding BackendCommand}" />
+            <Button Content="{Binding BackendButtonText}" Command="{Binding BackendCommand}" d:Content="Pause Simulation" />
         </StackPanel>
     </Grid>
-</local:SwappableScreen>
+</UserControl>

@@ -48,6 +48,17 @@ namespace UserInterface.HelperClasses
             }
         }
 
+        public class SetAirParameters : VMCommandBase<ConfigScreenVM>
+        {
+            public override void Execute(object? parameter)
+            {
+                parentViewModel.ReynoldsNo = DefaultParameters.REYNOLDS_NUMBER;
+                parentViewModel.Viscosity = DefaultParameters.FLUID_VISCOSITY;
+            }
+
+            public SetAirParameters(ConfigScreenVM parentViewModel) : base(parentViewModel) { }
+        }
+
         public class AdvancedParametersReset : ParameterCommandBase<AdvancedParametersVM>
         {
             public override void Execute(object? parameter)

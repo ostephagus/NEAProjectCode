@@ -302,7 +302,8 @@ namespace UserInterface.ViewModels
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
-            SendObstacles();
+            //SendObstacles();
+            EmbedObstacles();
 
             Task.Run(StartComputation);
             backFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
