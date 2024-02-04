@@ -9,10 +9,14 @@ namespace UserInterface.HelperClasses
         private List<PolarPoint> controlPoints;
 
         private Vector<double>? splineFunctionCoefficients;
+        private bool isValidSpline;
+
+        public bool IsValidSpline { get => isValidSpline; private set => isValidSpline = value; }
 
         public PolarSplineCalculator()
         {
             controlPoints = new List<PolarPoint>();
+            IsValidSpline = false;
         }
 
         /// <summary>
@@ -141,6 +145,8 @@ namespace UserInterface.HelperClasses
                 throw new ArgumentOutOfRangeException(nameof(theta), "Supplied angle must be between 0 and 2 pi.");
             }
 
+            IsValidSpline = true;
+
             if (theta < controlPoints[0].Angle) theta += 2 * Math.PI; // If theta is before the first control point, it is in the last segment so add 2 pi to it so it conforms to the bounds of the last segment.
 
             int segmentNo = controlPoints.Count - 1; // If theta is less than none of the coordinates then it must be in the last segment. segmentNo starts as this in case none of the conditions in the loop are met.
@@ -153,10 +159,20 @@ namespace UserInterface.HelperClasses
                     break;
                 }
             }
-            return splineFunctionCoefficients[4 * segmentNo + 0] * Math.Pow(theta, 3)
-                + splineFunctionCoefficients[4 * segmentNo + 1] * Math.Pow(theta, 2)
-                + splineFunctionCoefficients[4 * segmentNo + 2] * theta
-                + splineFunctionCoefficients[4 * segmentNo + 3];
+            double radius = splineFunctionCoefficients[4 * segmentNo + 0] * Math.Pow(theta, 3)
+            + splineFunctionCoefficients[4 * segmentNo + 1] * Math.Pow(theta, 2)
+            + splineFunctionCoefficients[4 * segmentNo + 2] * theta
+            + splineFunctionCoefficients[4 * segmentNo + 3];
+            
+            if (radius > 0)
+            {
+                return radius;
+            }
+            else
+            {
+                IsValidSpline = false;
+                return 0;
+            }
         }
     }
 }

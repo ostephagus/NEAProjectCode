@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using UserInterface.Converters;
 using UserInterface.HelperClasses;
 
 namespace UserInterface.ViewModels
@@ -31,6 +33,7 @@ namespace UserInterface.ViewModels
         private VisualisationControl visualisationControl;
         private MovingAverage<float> visFrameTimeAverage;
         private MovingAverage<float> backFrameTimeAverage;
+        private RectangularToPolar RecToPolConverter;
 
         private int dataWidth;
         private int dataHeight;
@@ -187,6 +190,7 @@ namespace UserInterface.ViewModels
             {
                 editingObstacles = value;
                 OnPropertyChanged(this, nameof(EditingObstacles));
+                OnPropertyChanged(this, nameof(EditObstaclesButtonText));
             }
         }
         public ObservableCollection<PolarPoint> ObstaclePoints { get => obstaclePoints; }
@@ -219,6 +223,14 @@ namespace UserInterface.ViewModels
                     BackendStatus.Stopped => "Resume simulation",
                     _ => string.Empty,
                 };
+            }
+        }
+
+        public string EditObstaclesButtonText
+        {
+            get
+            {
+                return EditingObstacles ? "Finish editing" : "Edit simulation obstacles";
             }
         }
 
@@ -255,7 +267,7 @@ namespace UserInterface.ViewModels
             currentButton = null; // Initially no panel selected
             obstaclePoints = new ObservableCollection<PolarPoint>();
             controlPoints = new ObservableCollection<PolarPoint>();
-            obstacleCentre = new Point(0.5, 0.5);
+            obstacleCentre = new Point(50, 50);
             obstaclePointCalculator = new PolarSplineCalculator();
             CreateDefaultObstacle();
             controlPoints.CollectionChanged += OnControlPointsChanged;
@@ -269,6 +281,7 @@ namespace UserInterface.ViewModels
             EditObstaclesCommand = new Commands.EditObstacles(this);
             ChangeWindowCommand = new Commands.ChangeWindow();
             CreatePopupCommand = new Commands.CreatePopup();
+            RecToPolConverter = new RectangularToPolar();
             #endregion
 
             #region Parameters related to Backend
@@ -442,7 +455,7 @@ namespace UserInterface.ViewModels
 
         private void CreateDefaultObstacle()
         {
-            double scale = 0.15;
+            double scale = 10;
 
             // Define the bean.
             controlPoints.Add(new PolarPoint(scale, Math.PI / 4));
@@ -472,9 +485,38 @@ namespace UserInterface.ViewModels
             OnPropertyChanged(this, nameof(ObstaclePoints));
         }
 
+        /// <summary>
+        /// Gets the Smallest Enclosing Rectangle (SER) for the drawn obstacle.
+        /// </summary>
+        /// <returns>The rectangle coordinates in the form: left x, bottom y, right x, right y.</returns>
+        private (int, int, int, int) GetObstacleSER()
+        {
+            return (0, 0, 100, 100);
+        }
+
         public void EmbedObstacles()
         {
-            // Here need to take the positions of the objects on the canvas and use them to populate the Obstacles array, then send it to backend.
+            bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
+            for (int i = 1; i <= dataWidth; i++)
+            {
+                for (int j = 1; j <= dataHeight; j++)
+                {
+                    obstacles[i * (dataHeight + 2) + j] = true; // Set cells to fluid
+                }
+            }
+            (int left, int bottom, int right, int top) = GetObstacleSER();
+            for (int i = left; i <= right; i++)
+            {
+                for (int j = bottom; j <= top; j++)
+                {
+                    PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(i, j), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
+                    if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle)) // Within the obstacle
+                    {
+                        obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
+                    }
+                }
+            }
+            _ = backendManager.SendObstacles(obstacles);
         }
 
         public void CloseBackend()

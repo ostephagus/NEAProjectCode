@@ -1,4 +1,4 @@
-﻿#define HOLLOW_TRIANGLES
+﻿//#define HOLLOW_TRIANGLES
 
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Wpf;
