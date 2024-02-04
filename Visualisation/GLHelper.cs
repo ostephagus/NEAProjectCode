@@ -103,7 +103,7 @@ namespace Visualisation
                 if (levelSets[levelSetNum].Count == 0) continue; // The level set does not exist
                 int currentHeight = (int)levelSets[levelSetNum][0]; // Get the starting height of the level set
                 float targetValue = levelSetNum * spacingMultiplier;
-                for (int i = 1; i < width; i++)
+                for (int i = 1; i < width-1; i++)
                 {
                     if (!(streamFunction[i * width + currentHeight] - targetValue > contourTolerance) && !(targetValue - streamFunction[i * width + currentHeight] > contourTolerance)) // Add in another condition to avoid floating point error (which should be always less than contour tolerance)
                     {

@@ -13,30 +13,25 @@ namespace UserInterface.Converters
         /// <summary>
         /// Converts a list of polar coordinates to a list of rectangular coordinates with a specified origin.
         /// </summary>
-        /// <param name="values">An array of: polar point observable collection, parent width, parent height, origin (as fractions of the canvas size. Either a <see cref="Point"/> or <see cref="string"/> that can be converted to a point).</param>
+        /// <param name="values">An array of polar point observable collection, and origin (as fractions of the canvas size. Either a <see cref="Point"/> or <see cref="string"/> that can be converted to a point).</param>
         /// <returns>A <see cref="PointCollection"/> of rectangular points.</returns>
         /// <exception cref="NotImplementedException"></exception>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             RectangularToPolar RectToPolConverter = new RectangularToPolar();
-            VisualisationXCoordinate XCoordConverter = new VisualisationXCoordinate();
-            VisualisationYCoordinate YCoordConverter = new VisualisationYCoordinate();
 
-            if (values[0] is not ObservableCollection<PolarPoint> || values[1] is not double || values[2] is not double)
+            if (values[0] is not ObservableCollection<PolarPoint>)
             {
                 return DependencyProperty.UnsetValue;
             }
             ObservableCollection<PolarPoint> polarPoints = (ObservableCollection<PolarPoint>)values[0];
-            double parentWidth = (double)values[1];
-            double parentHeight = (double)values[2];
-            object origin = values[3];
+            object origin = values[1]; // Allow RectToPolConverter to do the conversion
 
             PointCollection points = new PointCollection();
             foreach (PolarPoint point in polarPoints)
             {
-                Point relativePoint = (Point)RectToPolConverter.ConvertBack(point, targetType, origin, culture); // This has its dimensions between 0 and 1.
-                Point absolutePoint = new Point((double)XCoordConverter.Convert(parentWidth, targetType, relativePoint.X.ToString(), culture), (double)YCoordConverter.Convert(parentHeight, targetType, relativePoint.Y.ToString(), culture));
-                points.Add(absolutePoint);
+                Point rectangularPoint = (Point)RectToPolConverter.ConvertBack(point, targetType, origin, culture);
+                points.Add(new Point(rectangularPoint.X, 100 - rectangularPoint.Y)); // Flip the y coordinates.
             }
             return points;
         }
