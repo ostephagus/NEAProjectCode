@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     std::cin >> nonsense;
 #endif // WAIT_FOR_DEBUGGER_ATTACH
 
-    int iMax = 100;
+    int iMax = 200;
     int jMax = 100;
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1) { // Not linked to a frontend.
