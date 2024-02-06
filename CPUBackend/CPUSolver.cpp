@@ -26,7 +26,7 @@ CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     coordinates = nullptr;
     coordinatesLength = 0;
     numFluidCells = 0;
-    stepSizes = DoubleReal();
+    stepSizes = DoubleReal(0, 0);
 }
 
 CPUSolver::~CPUSolver() {

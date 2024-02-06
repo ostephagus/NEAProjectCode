@@ -191,12 +191,14 @@
     <ClCompile Include="CPUBackend.cpp" />
     <ClCompile Include="CPUSolver.cpp" />
     <ClCompile Include="DiscreteDerivatives.cpp" />
+    <ClCompile Include="Drag.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boundary.h" />
     <ClInclude Include="Computation.h" />
     <ClInclude Include="CPUSolver.h" />
     <ClInclude Include="DiscreteDerivatives.h" />
+    <ClInclude Include="Drag.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackendLib\BackendLib.vcxproj">
