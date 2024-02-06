@@ -105,34 +105,34 @@ namespace Visualisation
                 float targetValue = levelSetNum * spacingMultiplier;
                 for (int i = 1; i < width-1; i++)
                 {
-                    if (!(streamFunction[i * width + currentHeight] - targetValue > contourTolerance) && !(targetValue - streamFunction[i * width + currentHeight] > contourTolerance)) // Add in another condition to avoid floating point error (which should be always less than contour tolerance)
+                    if (!(streamFunction[i * height + currentHeight] - targetValue > contourTolerance) && !(targetValue - streamFunction[i * height + currentHeight] > contourTolerance)) // Add in another condition to avoid floating point error (which should be always less than contour tolerance)
                     {
-                        levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
+                        levelSets[levelSetNum].Add((uint)(i * height + currentHeight));
                         continue;
                     }
-                    if (streamFunction[i * width + currentHeight] > targetValue) // Possibilities: current value is too big, need to move down; or current value is too small, need to move up. For both cases, either there exists a member of the level set or there does not.
+                    if (streamFunction[i * height + currentHeight] > targetValue) // Possibilities: current value is too big, need to move down; or current value is too small, need to move up. For both cases, either there exists a member of the level set or there does not.
                     { // Stream function greater than target, need to move downwards
-                        while (currentHeight > 0 && streamFunction[i * width + currentHeight] - targetValue > contourTolerance) // While we are still too big, decrease height until 0
+                        while (currentHeight > 0 && streamFunction[i * height + currentHeight] - targetValue > contourTolerance) // While we are still too big, decrease height until 0
                         {
                             currentHeight--;
                         }
                         // Now, current height is either larger than target but within tolerance, below target but within tolerance, or neither
-                        if (streamFunction[i * width + currentHeight] > targetValue || targetValue - streamFunction[i * width + currentHeight] < contourTolerance) // Within tolerance either side of target
+                        if (streamFunction[i * height + currentHeight] > targetValue || targetValue - streamFunction[i * height + currentHeight] < contourTolerance) // Within tolerance either side of target
                         {
-                            levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
+                            levelSets[levelSetNum].Add((uint)(i * height + currentHeight));
                         }
                         // If it is not within the tolerance, there does not exist a stream function value at this x coordinate in the level set.
                     }
                     else // Current height's contour value is too small
                     {
-                        while (currentHeight < height - 1 && streamFunction[i * width + currentHeight] < targetValue) // While we are still too small, increase height until limit
+                        while (currentHeight < height - 1 && streamFunction[i * height + currentHeight] < targetValue) // While we are still too small, increase height until limit
                         {
                             currentHeight++;
                         }
                         // Now, current height is either smaller than target but within tolerance, above target but within tolerance, or neither
-                        if (targetValue > streamFunction[i * width + currentHeight] || streamFunction[i * width + currentHeight] - targetValue < contourTolerance)
+                        if (targetValue > streamFunction[i * height + currentHeight] || streamFunction[i * height + currentHeight] - targetValue < contourTolerance)
                         {
-                            levelSets[levelSetNum].Add((uint)(i * width + currentHeight));
+                            levelSets[levelSetNum].Add((uint)(i * height + currentHeight));
                         }
                     }
                 }

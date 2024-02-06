@@ -37,12 +37,16 @@ struct DoubleField
 {
 	REAL** x;
 	REAL** y;
+	DoubleField(REAL** x, REAL** y) : x(x), y(y) {}
+	DoubleField() : x(nullptr), y(nullptr) {}
 };
 
 struct DoubleReal
 {
 	REAL x;
 	REAL y;
+	DoubleReal(REAL x, REAL y) : x(x), y(y) {}
+	DoubleReal() : x(0), y(0) {}
 };
 
 struct SimulationParameters

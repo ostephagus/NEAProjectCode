@@ -6,7 +6,7 @@
 #include <chrono>
 
 int main(int argc, char** argv) {
-    int iMax = 200;
+    int iMax = 100;
     int jMax = 100;
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
@@ -21,9 +21,7 @@ int main(int argc, char** argv) {
         parameters.reynoldsNo = 1000;
         parameters.inflowVelocity = 1;
         parameters.surfaceFrictionalPermissibility = 0;
-        DoubleReal bodyForces = DoubleReal();
-        bodyForces.x = 0;
-        bodyForces.y = 0;
+        DoubleReal bodyForces = DoubleReal(0, 0);
         parameters.bodyForces = bodyForces;
 
         GPUSolver solver = GPUSolver(parameters, iMax, jMax);

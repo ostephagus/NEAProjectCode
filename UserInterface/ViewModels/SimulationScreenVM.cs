@@ -490,7 +490,7 @@ namespace UserInterface.ViewModels
         /// Gets the Smallest Enclosing Rectangle (SER) for the drawn obstacle.
         /// </summary>
         /// <returns>The rectangle coordinates in the form: left x, bottom y, right x, right y.</returns>
-        private (int, int, int, int) GetObstacleSER()
+        private (int, int, int, int) GetObstacleSER() // TODO: Possibly find the smallest enclosing rectangle for an obstacle for efficient embedding.
         {
             return (0, 0, 100, 100);
         }
@@ -513,7 +513,9 @@ namespace UserInterface.ViewModels
                     PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(i, j), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
                     if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle)) // Within the obstacle
                     {
-                        obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
+                        int rowNum = (int)(i * (float)dataWidth / 100);
+                        int colNum = (int)(j * (float)dataHeight / 100);
+                        obstacles[rowNum * (dataHeight + 2) + colNum] = false; // Set cells to obstacle
                     }
                 }
             }
