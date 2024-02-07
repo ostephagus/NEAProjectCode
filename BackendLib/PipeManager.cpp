@@ -175,6 +175,11 @@ REAL PipeManager::ReadReal() {
 	return *pOutput;
 }
 
+void PipeManager::SendReal(REAL datum) {
+	BYTE* buffer = reinterpret_cast<BYTE*>(&datum);
+	Write(buffer, sizeof(REAL));
+}
+
 int PipeManager::ReadInt() {
 	BYTE buffer[sizeof(int)];
 	Read(buffer, sizeof(int));

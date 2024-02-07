@@ -72,6 +72,8 @@ public:
 
     bool** GetObstacles() const;
 
+    REAL GetDragCoefficient();
+
     void ProcessObstacles();
 
     void PerformSetup();

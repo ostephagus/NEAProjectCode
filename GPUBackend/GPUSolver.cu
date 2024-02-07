@@ -154,6 +154,10 @@ bool** GPUSolver::GetObstacles() const {
     return obstacles;
 }
 
+REAL GPUSolver::GetDragCoefficient() {
+    return 0;
+}
+
 void GPUSolver::ProcessObstacles() { // When this function is called, no streams have been created and block dimensions have not been calculated. Therefore, no kernels can be launched here.
     BYTE** hostFlags = FlagMatrixMAlloc(iMax + 2, jMax + 2);
     SetFlags(obstacles, hostFlags, iMax + 2, jMax + 2); // Set the flags on the host.

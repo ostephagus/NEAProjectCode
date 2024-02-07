@@ -1,4 +1,4 @@
-﻿//#define NO_GPU_BACKEND
+﻿#define NO_GPU_BACKEND
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 
 
@@ -52,6 +51,7 @@ namespace UserInterface.HelperClasses
         private FieldType[]? namedFields;
 
         private float frameTime;
+        private float dragCoefficient;
         private Stopwatch frameTimer;
 
         private ResizableLinearQueue<ParameterChangedEventArgs> parameterSendQueue;
@@ -70,6 +70,16 @@ namespace UserInterface.HelperClasses
             {
                 frameTime = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FrameTime)));
+            }
+        }
+
+        public float DragCoefficient
+        {
+            get => dragCoefficient;
+            private set
+            {
+                dragCoefficient = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DragCoefficient)));
             }
         }
 
@@ -331,6 +341,14 @@ namespace UserInterface.HelperClasses
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
         }
 
+        private async void ReceiveParameter(byte parameterBits)
+        {
+            if (parameterBits == PipeConstants.Marker.DRAGCOEF)
+            {
+                DragCoefficient = await pipeManager.ReadParameterAsync();
+            }
+        }
+
         /// <summary>
         /// Asynchronous method to repeatedly receive fields from the backend, for visualisation
         /// </summary>
@@ -390,20 +408,28 @@ namespace UserInterface.HelperClasses
 
             while (!cancellationRequested) // Repeat until the task is cancelled
             {
-                if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITERSTART) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should start with an ITERSTART
+                if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITERSTART) throw new IOException("Backend did not send data correctly"); // Each timestep iteration should start with an ITERSTART
 
                 for (int fieldNum = 0; fieldNum < fields.Length; fieldNum++)
                 {
                     byte fieldBits = (byte)namedFields[fieldNum];
-                    byte fieldStart = await pipeManager.ReadAsync();
-                    if (fieldStart != (PipeConstants.Marker.FLDSTART | fieldBits)) { throw new IOException($"Backend did not send data correctly. Bits were {fieldStart}"); } // Each field should start with a FLDSTART with the relevant field bits
+                    byte startMarker = await pipeManager.ReadAsync();
+                    if (startMarker != (PipeConstants.Marker.FLDSTART | fieldBits)) throw new IOException($"Backend did not send data correctly. Bits were {startMarker}"); // Each field should start with a FLDSTART with the relevant field bits
 
                     await pipeManager.ReadAsync(tmpByteBuffer, FieldLength * sizeof(float)); // Read the stream of bytes into the temporary buffer
                     Buffer.BlockCopy(tmpByteBuffer, 0, fields[fieldNum], 0, FieldLength * sizeof(float)); // Copy the bytes from the temporary buffer into the double array
-                    if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits)) { throw new IOException("Backend did not send data correctly"); } // Each field should start with a FLDEND with the relevant field bits
+                    if (await pipeManager.ReadAsync() != (PipeConstants.Marker.FLDEND | fieldBits))  throw new IOException("Backend did not send data correctly"); // Each field should start with a FLDEND with the relevant field bits
+                }
+                byte nextByte = await pipeManager.ReadAsync();
+                while ((nextByte & ~PipeConstants.Marker.PRMMASK) == PipeConstants.Marker.PRMSTART)
+                {
+                    byte parameterBits = (byte)(nextByte & PipeConstants.Marker.PRMMASK);
+                    ReceiveParameter(parameterBits);
+                    if (await pipeManager.ReadAsync() != (PipeConstants.Marker.PRMEND | parameterBits)) throw new IOException("Backend did not send data correctly");
+                    nextByte = await pipeManager.ReadAsync();
                 }
 
-                if (await pipeManager.ReadAsync() != PipeConstants.Marker.ITEREND) { throw new IOException("Backend did not send data correctly"); } // Each timestep iteration should end with an ITEREND
+                if (nextByte != PipeConstants.Marker.ITEREND) throw new IOException("Backend did not send data correctly"); // Each timestep iteration should end with an ITEREND
 
                 if (token.IsCancellationRequested)
                 {
@@ -427,10 +453,7 @@ namespace UserInterface.HelperClasses
             SendControlByte(PipeConstants.Status.STOP); // Upon cancellation, stop (pause) the backend.
             BackendStatus = BackendStatus.Stopped;
 
-            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK)
-            {
-                throw new IOException("Backend did not stop correctly");
-            }
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not stop correctly");
         }
 
         public bool SendObstacles(bool[] obstacles)

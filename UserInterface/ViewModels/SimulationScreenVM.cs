@@ -33,6 +33,7 @@ namespace UserInterface.ViewModels
         private VisualisationControl visualisationControl;
         private MovingAverage<float> visFrameTimeAverage;
         private MovingAverage<float> backFrameTimeAverage;
+        private MovingAverage<float> dragCoefficientAverage;
         private RectangularToPolar RecToPolConverter;
 
         private int dataWidth;
@@ -210,6 +211,7 @@ namespace UserInterface.ViewModels
         
         public float VisFPS { get => 1 / visFrameTimeAverage.Average; }
         public float BackFPS { get => 1 / backFrameTimeAverage.Average; }
+        public float DragCoefficient { get => dragCoefficientAverage.Average; }
         
         public CancellationTokenSource BackendCTS { get => backendCTS; set => backendCTS = value; }
 
@@ -307,6 +309,7 @@ namespace UserInterface.ViewModels
 
             Task.Run(StartComputation);
             backFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
+            dragCoefficientAverage = new MovingAverage<float>(DefaultParameters.DRAG_COEF_WINDOW_SIZE);
             backendManager.PropertyChanged += HandleBackendPropertyChanged;
             #endregion
 
@@ -486,15 +489,6 @@ namespace UserInterface.ViewModels
             OnPropertyChanged(this, nameof(ObstaclePoints));
         }
 
-        /// <summary>
-        /// Gets the Smallest Enclosing Rectangle (SER) for the drawn obstacle.
-        /// </summary>
-        /// <returns>The rectangle coordinates in the form: left x, bottom y, right x, right y.</returns>
-        private (int, int, int, int) GetObstacleSER() // TODO: Possibly find the smallest enclosing rectangle for an obstacle for efficient embedding.
-        {
-            return (0, 0, 100, 100);
-        }
-
         public void EmbedObstacles()
         {
             bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
@@ -505,17 +499,17 @@ namespace UserInterface.ViewModels
                     obstacles[i * (dataHeight + 2) + j] = true; // Set cells to fluid
                 }
             }
-            (int left, int bottom, int right, int top) = GetObstacleSER();
-            for (int i = left; i <= right; i++)
+
+            for (int i = 1; i <= dataWidth; i++)
             {
-                for (int j = bottom; j <= top; j++)
+                for (int j = 1; j <= dataHeight; j++)
                 {
-                    PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(i, j), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
+                    float screenX = i * (float)100 / dataWidth;
+                    float screenY = j * (float)100 / dataHeight;
+                    PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(screenX, screenY), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
                     if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle)) // Within the obstacle
                     {
-                        int rowNum = (int)(i * (float)dataWidth / 100);
-                        int colNum = (int)(j * (float)dataHeight / 100);
-                        obstacles[rowNum * (dataHeight + 2) + colNum] = false; // Set cells to obstacle
+                        obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
                     }
                 }
             }
@@ -536,6 +530,18 @@ namespace UserInterface.ViewModels
             OnPropertyChanged(this, nameof(VisFPS));
         }
 
+        private void BackFPSUpdate()
+        {
+            backFrameTimeAverage.UpdateAverage(backendManager.FrameTime);
+            OnPropertyChanged(this, nameof(BackFPS));
+        }
+
+        private void DragCoefficientUpdate()
+        {
+            dragCoefficientAverage.UpdateAverage(backendManager.DragCoefficient);
+            OnPropertyChanged(this, nameof(DragCoefficient));
+        }
+
         private void HandleBackendPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(backendManager.BackendStatus))
@@ -547,12 +553,10 @@ namespace UserInterface.ViewModels
             {
                 BackFPSUpdate();
             }
-        }
-
-        private void BackFPSUpdate()
-        {
-            backFrameTimeAverage.UpdateAverage(backendManager.FrameTime);
-            OnPropertyChanged(this, nameof(BackFPS));
+            else if (e.PropertyName == nameof(backendManager.DragCoefficient))
+            {
+                DragCoefficientUpdate();
+            }
         }
     }
 }

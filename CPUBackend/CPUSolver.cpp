@@ -3,6 +3,7 @@
 #include "Boundary.h"
 #include "Flags.h"
 #include "Computation.h"
+#include "Drag.h"
 
 CPUSolver::CPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solver(parameters, iMax, jMax) {
     velocities.x = MatrixMAlloc(iMax + 2, jMax + 2);
@@ -64,6 +65,10 @@ REAL* CPUSolver::GetStreamFunction() const {
 
 bool** CPUSolver::GetObstacles() const {
     return obstacles;
+}
+
+REAL CPUSolver::GetDragCoefficient() {
+    return ComputeObstacleDrag(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, parameters.dynamicViscosity);
 }
 
 void CPUSolver::ProcessObstacles() {

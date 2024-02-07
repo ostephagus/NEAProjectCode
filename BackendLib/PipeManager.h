@@ -85,6 +85,12 @@ public:
 	REAL ReadReal();
 
 	/// <summary>
+	/// Sends one REAL datum down the pipe.
+	/// </summary>
+	/// <param name="data">The REAL to send down the pipe.</param>
+	void SendReal(REAL data);
+
+	/// <summary>
 	/// Reads a <c>int</c> data type from the pipe, assuming one has been sent.
 	/// </summary>
 	/// <returns>The converted <c>int</c> read from the pipe.</returns>

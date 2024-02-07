@@ -39,6 +39,8 @@ public:
 
     REAL* GetStreamFunction() const;
 
+    REAL GetDragCoefficient();
+
     void ProcessObstacles();
 
     void PerformSetup();

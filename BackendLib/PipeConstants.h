@@ -62,6 +62,7 @@ namespace PipeConstants {
         constexpr BYTE INVEL = 0b00001010;
         constexpr BYTE CHI = 0b00001011;
         constexpr BYTE MU = 0b00001100;
+        constexpr BYTE DRAGCOEF = 0b00001101;
     }
     namespace Error
     {

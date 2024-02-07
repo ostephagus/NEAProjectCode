@@ -74,7 +74,8 @@ REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coo
     DoubleReal fluidVector = DoubleReal(-1, 0);
     REAL baselinePressure = ComputeBaselinePressure(pressure, iMax, jMax);
     for (int coordinateNum = 0; coordinateNum < coordinatesLength; coordinateNum++) {
-        BYTE flag = flags[coordinates[coordinateNum].first][coordinates[coordinateNum].second];
+        std::pair<int, int> coordinate = coordinates[coordinateNum];
+        BYTE flag = flags[coordinate.first][coordinate.second];
 
         BYTE northBit = (flag & NORTH) >> NORTHSHIFT;
         BYTE eastBit  = (flag & EAST)  >> EASTSHIFT;
@@ -85,14 +86,27 @@ REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coo
         if (numEdges == 2) { // Corner cell - compute the pressure integrand for the 3 fluid cells around it
             int xDirection = eastBit - westBit;
             int yDirection = northBit - southBit;
+            DoubleReal unitNormal;
 
+            // Cell 1: east / west
+            unitNormal = DoubleReal((REAL)xDirection, 0);
+            totalPresureDrag += PressureIntegrand(pressure[coordinate.first + xDirection][coordinate.second], baselinePressure, unitNormal, fluidVector) * stepSizes.x;
+
+            // Cell 2: north / south
+            unitNormal = DoubleReal(0, (REAL)yDirection);
+            totalPresureDrag += PressureIntegrand(pressure[coordinate.first][coordinate.second + yDirection], baselinePressure, unitNormal, fluidVector) * stepSizes.y;
+
+            // Cell 3: diagonal
+            unitNormal = DoubleReal(xDirection / DIAGONAL_CELL_DISTANCE, yDirection / DIAGONAL_CELL_DISTANCE);
+            REAL stepSize = (stepSizes.x + stepSizes.y) / 2;
+            totalPresureDrag += PressureIntegrand(pressure[coordinate.first + xDirection][coordinate.second + yDirection], baselinePressure, unitNormal, fluidVector) * stepSize;
         }
         else if (numEdges == 1) { // Edge cell - compute the pressure integrand for the fluid cell next to it
-            int i = coordinates[coordinateNum].first + eastBit - westBit;
-            int j = coordinates[coordinateNum].second + northBit - southBit;
+            int i = coordinate.first + eastBit - westBit;
+            int j = coordinate.second + northBit - southBit;
             DoubleReal unitNormal = DoubleReal((REAL)(eastBit - westBit), (REAL)(northBit - southBit));
 
-            REAL stepSize = stepSizes.x;
+            REAL stepSize = stepSizes.x; // Shoddy - do a proper if ... else
             if ((northBit | southBit) == 1) {
                 stepSize = stepSizes.y;
             }
@@ -107,5 +121,32 @@ REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coo
 REAL ComputeObstacleDrag(DoubleField velocities, REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, REAL viscosity)
 {
     return ComputeViscousDrag(velocities, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, viscosity) + ComputePressureDrag(pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes);
+}
+
+/// <summary>
+/// Finds the area of the object projected onto the y axis by finding the highest and lowest y coordinates of the obstacle.
+/// </summary>
+/// <returns>The area projected onto the y axis.</returns>
+REAL ComputeProjectionArea(std::pair<int, int>* coordinates, int coordinatesLength, REAL delY) {
+    int lowestY = coordinates[0].second;
+    int highestY = coordinates[0].second;
+    for (int i = 0; i < coordinatesLength; i++) {
+        int yCoord = coordinates[i].second;
+        if (yCoord > highestY) {
+            highestY = yCoord;
+        }
+        if (yCoord < lowestY) {
+            lowestY = yCoord;
+        }
+    }
+
+    return (highestY - lowestY) * delY;
+}
+
+REAL ComputeDragCoefficient(DoubleField velocities, REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, REAL viscosity, REAL density, REAL inflowVelocity)
+{
+    REAL dragForce = ComputeObstacleDrag(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, viscosity);
+    REAL projectedArea = ComputeProjectionArea(coordinates, coordinatesLength, stepSizes.y);
+    return (2 * dragForce) / (density * inflowVelocity * inflowVelocity * projectedArea);
 }
 

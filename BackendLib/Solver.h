@@ -70,6 +70,8 @@ public:
 
     virtual bool** GetObstacles() const = 0;
 
+    virtual REAL GetDragCoefficient() = 0;
+
     /// <summary>
     /// Embeds obstacles into the simulation domain. Assumes obstacles have already been set
     /// </summary>

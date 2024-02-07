@@ -235,11 +235,18 @@ namespace UserInterface.HelperClasses
         /// <param name="bits">The bits corresponding to the parameter, as read from <c>PipeConstants</c></param>
         public void SendParameter(int parameter, byte bits)
         {
-            byte[] buffer = new byte[6];
+            byte[] buffer = new byte[2 + sizeof(float)];
             buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | bits);
             SerialisePrimitive(buffer, 1, parameter);
-            buffer[5] = (byte)(PipeConstants.Marker.PRMEND | bits);
+            buffer[1 + sizeof(float)] = (byte)(PipeConstants.Marker.PRMEND | bits);
             pipeStream.Write(buffer, 0, buffer.Length);
+        }
+
+        public async Task<float> ReadParameterAsync()
+        {
+            byte[] buffer = new byte[sizeof(float)];
+            await ReadAsync(buffer, sizeof(float));
+            return BitConverter.ToSingle(buffer, 0);
         }
 
         /// <summary>

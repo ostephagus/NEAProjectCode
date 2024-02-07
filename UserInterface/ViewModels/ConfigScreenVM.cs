@@ -58,6 +58,8 @@ namespace UserInterface.ViewModels
             Chi = parameterHolder.SurfaceFriction.Value;
             Width = parameterHolder.Width.Value;
             Height = parameterHolder.Height.Value;
+            ReynoldsNo = parameterHolder.ReynoldsNumber.Value;
+            Viscosity = parameterHolder.FluidViscosity.Value;
             ResetCommand = new Commands.ConfigScreenReset(this, parameterHolder);
             SetAirCommand = new Commands.SetAirParameters(this);
             ChangeWindowCommand = new Commands.ChangeWindow();

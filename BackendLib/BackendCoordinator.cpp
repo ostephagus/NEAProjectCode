@@ -66,6 +66,10 @@ void BackendCoordinator::HandleRequest(BYTE requestByte) {
                 pipeManager.SendByte(PipeConstants::Marker::FLDEND | PipeConstants::Marker::STRM);
             }
 
+            pipeManager.SendByte(PipeConstants::Marker::PRMSTART | PipeConstants::Marker::DRAGCOEF);
+            pipeManager.SendReal(solver->GetDragCoefficient());
+            pipeManager.SendByte(PipeConstants::Marker::PRMEND | PipeConstants::Marker::DRAGCOEF);
+
             pipeManager.SendByte(PipeConstants::Marker::ITEREND);
 
             BYTE receivedByte = pipeManager.ReadByte();

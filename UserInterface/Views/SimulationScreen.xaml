@@ -191,7 +191,7 @@
                     <Setter Property="Margin" Value="2.5 0 2.5 5" />
                 </Style>
             </StackPanel.Resources>
-            <TextBlock Margin="0 0 5 0"><Run Text="Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS."/></TextBlock>
+            <TextBlock Margin="0 0 5 0"><Run Text="Drag coefficient: " /><Run x:Name="RunDragCoefficient" Text="{Binding DragCoefficient, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=2, Mode=OneWay}" d:Text="0" /><Run Text=", Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS."/></TextBlock>
             <Button Command="{Binding EditObstaclesCommand}" Content="{Binding EditObstaclesButtonText}" d:Content="Edit simulation obstacles" />
             <Button Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
             <Button>Save as image</Button>
