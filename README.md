@@ -31,6 +31,6 @@ The User Interface is now able to change and send parameters and the click-and-d
 Drag calculation in parallel
 
 ### User Interface
-Customisable units
-Edit a few slider bounds (velocity closer to 40m/s)
-Reading in a file for obstacles? - might have to remove from objectives.
+- Customisable units
+- Edit a few slider bounds (velocity closer to 40m/s)
+- Reading in a file for obstacles? - might have to remove from objectives.
