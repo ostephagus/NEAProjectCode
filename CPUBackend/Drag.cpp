@@ -1,6 +1,7 @@
 #include "Drag.h"
 #include "Math.h"
 #include <bitset>
+#include <cstdio> // TESTING
 
 constexpr REAL DIAGONAL_CELL_DISTANCE = (REAL)1.41421356237; // Sqrt 2
 
@@ -10,6 +11,11 @@ REAL Magnitude(REAL x, REAL y) {
 
 REAL Dot(DoubleReal left, DoubleReal right) {
     return left.x * right.x + left.y * right.y;
+}
+
+DoubleReal GetUnitVector(DoubleReal vector) {
+    REAL magnitude = Magnitude(vector.x, vector.y);
+    return DoubleReal(vector.x / magnitude, vector.y / magnitude);
 }
 
 /// <summary>
@@ -29,28 +35,67 @@ REAL PVPd(DoubleField velocities, REAL distance, int iStart, int jStart, int iEx
 /// </summary>
 /// <param name="unitNormal">The unit vector perpendicular to the direction of the surface at the cell.</param>
 /// <returns>The magnitude of the wall shear stress for one boundary cell.</returns>
-REAL ComputeWallShear(DoubleField velocities, DoubleReal unitNormal, int i, int j, DoubleReal stepSizes, REAL viscosity) {
+REAL ComputeWallShear(DoubleReal& shearUnitVector, DoubleField velocities, DoubleReal unitNormal, int i, int j, DoubleReal stepSizes, REAL viscosity) {
+    int iExtended, jExtended;
+    REAL distance;
     if (unitNormal.x == 0 || unitNormal.y == 0) { // Parallel to an axis
-        REAL relevantStepsize;
-        if (unitNormal.x == 0) relevantStepsize = stepSizes.x;
-        else relevantStepsize = stepSizes.y;
-
-        return viscosity * PVPd(velocities, relevantStepsize, i, j, i + (int)unitNormal.x, j + (int)unitNormal.y);
+        if (unitNormal.x == 0) {
+            distance = stepSizes.x;
+        }
+        else {
+            distance = stepSizes.y;
+        }
+        iExtended = i + (int)unitNormal.x;
+        jExtended = j + (int)unitNormal.y;
     }
     else { // 45 degrees to an axis.
-        REAL distance = Magnitude(unitNormal.x * stepSizes.x, unitNormal.y * stepSizes.y) * DIAGONAL_CELL_DISTANCE;
-        int iExtended = i + (int)(unitNormal.x * DIAGONAL_CELL_DISTANCE);
-        int jExtended = j + (int)(unitNormal.y * DIAGONAL_CELL_DISTANCE);
-        return viscosity * PVPd(velocities, distance, i, j, iExtended, jExtended);
+        distance = Magnitude(unitNormal.x * stepSizes.x, unitNormal.y * stepSizes.y) * DIAGONAL_CELL_DISTANCE;
+        iExtended = i + (int)roundf(unitNormal.x * DIAGONAL_CELL_DISTANCE) * 2;
+        jExtended = j + (int)roundf(unitNormal.y * DIAGONAL_CELL_DISTANCE) * 2;
     }
+    shearUnitVector = DoubleReal(velocities.x[iExtended][jExtended], velocities.y[iExtended][jExtended]);
+    return viscosity * PVPd(velocities, distance, i, j, iExtended, jExtended);
 }
 
 /// <summary>
 /// Computes the viscous drag on the obstacle.
 /// </summary>
 /// <returns>The magnitude of the viscous drag on the obstacle.</returns>
-REAL ComputeViscousDrag(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, REAL viscosity) { // Calculates the cells that make up the surface and calls ComputeViscousDrag on each.
-    return 0;
+REAL ComputeViscousDrag(DoubleField velocities, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, DoubleReal fluidVector, REAL viscosity) { // Calculates the cells that make up the surface and calls ComputeWallShear on each.
+    REAL totalViscousDrag = 0;
+    for (int coordinateNum = 0; coordinateNum < coordinatesLength; coordinateNum++) {
+        std::pair<int, int> coordinate = coordinates[coordinateNum];
+        BYTE flag = flags[coordinate.first][coordinate.second];
+
+        BYTE northBit = (flag & NORTH) >> NORTHSHIFT;
+        BYTE eastBit = (flag & EAST) >> EASTSHIFT;
+        BYTE southBit = (flag & SOUTH) >> SOUTHSHIFT;
+        BYTE westBit = (flag & WEST) >> WESTSHIFT;
+        int numEdges = (int)std::bitset<8>(flag).count();
+
+        int i = coordinate.first - westBit;
+        int j = coordinate.second - southBit;
+        DoubleReal unitNormal = DoubleReal((REAL)(eastBit - westBit), (REAL)(northBit - southBit));
+        REAL stepSize;
+        if (numEdges == 2) {
+            unitNormal.x /= DIAGONAL_CELL_DISTANCE;
+            unitNormal.y /= DIAGONAL_CELL_DISTANCE;
+            stepSize = (stepSizes.x + stepSizes.y) / 2;
+        }
+        else if ((eastBit | westBit) == 1) {
+            stepSize = stepSizes.x;
+        }
+        else {
+            stepSize = stepSizes.y;
+            
+        }
+        DoubleReal shearDirection;
+        REAL wallShear = ComputeWallShear(shearDirection, velocities, unitNormal, i, j, stepSizes, viscosity);
+
+        totalViscousDrag += wallShear * -Dot(fluidVector, shearDirection) * stepSize;
+    }
+
+    return totalViscousDrag;
 }
 
 /// <summary>
@@ -69,9 +114,8 @@ REAL PressureIntegrand(REAL pressure, REAL baselinePressure, DoubleReal unitNorm
 /// Computes the pressure drag on the obstacle. Assumes fluid flowing left to right.
 /// </summary>
 /// <returns>The magnitude of the pressure drag on the obstacle.</returns>
-REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes) {
+REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, DoubleReal fluidVector) {
     REAL totalPresureDrag = 0;
-    DoubleReal fluidVector = DoubleReal(-1, 0);
     REAL baselinePressure = ComputeBaselinePressure(pressure, iMax, jMax);
     for (int coordinateNum = 0; coordinateNum < coordinatesLength; coordinateNum++) {
         std::pair<int, int> coordinate = coordinates[coordinateNum];
@@ -105,11 +149,14 @@ REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coo
             int i = coordinate.first + eastBit - westBit;
             int j = coordinate.second + northBit - southBit;
             DoubleReal unitNormal = DoubleReal((REAL)(eastBit - westBit), (REAL)(northBit - southBit));
-
-            REAL stepSize = stepSizes.x; // Shoddy - do a proper if ... else
-            if ((northBit | southBit) == 1) {
+            REAL stepSize;
+            if ((eastBit | westBit) == 1) {
+                stepSize = stepSizes.x;
+            }
+            else {
                 stepSize = stepSizes.y;
             }
+
             totalPresureDrag += PressureIntegrand(pressure[i][j], baselinePressure, unitNormal, fluidVector) * stepSize;
         }
         
@@ -120,7 +167,12 @@ REAL ComputePressureDrag(REAL** pressure, BYTE** flags, std::pair<int, int>* coo
 
 REAL ComputeObstacleDrag(DoubleField velocities, REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, REAL viscosity)
 {
-    return ComputeViscousDrag(velocities, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, viscosity) + ComputePressureDrag(pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes);
+    DoubleReal fluidVector = DoubleReal(-1, 0);
+
+    REAL viscousDrag = ComputeViscousDrag(velocities, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector, viscosity);
+    REAL pressureDrag = ComputePressureDrag(pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector);
+    printf("Viscous drag: %f, pressure drag: %f.\n", viscousDrag, pressureDrag);
+    return viscousDrag + pressureDrag;
 }
 
 /// <summary>

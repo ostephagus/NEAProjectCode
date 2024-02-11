@@ -68,7 +68,7 @@ bool** CPUSolver::GetObstacles() const {
 }
 
 REAL CPUSolver::GetDragCoefficient() {
-    return ComputeObstacleDrag(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, parameters.dynamicViscosity);
+    return ComputeDragCoefficient(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, parameters.dynamicViscosity, parameters.fluidDensity, parameters.inflowVelocity);
 }
 
 void CPUSolver::ProcessObstacles() {
