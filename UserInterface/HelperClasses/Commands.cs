@@ -54,6 +54,7 @@ namespace UserInterface.HelperClasses
             {
                 parentViewModel.ReynoldsNo = DefaultParameters.REYNOLDS_NUMBER;
                 parentViewModel.Viscosity = DefaultParameters.FLUID_VISCOSITY;
+                parentViewModel.Density = DefaultParameters.FLUID_DENSITY;
             }
 
             public SetAirParameters(ConfigScreenVM parentViewModel) : base(parentViewModel) { }

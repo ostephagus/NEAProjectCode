@@ -22,9 +22,11 @@
         </Grid.ColumnDefinitions>
         <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Text="Simulation configuration" Grid.ColumnSpan="2" />
         <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="0" Text="Parameters" />
-        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Simulated objects" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Units" />
         <Grid Grid.Row="2" Grid.Column="0" Margin="0 0 10 0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -41,31 +43,30 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" Value="{Binding InVel}" />
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
             
             <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Chi}" />
+            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Chi}" Unit="{Binding DimensionlessUnit}" />
             
             <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Width}"  />
+            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Width}" Unit="{Binding LengthUnit}" />
             
             <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Height}" />
+            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Height}" Unit="{Binding LengthUnit}" />
 
             <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
             
             <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
             <helpercontrols:ResizableCentredTextBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="50" Text="Fluid parameters" />
             <Label Grid.Row="7" Grid.Column="0">Reynolds number</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderReynoldsNo" Grid.Row="7" Grid.Column="1" Value="{Binding ReynoldsNo}" Minimum="1000" Maximum="100000" />
+            <helpercontrols:SliderWithValue x:Name="SliderReynoldsNo" Grid.Row="7" Grid.Column="1" Value="{Binding ReynoldsNo}" Minimum="1000" Maximum="100000" Unit="{Binding DimensionlessUnit}" />
             <Label Grid.Row="8" Grid.Column="0">Viscosity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderViscosity" Grid.Row="8" Grid.Column="1" Value="{Binding Viscosity}" Minimum="2E-5" Maximum="1" />
-            <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding SetAirCommand}">Reset to air at room temperature (20°C)</Button>
+            <helpercontrols:SliderWithValue x:Name="SliderViscosity" Grid.Row="8" Grid.Column="1" Value="{Binding Viscosity}" Minimum="2E-5" Maximum="1" Unit="{Binding ViscosityUnit}" />
+            <Label Grid.Row="9" Grid.Column="0">Density</Label>
+            <helpercontrols:SliderWithValue x:Name="SliderDensity" Grid.Row="9" Grid.Column="1" Value="{Binding Density}" Minimum="0" Maximum="10" Unit="{Binding DensityUnit}" />
+            <Button Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding SetAirCommand}">Reset to air at room temperature (20°C)</Button>
         </Grid>
-        <StackPanel Grid.Row="2" Grid.Column="1">
-            <Button>Select file</Button>
-            <TextBlock>No file selected..</TextBlock>
-        </StackPanel>
+        <ContentControl Grid.Row="2" Grid.Column="2" Content="{Binding UnitsPanel}" />
         <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindowCommand}" CommandParameter="{x:Type local:SimulationScreen}">Simulate</Button>
     </Grid>
 </UserControl>

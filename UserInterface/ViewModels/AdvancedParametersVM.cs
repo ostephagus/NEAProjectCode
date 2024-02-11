@@ -38,7 +38,7 @@ namespace UserInterface.ViewModels
         public Commands.SaveParameters SaveCommand { get; set; }
         #endregion
 
-        public AdvancedParametersVM(ParameterHolder parameterHolder) : base(parameterHolder)
+        public AdvancedParametersVM(ParameterHolder parameterHolder, UnitHolder unitHolder) : base(parameterHolder, unitHolder)
         {
             Tau = parameterHolder.TimeStepSafetyFactor.Value;
             Omega = parameterHolder.RelaxationParameter.Value;

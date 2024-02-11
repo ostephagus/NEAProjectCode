@@ -1,4 +1,6 @@
-﻿#define NO_GPU_BACKEND
+﻿#if DEBUG
+#define NO_GPU_BACKEND
+#endif
 
 using System;
 using System.Collections.Generic;
@@ -218,6 +220,7 @@ namespace UserInterface.HelperClasses
                     "InflowVelocity" => PipeConstants.Marker.INVEL,
                     "SurfaceFriction" => PipeConstants.Marker.CHI,
                     "FluidViscosity" => PipeConstants.Marker.MU,
+                    "FluidDensity" => PipeConstants.Marker.DENSITY,
                     _ => 0,
                 };
 
@@ -335,6 +338,9 @@ namespace UserInterface.HelperClasses
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
 
             pipeManager.SendParameter(parameterHolder.SurfaceFriction.Value, PipeConstants.Marker.CHI);
+            if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
+
+            pipeManager.SendParameter(parameterHolder.FluidDensity.Value, PipeConstants.Marker.DENSITY);
             if (await pipeManager.ReadAsync() != PipeConstants.Status.OK) throw new IOException("Backend did not read parameters correctly");
 
             pipeManager.SendParameter(parameterHolder.FluidViscosity.Value, PipeConstants.Marker.MU);

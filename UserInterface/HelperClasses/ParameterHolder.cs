@@ -74,6 +74,7 @@ namespace UserInterface.HelperClasses
         private ParameterStruct<float> reynoldsNumber;
         private ParameterStruct<float> fluidViscosity;
         private ParameterStruct<float> fluidVelocity;
+        private ParameterStruct<float> fluidDensity;
         private ParameterStruct<float> surfaceFriction;
 
         // Visualisation parameters
@@ -174,6 +175,17 @@ namespace UserInterface.HelperClasses
                 OnPropertyChanged(fluidVelocity.Value);
             }
         }
+
+        public ParameterStruct<float> FluidDensity
+        {
+            get => fluidDensity;
+            set
+            {
+                fluidDensity = value;
+                OnPropertyChanged(FluidDensity.Value);
+            }
+        }
+
         public ParameterStruct<float> SurfaceFriction
         {
             get => surfaceFriction;
@@ -222,7 +234,7 @@ namespace UserInterface.HelperClasses
         }
         #endregion
 
-        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidViscosity, float fluidVelocity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
+        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidViscosity, float fluidVelocity, float fluidDensity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
         {
 
             this.width = new ParameterStruct<float>(width, ParameterUsage.Backend, false);
@@ -234,6 +246,7 @@ namespace UserInterface.HelperClasses
             this.reynoldsNumber = new ParameterStruct<float>(reynoldsNumber, ParameterUsage.Backend, false);
             this.fluidViscosity = new ParameterStruct<float>(fluidViscosity, ParameterUsage.Backend, false);
             this.fluidVelocity = new ParameterStruct<float>(fluidVelocity, ParameterUsage.Backend, true);
+            this.fluidDensity = new ParameterStruct<float>(fluidDensity, ParameterUsage.Backend, false);
             this.surfaceFriction = new ParameterStruct<float>(surfaceFriction, ParameterUsage.Backend, true);
             this.fieldParameters = new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
             this.drawContours = new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);

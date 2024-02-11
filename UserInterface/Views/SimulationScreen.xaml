@@ -104,13 +104,13 @@
                 </Style>
             </StackPanel.Style>
             <Label>Fluid Velocity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="40" Value="{Binding InVel}" />
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="40" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
             <Label>Material Friction</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderChi" Minimum="0" Maximum="1" Value="{Binding Chi}" />
+            <helpercontrols:SliderWithValue x:Name="SliderChi" Minimum="0" Maximum="1" Value="{Binding Chi}" Unit="{Binding DimensionlessUnit}" />
         </StackPanel>
-        <Label Grid.Row="2" Grid.Column="1">
-            <Label.Style>
-                <Style TargetType="Label">
+        <ContentControl Grid.Row="2" Grid.Column="1" Content="{Binding UnitsPanel}">
+            <ContentControl.Style>
+                <Style TargetType="ContentControl">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding CurrentButton}" Value="BtnUnitsSelect">
@@ -118,9 +118,8 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </Label.Style>
-            This is the units selection panel
-        </Label>
+            </ContentControl.Style>
+        </ContentControl>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <StackPanel.Style>
                 <Style TargetType="StackPanel">

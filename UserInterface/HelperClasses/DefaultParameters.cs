@@ -11,6 +11,7 @@
         public static readonly float REYNOLDS_NUMBER = 2000f;
         public static readonly float FLUID_VISCOSITY = 1.983E-5f;
         public static readonly float FLUID_VELOCITY = 1f;
+        public static readonly float FLUID_DENSITY = 1.293f;
         public static readonly float SURFACE_FRICTION = 0f;
 
         public static readonly bool DRAW_CONTOURS = true;

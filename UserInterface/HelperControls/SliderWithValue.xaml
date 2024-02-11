@@ -22,9 +22,10 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" Content="{Binding Minimum}" />
-        <Label Grid.Row="0" Grid.Column="2" Content="{Binding Maximum}" />
-        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Value="{Binding Value}"  x:Name="slider" Margin="10 0 10 0" Ticks="{Binding ForceIntegers, Converter={StaticResource BoolToTickPlacementConverter}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding ForceIntegers}" />
-        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Value}" TextAlignment="Right" Width="40" />
+        <Label Grid.Row="0" Grid.Column="0" Content="{Binding ConvertedMinimum}" d:Content="0" />
+        <Label Grid.Row="0" Grid.Column="2" Content="{Binding ConvertedMaximum}" d:Content="1" />
+        <Label Grid.Row="0" Grid.Column="3" Content="{Binding UnitShortName}" d:Content="m" />
+        <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Minimum="{Binding ConvertedMinimum}" Maximum="{Binding ConvertedMaximum}" Value="{Binding ConvertedValue}"  x:Name="slider" Margin="10 0 10 0" Ticks="{Binding ForceIntegers, Converter={StaticResource BoolToTickPlacementConverter}, Mode=OneWay}" TickFrequency="1" IsSnapToTickEnabled="{Binding ForceIntegers}" />
+        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding ConvertedValue}" TextAlignment="Right" Width="40" />
     </Grid>
 </UserControl>

@@ -76,7 +76,8 @@
             public static readonly byte INVEL = 0b00001010;
             public static readonly byte CHI = 0b00001011;
             public static readonly byte MU = 0b00001100;
-            public static readonly byte DRAGCOEF = 0b00001101;
+            public static readonly byte DENSITY = 0b00001101;
+            public static readonly byte DRAGCOEF = 0b00001110;
         }
 
         /// <summary>

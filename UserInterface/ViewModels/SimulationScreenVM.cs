@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using UserInterface.Converters;
 using UserInterface.HelperClasses;
+using UserInterface.HelperControls;
 
 namespace UserInterface.ViewModels
 {
@@ -30,6 +31,7 @@ namespace UserInterface.ViewModels
 
         private BackendManager backendManager;
         private CancellationTokenSource backendCTS;
+        private UnitConversionPanel unitsPanel;
         private VisualisationControl visualisationControl;
         private MovingAverage<float> visFrameTimeAverage;
         private MovingAverage<float> backFrameTimeAverage;
@@ -208,6 +210,7 @@ namespace UserInterface.ViewModels
         }
 
         public VisualisationControl VisualisationControl { get => visualisationControl; }
+        public UnitConversionPanel UnitsPanel { get => unitsPanel; }
         
         public float VisFPS { get => 1 / visFrameTimeAverage.Average; }
         public float BackFPS { get => 1 / backFrameTimeAverage.Average; }
@@ -263,7 +266,7 @@ namespace UserInterface.ViewModels
         public event CancelEventHandler StopBackendExecuting;
         #endregion
 
-        public SimulationScreenVM(ParameterHolder parameterHolder) : base(parameterHolder)
+        public SimulationScreenVM(ParameterHolder parameterHolder, UnitHolder unitHolder) : base(parameterHolder, unitHolder)
         {
             #region Parameters related to View
             currentButton = null; // Initially no panel selected
@@ -277,7 +280,7 @@ namespace UserInterface.ViewModels
             InVel = parameterHolder.InflowVelocity.Value;
             Chi = parameterHolder.SurfaceFriction.Value;
 
-
+            unitsPanel = new UnitConversionPanel(unitHolder);
             SwitchPanelCommand = new Commands.SwitchPanel(this);
             BackendCommand = new Commands.PauseResumeBackend(this);
             EditObstaclesCommand = new Commands.EditObstacles(this);
@@ -411,34 +414,34 @@ namespace UserInterface.ViewModels
             return fieldParameters;
         }
 
-        private bool SendObstacles() // Temporary method to create a square of obstacle cells
-        {
-            bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
+        //private bool SendObstacles() // Temporary method to create a square of obstacle cells
+        //{
+        //    bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
 
-            for (int i = 1; i <= dataWidth; i++)
-            {
-                for (int j = 1; j <= dataHeight; j++)
-                {
-                    obstacles[i * (dataHeight + 2) + j] = true; // Set cells to fluid
-                }
-            }
+        //    for (int i = 1; i <= dataWidth; i++)
+        //    {
+        //        for (int j = 1; j <= dataHeight; j++)
+        //        {
+        //            obstacles[i * (dataHeight + 2) + j] = true; // Set cells to fluid
+        //        }
+        //    }
 
-            int leftCell = (int)(boundaryLeft * dataWidth);
-            int rightCell = (int)((boundaryLeft + boundaryWidth) * dataWidth);
-            int bottomCell = (int)((boundaryTop - boundaryHeight) * dataHeight);
-            int topCell = (int)(boundaryTop * dataHeight);
+        //    int leftCell = (int)(boundaryLeft * dataWidth);
+        //    int rightCell = (int)((boundaryLeft + boundaryWidth) * dataWidth);
+        //    int bottomCell = (int)((boundaryTop - boundaryHeight) * dataHeight);
+        //    int topCell = (int)(boundaryTop * dataHeight);
 
-            for (int i = leftCell; i < rightCell; i++)
-            { // Create a square of boundary cells
-                for (int j = bottomCell; j < topCell; j++)
-                {
-                    obstacles[(i + 1) * (dataHeight + 2) + j + 1] = false;
-                }
-            }
+        //    for (int i = leftCell; i < rightCell; i++)
+        //    { // Create a square of boundary cells
+        //        for (int j = bottomCell; j < topCell; j++)
+        //        {
+        //            obstacles[(i + 1) * (dataHeight + 2) + j + 1] = false;
+        //        }
+        //    }
 
 
-            return backendManager.SendObstacles(obstacles);
-        }
+        //    return backendManager.SendObstacles(obstacles);
+        //}
 
         public void StartComputation()
         {

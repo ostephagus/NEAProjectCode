@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="UserInterface.HelperControls.UnitConversionPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UserInterface.HelperControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.Column="0">Unit system:</Label>
+        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="UnitSystemComboBox" SelectionChanged="OnUnitSystemChanged">
+            <ComboBoxItem Content="SI (standard metric)" d:IsSelected="True" />
+            <ComboBoxItem Content="CGS (cm, gram, second)" />
+            <ComboBoxItem Content="Imperial" />
+        </ComboBox>
+        <Label Grid.Row="1" Grid.Column="0">Length units:</Label>
+        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="LengthComboBox" SelectionChanged="OnSelectionChanged">
+            <ComboBoxItem Content="Metres" d:IsSelected="True" />
+            <ComboBoxItem Content="Feet" />
+            <ComboBoxItem Content="Inches" />
+            <ComboBoxItem Content="Centimetres" />
+            <ComboBoxItem Content="Millimetres" />
+        </ComboBox>
+        <Label Grid.Row="2" Grid.Column="0">Speed units:</Label>
+        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="SpeedComboBox" SelectionChanged="OnSelectionChanged">
+            <ComboBoxItem Content="Metres per second" d:IsSelected="True" />
+            <ComboBoxItem Content="Centimetres per second" />
+            <ComboBoxItem Content="Miles per hour" />
+            <ComboBoxItem Content="Kilometres per hour" />
+            <ComboBoxItem Content="Feet per second" />
+        </ComboBox>
+        <Label Grid.Row="3" Grid.Column="0">Time units:</Label>
+        <ComboBox Grid.Row="3" Grid.Column="1" x:Name="TimeComboBox" SelectionChanged="OnSelectionChanged">
+            <ComboBoxItem Content="Seconds" d:IsSelected="True" />
+            <ComboBoxItem Content="Milliseconds" />
+            <ComboBoxItem Content="Minutes" />
+            <ComboBoxItem Content="Hours" />
+        </ComboBox>
+        <Label Grid.Row="4" Grid.Column="0">Density units:</Label>
+        <ComboBox Grid.Row="4" Grid.Column="1" x:Name="DensityComboBox" SelectionChanged="OnSelectionChanged">
+            <ComboBoxItem Content="Kilograms per cubic metre" d:IsSelected="True" />
+            <ComboBoxItem Content="Grams per cubic centimetre" />
+            <ComboBoxItem Content="Pounds per cubic inch" />
+            <ComboBoxItem Content="Pounds per cubic foot" />
+        </ComboBox>
+        <Label Grid.Row="5" Grid.Column="0">Viscosity units:</Label>
+        <ComboBox Grid.Row="5" Grid.Column="1" x:Name="ViscosityComboBox" SelectionChanged="OnSelectionChanged">
+            <ComboBoxItem Content="Kilograms per metre per second" d:IsSelected="True" />
+            <ComboBoxItem Content="Grams per centimetre per second" />
+            <ComboBoxItem Content="Pound-seconds per square foot" />
+        </ComboBox>
+    </Grid>
+</UserControl>

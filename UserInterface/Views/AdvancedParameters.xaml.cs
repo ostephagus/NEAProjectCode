@@ -9,10 +9,10 @@ namespace UserInterface.Views
     /// </summary>
     public partial class AdvancedParameters : UserControl
     {
-        public AdvancedParameters(ParameterHolder parameterHolder) // Sets the parameter holder
+        public AdvancedParameters(ParameterHolder parameterHolder, UnitHolder unitHolder)
         {
             InitializeComponent();
-            DataContext = new AdvancedParametersVM(parameterHolder);
+            DataContext = new AdvancedParametersVM(parameterHolder, unitHolder);
         }
     }
 }

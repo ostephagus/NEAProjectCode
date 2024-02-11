@@ -9,5 +9,15 @@
         <Style TargetType="Label">
             <Setter Property="FontSize" Value="16" />
         </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="16" />
+        </Style>
     </Application.Resources>
 </Application>

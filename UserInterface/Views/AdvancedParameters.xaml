@@ -25,15 +25,13 @@
         </Grid.ColumnDefinitions>
         <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Advanced Parameters" />
         <Label Grid.Row="1" Grid.Column="0">Timestep Safety Factor &#964;</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderTau" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Tau}"/>
+        <helpercontrols:SliderWithValue x:Name="sliderTau" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Tau}" Unit="{Binding DimensionlessUnit}"/>
         <Label Grid.Row="2" Grid.Column="0">SOR relaxation parameter &#969;</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderOmega" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding Omega}" />
+        <helpercontrols:SliderWithValue x:Name="sliderOmega" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding Omega}" Unit="{Binding DimensionlessUnit}" />
         <Label Grid.Row="3" Grid.Column="0">Pressure residual tolerance r</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="10" Value="{Binding RMax}" />
+        <helpercontrols:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="10" Value="{Binding RMax}" Unit="{Binding DimensionlessUnit}" />
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" ForceIntegers="True" Value="{Binding IterMax}" />
-        <Label Grid.Row="5" Grid.Column="0">Grid cells per compute unit</Label>
-        <helpercontrols:SliderWithValue Grid.Row="5" Grid.Column="1" Maximum="10" ForceIntegers="True"/>
+        <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" ForceIntegers="True" Value="{Binding IterMax}" Unit="{Binding DimensionlessUnit}" />
         <Button x:Name="ResetButton" Grid.Row="6" Grid.Column="0" FontSize="16" Command="{Binding ResetCommand}">Reset values</Button>
         <Button x:Name="SaveButton" Grid.Row="6" Grid.Column="1" FontSize="16" Command="{Binding SaveCommand}">Save and return</Button>
     </Grid>

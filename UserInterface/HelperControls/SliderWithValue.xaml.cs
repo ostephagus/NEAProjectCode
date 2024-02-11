@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using UserInterface.Converters;
 using UserInterface.HelperClasses;
 
 namespace UserInterface.HelperControls
@@ -20,6 +21,20 @@ namespace UserInterface.HelperControls
         }
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)); // Value is two-way: changes to the slider must be passed to the source that uses this UserControl.
+        public double ConvertedValue
+        {
+            get
+            {
+                Units UnitConverter = new Units(Unit);
+                return (double)UnitConverter.ConvertBack(Value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+            }
+            set
+            {
+                Units UnitConverter = new Units(Unit);
+                Value = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+
+            }
+        }
 
         public double Minimum
         {
@@ -28,6 +43,20 @@ namespace UserInterface.HelperControls
         }
         public static readonly DependencyProperty MinimumProperty =
             DependencyProperty.Register("Minimum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(0d));
+        public double ConvertedMinimum
+        {
+            get
+            {
+                Units UnitConverter = new Units(Unit);
+                return (double)UnitConverter.ConvertBack(Minimum, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+            }
+            set
+            {
+                Units UnitConverter = new Units(Unit);
+                Minimum = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+
+            }
+        }
 
         public double Maximum
         {
@@ -36,6 +65,33 @@ namespace UserInterface.HelperControls
         }
         public static readonly DependencyProperty MaximumProperty =
             DependencyProperty.Register("Maximum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(1d));
+        public double ConvertedMaximum
+        {
+            get
+            {
+                Units UnitConverter = new Units(Unit);
+                return (double)UnitConverter.ConvertBack(Maximum, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+            }
+            set
+            {
+                Units UnitConverter = new Units(Unit);
+                Maximum = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+            }
+        }
+
+        public string UnitShortName { get => Unit?.ShortName ?? ""; }
+
+
+        public UnitClasses.Unit Unit
+        {
+            get { return (UnitClasses.Unit)GetValue(UnitProperty); }
+            set { SetValue(UnitProperty, value); }
+        }
+
+        public static readonly DependencyProperty UnitProperty =
+            DependencyProperty.Register(nameof(Unit), typeof(UnitClasses.Unit), typeof(SliderWithValue));
+
+
 
         public SliderWithValue()
         {
