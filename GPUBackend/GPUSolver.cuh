@@ -3,6 +3,7 @@
 
 #include "Definitions.cuh"
 #include "Solver.h"
+#include "DragCalculator.cuh"
 
 constexpr int computationStreams = 4; // Number of streams for launching parallelisable computation kernels
 constexpr int memcpyStreams = 4; // Number of streams for launching parallel memory copies
@@ -41,6 +42,8 @@ private:
 
     dim3 numBlocks; // Number of blocks for a grid of iMax x jMax threads.
     dim3 threadsPerBlock; // Maximum number of threads per block in a 2D square allocation.
+
+    DragCalculator dragCalculator;
 
     bool** obstacles; // 2D array of obstacles, resides on host.
 

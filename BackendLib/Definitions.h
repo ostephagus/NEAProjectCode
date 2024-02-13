@@ -32,6 +32,10 @@ constexpr BYTE EASTSHIFT  = 2; // Amount to shift for EAST bit at LSB.
 constexpr BYTE SOUTHSHIFT = 1; // Amount to shift for SOUTH bit at LSB.
 constexpr BYTE WESTSHIFT  = 0; // Amount to shift for WEST bit at LSB.
 
+// Constants used for dealing with drag coefficient.
+constexpr REAL DIAGONAL_CELL_DISTANCE = (REAL)1.41421356237; // Sqrt 2
+constexpr REAL PRESSURE_CONVERSION = (REAL)1; //3.576651; // Conversion ratio for pressure.
+constexpr REAL VISCOSITY_CONVERSION = (REAL)1;// 50; // Conversion ratio for viscosity.
 
 struct DoubleField
 {

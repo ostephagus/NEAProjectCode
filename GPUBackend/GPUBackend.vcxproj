@@ -88,6 +88,8 @@
     <CudaCompile Include="Boundary.cu" />
     <CudaCompile Include="Computation.cu" />
     <CudaCompile Include="DiscreteDerivatives.cu" />
+    <CudaCompile Include="Drag.cu" />
+    <CudaCompile Include="DragCalculator.cu" />
     <CudaCompile Include="GPUSolver.cu" />
     <CudaCompile Include="kernel.cu" />
     <CudaCompile Include="PressureComputation.cu" />
@@ -103,12 +105,11 @@
     <ClInclude Include="Computation.cuh" />
     <ClInclude Include="Definitions.cuh" />
     <ClInclude Include="DiscreteDerivatives.cuh" />
+    <ClInclude Include="Drag.cuh" />
+    <ClInclude Include="DragCalculator.cuh" />
     <ClInclude Include="GPUSolver.cuh" />
     <ClInclude Include="PressureComputation.cuh" />
     <ClInclude Include="ReductionKernels.cuh" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

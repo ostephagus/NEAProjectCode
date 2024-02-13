@@ -56,11 +56,30 @@ __global__ void ComputePartialMaxes(REAL* partialMaxes, PointerWithPitch<REAL> f
     }
 }
 
-/// <summary>
-/// Computes the final max from a given array of partial maxes. Requires 1 block of <paramref name="xLength" /> threads, and 1 REAL's worth of shared memory per thread.
-/// </summary>
-/// <param name="max">The location to place the output.</param>
-/// <param name="partialMaxes">An array of partial maxes, of size <paramref name="xLength" />.</param>
+
+__global__ void ComputePartialMaxes(REAL* partialMaxes, REAL* array, int arrayLength) {
+    cg::thread_block threadBlock = cg::this_thread_block();
+    REAL* startIndex = array + blockIdx.x * blockDim.x; // Start of this thread block's memory allocation
+
+    // Perform copy to shared memory.
+    // Put a 0 in shared if current index is greater than yLength (this catches index in pitch padding, or index > size of a row)
+    extern __shared__ REAL sharedArray[];
+
+    if (blockIdx.x * blockDim.x + threadIdx.x < arrayLength) { // the index of the thread is greater than the length of a column.
+        sharedArray[threadIdx.x] = *(startIndex + threadIdx.x);
+    }
+    else {
+        sharedArray[threadIdx.x] = (REAL)0;
+    }
+    threadBlock.sync();
+
+    GroupMax(threadBlock, sharedArray);
+
+    if (threadIdx.x == 0) { // If the thread is the 0th in the block, store its result to global memory.
+        partialMaxes[blockIdx.x] = sharedArray[0];
+    }
+}
+
 __global__ void ComputeFinalMax(REAL* max, REAL* partialMaxes, int xLength)
 {
     cg::thread_block threadBlock = cg::this_thread_block();
@@ -123,6 +142,35 @@ __global__ void ComputePartialSums(REAL* partialSums, PointerWithPitch<REAL> fie
 
     if (threadIdx.x == 0) { // If the thread is the 0th in the block, store its result to global memory.
         partialSums[blockIdx.x] = sharedArray[0];
+    }
+}
+
+/// <summary>
+/// Computes partial sums of an array. Requires 1 REAL's worth of shared memory per thread.
+/// </summary>
+/// <param name="partialMaxes">The output array, length equal to the number of blocks spawned.</param>
+/// <param name="array">The array to calculate the sum of.</param>
+/// <param name="arrayLength">The length of the array.</param>
+__global__ void ComputePartialSums(REAL* partialMaxes, REAL* array, int arrayLength) {
+    cg::thread_block threadBlock = cg::this_thread_block();
+    REAL* startIndex = array + blockIdx.x * blockDim.x; // Start of this thread block's memory allocation
+
+    // Perform copy to shared memory.
+    // Put a 0 in shared if current index is greater than yLength (this catches index in pitch padding, or index > size of a row)
+    extern __shared__ REAL sharedArray[];
+
+    if (blockIdx.x * blockDim.x + threadIdx.x < arrayLength) { // the index of the thread is greater than the length of a column.
+        sharedArray[threadIdx.x] = *(startIndex + threadIdx.x);
+    }
+    else {
+        sharedArray[threadIdx.x] = (REAL)0;
+    }
+    threadBlock.sync();
+
+    GroupSum(threadBlock, sharedArray);
+
+    if (threadIdx.x == 0) { // If the thread is the 0th in the block, store its result to global memory.
+        partialMaxes[blockIdx.x] = sharedArray[0];
     }
 }
 

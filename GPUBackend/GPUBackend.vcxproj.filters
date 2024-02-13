@@ -22,6 +22,12 @@
     <CudaCompile Include="PressureComputation.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="Drag.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="DragCalculator.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUSolver.cuh">
@@ -45,6 +51,12 @@
     <ClInclude Include="PressureComputation.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Drag.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DragCalculator.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -55,8 +67,5 @@
       <UniqueIdentifier>{c5ff24ed-b460-4cda-8a1e-fa449a6a3c8a}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;cu</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

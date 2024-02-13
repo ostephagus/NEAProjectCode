@@ -108,7 +108,7 @@ void FindBoundaryCells(BYTE** flags, uint2*& coordinates, int& coordinatesLength
     std::vector<uint2> coordinatesVec;
     for (int i = 1; i <= iMax; i++) {
         for (int j = 1; j <= jMax; j++) {
-            if (flags[i][j] >= 0b00000001 && flags[i][j] <= 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set. This could probably be optimised.
+            if (flags[i][j] >= 0b00000001 && flags[i][j] <= 0b00001111) { // This defines boundary cells - all cells without the self bit set except when no bits are set.
                 uint2 coordinate = uint2();
                 coordinate.x = i;
                 coordinate.y = j;

@@ -1,5 +1,5 @@
 ﻿#if DEBUG
-#define NO_GPU_BACKEND
+//#define NO_GPU_BACKEND
 #endif
 
 using System;

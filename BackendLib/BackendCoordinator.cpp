@@ -194,7 +194,7 @@ void BackendCoordinator::SetDefaultParameters(SimulationParameters& parameters) 
     parameters.pressureResidualTolerance = 2;
     parameters.pressureMinIterations = 5;
     parameters.pressureMaxIterations = 1000;
-    parameters.reynoldsNo = 2000;
+    parameters.reynoldsNo = 10000;
     parameters.dynamicViscosity = (REAL)0.00001983;
     parameters.fluidDensity = (REAL)1.293;
     parameters.inflowVelocity = 1;

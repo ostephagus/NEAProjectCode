@@ -36,6 +36,8 @@ GPUSolver::GPUSolver(SimulationParameters parameters, int iMax, int jMax) : Solv
     
     obstacles = ObstacleMatrixMAlloc(iMax + 2, jMax + 2);
 
+    dragCalculator = DragCalculator();
+
     transmissionHVel = new REAL[iMax * jMax];
     transmissionVVel = new REAL[iMax * jMax];
     transmissionPressure = new REAL[iMax * jMax];
@@ -155,7 +157,7 @@ bool** GPUSolver::GetObstacles() const {
 }
 
 REAL GPUSolver::GetDragCoefficient() {
-    return 0;
+    return dragCalculator.GetDragCoefficient(streams[0], hVel, vVel, pressure, iMax, jMax, delX, delY, parameters.dynamicViscosity, parameters.fluidDensity, parameters.inflowVelocity);
 }
 
 void GPUSolver::ProcessObstacles() { // When this function is called, no streams have been created and block dimensions have not been calculated. Therefore, no kernels can be launched here.
@@ -166,6 +168,8 @@ void GPUSolver::ProcessObstacles() { // When this function is called, no streams
     FindBoundaryCells(hostFlags, hostCoordinates, coordinatesLength, iMax, jMax);
 
     numFluidCells = CountFluidCells(hostFlags, iMax, jMax);
+
+    dragCalculator.ProcessObstacles(hostFlags, iMax, jMax, parameters.width / iMax, parameters.height / jMax);
 
     cudaMalloc(&devCoordinates, coordinatesLength * sizeof(uint2));
 

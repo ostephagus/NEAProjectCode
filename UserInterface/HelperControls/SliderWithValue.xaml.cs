@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using UserInterface.Converters;
@@ -9,7 +10,7 @@ namespace UserInterface.HelperControls
     /// <summary>
     /// Interaction logic for SliderWithValue.xaml
     /// </summary>
-    public partial class SliderWithValue : UserControl
+    public partial class SliderWithValue : UserControl, INotifyPropertyChanged
     {
 
         // Dependency properties are used extensively here to allow for bindings on Value, Minimum and Maximum.
@@ -85,13 +86,19 @@ namespace UserInterface.HelperControls
         public UnitClasses.Unit Unit
         {
             get { return (UnitClasses.Unit)GetValue(UnitProperty); }
-            set { SetValue(UnitProperty, value); }
+            set
+            {
+                SetValue(UnitProperty, value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedValue)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedMinimum)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedMaximum)));
+            }
         }
 
         public static readonly DependencyProperty UnitProperty =
             DependencyProperty.Register(nameof(Unit), typeof(UnitClasses.Unit), typeof(SliderWithValue));
 
-
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public SliderWithValue()
         {

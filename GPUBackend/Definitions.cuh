@@ -20,11 +20,21 @@
 
 #define INT_DIVIDE_ROUND_UP(numerator, denominator) (((numerator) + (denominator) - 1) / (denominator))
 
+#define make_REAL2 make_float2
+typedef float2 REAL2;
+
 template <typename T>
 struct PointerWithPitch
 {
     T* ptr;
     size_t pitch;
+};
+
+struct DragCoordinate
+{
+    uint2 coordinate;
+    REAL2 unitNormal;
+    REAL stepSize;
 };
 
 #endif // !DEFINITIONS_CUH
