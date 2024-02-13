@@ -15,12 +15,27 @@ namespace UserInterface.Converters
         /// <returns>The rounded value, cast from a <see cref="string"/> to an <see cref="object"/>.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not float || !int.TryParse((string)parameter, out int iParameter)) // Input validation
+            // Input validation
+            if (!int.TryParse((string)parameter, out int iParameter))
+            {
+                return "";
+            }
+            float fValue;
+            if (value is double dValue)
+            {
+                fValue = (float)dValue;
+            }
+            else if (value is float)
+            {
+                fValue = (float)value;
+            }
+            else
             {
                 return "";
             }
 
-            return ((float)value).ToString($"G{iParameter}"); // Use the ToString method with the number of SF as the parameter to it.
+
+            return fValue.ToString($"G{iParameter}"); // Use the ToString method with the number of SF as the parameter to it.
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

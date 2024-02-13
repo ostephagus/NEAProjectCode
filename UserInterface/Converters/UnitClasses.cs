@@ -115,7 +115,7 @@ namespace UserInterface.Converters
 
         public class KilogramPerMetrePerSecond() : ViscosityUnit(1, "Kilograms per metre per second", "kg/m s");
         public class GramPerCentimetrePerSecond() : ViscosityUnit(ViscosityMultipliers.GramsPerCentimetrePerSecond, "Grams per centimetre per second", "g/cm s");
-        public class PoundSecondPerSquareFoot() : ViscosityUnit(ViscosityMultipliers.PoundSecondsPerSquareFoot, "Pound-seconds per square foot", "lb s/ft²");
+        public class PoundSecondPerSquareFoot() : ViscosityUnit(ViscosityMultipliers.PoundSecondsPerSquareFoot, "Pound-seconds per square foot", "lb·s/ft²");
 
         public class UnitSystemList
         {

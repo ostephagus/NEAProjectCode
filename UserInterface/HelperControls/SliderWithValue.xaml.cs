@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -33,7 +34,7 @@ namespace UserInterface.HelperControls
             {
                 Units UnitConverter = new Units(Unit);
                 Value = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
-
+                OnPropertyChanged(nameof(ConvertedValue));
             }
         }
 
@@ -55,7 +56,7 @@ namespace UserInterface.HelperControls
             {
                 Units UnitConverter = new Units(Unit);
                 Minimum = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
-
+                OnPropertyChanged(nameof(ConvertedMinimum));
             }
         }
 
@@ -77,6 +78,7 @@ namespace UserInterface.HelperControls
             {
                 Units UnitConverter = new Units(Unit);
                 Maximum = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
+                OnPropertyChanged(nameof(ConvertedMaximum));
             }
         }
 
@@ -86,17 +88,11 @@ namespace UserInterface.HelperControls
         public UnitClasses.Unit Unit
         {
             get { return (UnitClasses.Unit)GetValue(UnitProperty); }
-            set
-            {
-                SetValue(UnitProperty, value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedValue)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedMinimum)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ConvertedMaximum)));
-            }
+            set { SetValue(UnitProperty, value); }
         }
 
         public static readonly DependencyProperty UnitProperty =
-            DependencyProperty.Register(nameof(Unit), typeof(UnitClasses.Unit), typeof(SliderWithValue));
+            DependencyProperty.Register(nameof(Unit), typeof(UnitClasses.Unit), typeof(SliderWithValue), new PropertyMetadata(OnUnitChangedCallBack));
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -104,6 +100,32 @@ namespace UserInterface.HelperControls
         {
             InitializeComponent();
             LayoutRoot.DataContext = this;
+        }
+
+        private static void OnUnitChangedCallBack(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is SliderWithValue sliderWithValue)
+            {
+                sliderWithValue.OnUnitChanged();
+            }
+        }
+
+        public void OnUnitChanged()
+        {
+            OnPropertiesChanged([nameof(ConvertedValue), nameof(ConvertedMinimum), nameof(ConvertedMaximum), nameof(UnitShortName)]);
+        }
+
+        private void OnPropertiesChanged(IEnumerable<string> properties)
+        {
+            foreach (string property in properties)
+            {
+                OnPropertyChanged(property);
+            }
+        }
+
+        private void OnPropertyChanged(string property)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
 
         public bool ForceIntegers { get; set; } = false;

@@ -10,7 +10,7 @@
         public static readonly float PRESSURE_MAX_ITERATIONS = 1000f;
         public static readonly float REYNOLDS_NUMBER = 2000f;
         public static readonly float FLUID_VISCOSITY = 1.983E-5f;
-        public static readonly float FLUID_VELOCITY = 1f;
+        public static readonly float FLUID_VELOCITY = 5f;
         public static readonly float FLUID_DENSITY = 1.293f;
         public static readonly float SURFACE_FRICTION = 0f;
 
@@ -21,8 +21,8 @@
         public static readonly int DRAG_COEF_WINDOW_SIZE = 10;
 
         public static readonly float VELOCITY_MIN = 0f;
-        public static readonly float VELOCITY_MAX = 5f;
+        public static readonly float VELOCITY_MAX = 18f;
         public static readonly float PRESSURE_MIN = 1000f;
-        public static readonly float PRESSURE_MAX = 5000f;
+        public static readonly float PRESSURE_MAX = 100000f;
     }
 }
