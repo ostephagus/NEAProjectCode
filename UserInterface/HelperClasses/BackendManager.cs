@@ -104,7 +104,7 @@ namespace UserInterface.HelperClasses
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
                 backendProcess.StartInfo.ArgumentList.Add(pipeName);
-                //backendProcess.StartInfo.CreateNoWindow = true;
+                backendProcess.StartInfo.CreateNoWindow = true;
                 backendProcess.Start();
                 BackendStatus = BackendStatus.NotStarted;
                 return true;
@@ -474,17 +474,24 @@ namespace UserInterface.HelperClasses
             {
                 return false;
             }
+            SendControlByte(PipeConstants.Status.CLOSE);
+            if (pipeManager.AttemptRead().data[0] != PipeConstants.Status.OK)
+            {
+                return false;
+            }
             if (!backendProcess.HasExited)
             {
                 return false;
             }
             backendProcess.Close();
+            pipeManager.CloseConnection();
             return true;
         }
 
         public void ForceCloseBackend()
         {
             backendProcess.Kill();
+            pipeManager.CloseConnection();
         }
     }
 }

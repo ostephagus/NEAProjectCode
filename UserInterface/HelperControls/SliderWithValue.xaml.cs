@@ -22,7 +22,7 @@ namespace UserInterface.HelperControls
             set { SetValue(ValueProperty, value); }
         }
         public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)); // Value is two-way: changes to the slider must be passed to the source that uses this UserControl.
+            DependencyProperty.Register("Value", typeof(double), typeof(SliderWithValue), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnValueChanged)); // Value is two-way: changes to the slider must be passed to the source that uses this UserControl.
         public double ConvertedValue
         {
             get
@@ -37,6 +37,13 @@ namespace UserInterface.HelperControls
                 OnPropertyChanged(nameof(ConvertedValue));
             }
         }
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SliderWithValue slider)
+            {
+                slider.OnPropertyChanged(nameof(slider.ConvertedValue));
+            }
+        }
 
         public double Minimum
         {
@@ -44,7 +51,7 @@ namespace UserInterface.HelperControls
             set { SetValue(MinimumProperty, value); }
         }
         public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(0d));
+            DependencyProperty.Register("Minimum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(0d, OnMinimumChanged));
         public double ConvertedMinimum
         {
             get
@@ -59,6 +66,13 @@ namespace UserInterface.HelperControls
                 OnPropertyChanged(nameof(ConvertedMinimum));
             }
         }
+        private static void OnMinimumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SliderWithValue slider)
+            {
+                slider.OnPropertyChanged(nameof(slider.ConvertedMinimum));
+            }
+        }
 
         public double Maximum
         {
@@ -66,7 +80,7 @@ namespace UserInterface.HelperControls
             set { SetValue(MaximumProperty, value); }
         }
         public static readonly DependencyProperty MaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(1d));
+            DependencyProperty.Register("Maximum", typeof(double), typeof(SliderWithValue), new PropertyMetadata(1d, OnMaximumChanged));
         public double ConvertedMaximum
         {
             get
@@ -79,6 +93,13 @@ namespace UserInterface.HelperControls
                 Units UnitConverter = new Units(Unit);
                 Maximum = (double)UnitConverter.Convert(value, typeof(double), 0, System.Globalization.CultureInfo.CurrentCulture);
                 OnPropertyChanged(nameof(ConvertedMaximum));
+            }
+        }
+        private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SliderWithValue slider)
+            {
+                slider.OnPropertyChanged(nameof(slider.ConvertedMaximum));
             }
         }
 

@@ -5,89 +5,68 @@ namespace UserInterface.ViewModels
 {
     public class ConfigScreenVM : ViewModel
     {
-        private float inVel;
-        private float chi;
-        private float width;
-        private float height;
-        private float reynoldsNo;
-        private float viscosity;
-        private float density;
-
         private readonly UnitConversionPanel unitsPanel;
 
         public float InVel
         {
-            get => inVel;
+            get => parameterHolder.InflowVelocity.Value;
             set
             {
-                inVel = value;
+                parameterHolder.InflowVelocity = ModifyParameterValue(parameterHolder.InflowVelocity, value);
                 OnPropertyChanged(this, nameof(InVel));
-                parameterHolder.InflowVelocity = ModifyParameterValue(parameterHolder.InflowVelocity, inVel);
             }
         }
-
         public float Chi
         {
-            get => chi;
+            get => parameterHolder.SurfaceFriction.Value;
             set
             {
-                chi = value;
+                parameterHolder.SurfaceFriction = ModifyParameterValue(parameterHolder.SurfaceFriction, value);
                 OnPropertyChanged(this, nameof(Chi));
-                parameterHolder.SurfaceFriction = ModifyParameterValue(parameterHolder.SurfaceFriction, chi);
             }
         }
-
         public float Width
         {
-            get => width;
+            get => parameterHolder.Width.Value;
             set
             {
-                width = value;
+                parameterHolder.Width = ModifyParameterValue(parameterHolder.Width, value);
                 OnPropertyChanged(this, nameof(Width));
-                parameterHolder.Width = ModifyParameterValue(parameterHolder.Width, width);
             }
         }
-
         public float Height
         {
-            get => height;
+            get => parameterHolder.Height.Value;
             set
             {
-                height = value;
+                parameterHolder.Height = ModifyParameterValue(parameterHolder.Height, value);
                 OnPropertyChanged(this, nameof(Height));
-                parameterHolder.Height = ModifyParameterValue(parameterHolder.Height, height);
             }
         }
-
         public float ReynoldsNo
         {
-            get => reynoldsNo;
+            get => parameterHolder.ReynoldsNumber.Value;
             set
             {
-                reynoldsNo = value;
+                parameterHolder.ReynoldsNumber = ModifyParameterValue(parameterHolder.ReynoldsNumber, value);
                 OnPropertyChanged(this, nameof(ReynoldsNo));
-                parameterHolder.ReynoldsNumber = ModifyParameterValue(parameterHolder.ReynoldsNumber, reynoldsNo);
             }
         }
-
         public float Viscosity
         {
-            get => viscosity;
+            get => parameterHolder.FluidViscosity.Value;
             set {
-                viscosity = value;
+                parameterHolder.FluidViscosity = ModifyParameterValue(parameterHolder.FluidViscosity, value);
                 OnPropertyChanged(this, nameof(Viscosity));
-                parameterHolder.FluidViscosity = ModifyParameterValue(parameterHolder.FluidViscosity, viscosity);
             }
         }
-
         public float Density
         {
-            get => density;
+            get => parameterHolder.FluidDensity.Value;
             set
             {
-                density = value;
+                parameterHolder.FluidDensity = ModifyParameterValue(parameterHolder.FluidDensity, value);
                 OnPropertyChanged(this, nameof(Density));
-                parameterHolder.FluidDensity = ModifyParameterValue(parameterHolder.FluidDensity, density);
             }
         }
 

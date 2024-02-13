@@ -10,7 +10,7 @@
              xmlns:converters="clr-namespace:UserInterface.Converters"
              d:DataContext="{d:DesignInstance Type=viewmodels:SimulationScreenVM}"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="720" d:DesignWidth="1280">
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
@@ -77,19 +77,6 @@
                 </Button.Style>
                 <Image Source="/Images/VisualisationIcon.png" />
             </Button>
-            <Button x:Name="BtnRecordingSelect" Command="{Binding SwitchPanelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="LightGray" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding CurrentButton}" Value="BtnRecordingSelect">
-                                <Setter Property="Background" Value="#AAAAAA" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-                <Image Source="/Images/RecordingIcon.png" />
-            </Button>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="1">
@@ -104,7 +91,7 @@
                 </Style>
             </StackPanel.Style>
             <Label>Fluid Velocity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="40" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
+            <helpercontrols:SliderWithValue x:Name="SliderInVel" Minimum="0" Maximum="18" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
             <Label>Material Friction</Label>
             <helpercontrols:SliderWithValue x:Name="SliderChi" Minimum="0" Maximum="1" Value="{Binding Chi}" Unit="{Binding DimensionlessUnit}" />
         </StackPanel>
@@ -139,27 +126,14 @@
             <Label>Maximum value</Label>
             <helpercontrols:SliderWithValue x:Name="SliderMax" Minimum="{Binding VisLowerBound, Mode=OneWay}" Maximum="{Binding VisUpperBound, Mode=OneWay}" Value="{Binding VisMax}" />
             <StackPanel Orientation="Horizontal">
-                <Label>Streamlines</Label>
-                <CheckBox x:Name="CBContourLines" IsChecked="{Binding StreamlinesEnabled}" />
+                <Label Margin="0 0 10 0">Streamlines</Label>
+                <CheckBox x:Name="CBContourLines" IsChecked="{Binding StreamlinesEnabled}" VerticalAlignment="Center" />
             </StackPanel>
             <Label>Streamline contour tolerance</Label>
             <helpercontrols:SliderWithValue x:Name="SliderContourTolerance" Minimum="0" Maximum="0.05" Value="{Binding ContourTolerance}" />
             <Label>Streamline contour spacing</Label>
             <helpercontrols:SliderWithValue x:Name="SliderContourSpacing" Minimum="0" Maximum="0.5" Value="{Binding ContourSpacing}" />
         </StackPanel>
-        <Label Grid.Row="2" Grid.Column="1">
-            <Label.Style>
-                <Style TargetType="Label">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding CurrentButton}" Value="BtnRecordingSelect">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Label.Style>
-            This is the recording settings panel
-        </Label>
         <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10 0 10 5" x:Name="VisualisationControlHolder" Content="{Binding VisualisationControl, Mode=OneWay}">
             <ContentControl.Style>
                 <Style TargetType="ContentControl">
@@ -184,17 +158,20 @@
                 </Polygon>
             </Canvas>
         </Viewbox>
+        <Button Grid.Row="3" Grid.Column="0" Command="{Binding BackCommand}">Back</Button>
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <StackPanel.Resources>
                 <Style TargetType="Button">
+                    <Setter Property="FontSize" Value="16" />
                     <Setter Property="Margin" Value="2.5 0 2.5 5" />
+                </Style>
+                <Style TargetType="Run">
+                    <Setter Property="FontSize" Value="16" />
                 </Style>
             </StackPanel.Resources>
             <TextBlock Margin="0 0 5 0"><Run Text="Drag coefficient: " /><Run x:Name="RunDragCoefficient" Text="{Binding DragCoefficient, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=2, Mode=OneWay}" d:Text="0" /><Run Text=", Visualisation: " /><Run x:Name="RunVisFPS" Text="{Binding VisFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS, Backend: " /><Run x:Name="RunBackFPS" Text="{Binding BackFPS, Converter={StaticResource SignificantFiguresConverter}, ConverterParameter=3, Mode=OneWay}" d:Text="0" /><Run Text=" FPS."/></TextBlock>
             <Button Command="{Binding EditObstaclesCommand}" Content="{Binding EditObstaclesButtonText}" d:Content="Edit simulation obstacles" />
             <Button Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
-            <Button>Save as image</Button>
-            <Button>Save as video</Button>
             <Button Content="{Binding BackendButtonText}" Command="{Binding BackendCommand}" d:Content="Pause Simulation" />
         </StackPanel>
     </Grid>

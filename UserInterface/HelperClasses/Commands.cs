@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using UserInterface.ViewModels;
+using UserInterface.Views;
 
 namespace UserInterface.HelperClasses
 {
@@ -217,6 +220,39 @@ namespace UserInterface.HelperClasses
             public EditObstacles(SimulationScreenVM parentViewModel) : base(parentViewModel)
             {
                 BackendCommand = new PauseResumeBackend(parentViewModel);
+            }
+        }
+
+        public class SimScreenBack : VMCommandBase<SimulationScreenVM>
+        {
+            private readonly PauseResumeBackend PauseResumeBackendCommand;
+            private readonly ChangeWindow ChangeWindowCommand;
+            public override bool CanExecute(object? parameter)
+            {
+                return !parentViewModel.EditingObstacles; // Cannot execute when editing obstacles.
+            }
+
+            public override void Execute(object? parameter)
+            {
+                if (parentViewModel.BackendStatus == BackendStatus.Running)
+                {
+                    PauseResumeBackendCommand.Execute(null);
+                }
+                Thread.Sleep(100);
+                parentViewModel.CloseBackend();
+                ChangeWindowCommand.Execute(typeof(ConfigScreen));
+            }
+
+            public SimScreenBack(SimulationScreenVM parentViewModel) : base(parentViewModel)
+            {
+                PauseResumeBackendCommand = new PauseResumeBackend(parentViewModel);
+                ChangeWindowCommand = new ChangeWindow();
+                parentViewModel.PropertyChanged += VMPropertyChanged;
+            }
+
+            private void VMPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(parentViewModel.EditingObstacles)) OnCanExecuteChanged(sender, e);
             }
         }
     }

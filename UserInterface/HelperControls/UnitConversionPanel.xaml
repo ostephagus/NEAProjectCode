@@ -22,9 +22,9 @@
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.Column="0">Unit system:</Label>
         <ComboBox Grid.Row="0" Grid.Column="1" x:Name="UnitSystemComboBox" SelectionChanged="OnUnitSystemChanged">
-            <ComboBoxItem Content="SI (metric system)" d:IsSelected="True" />
-            <ComboBoxItem Content="CGS (cm, gram, second)" />
-            <ComboBoxItem Content="Imperial" />
+            <ComboBoxItem Content="SI (metre, kilogram, second)" d:IsSelected="True" />
+            <ComboBoxItem Content="CGS (centimetre, gram, second)" />
+            <ComboBoxItem Content="Imperial (foot, pound, second)" />
         </ComboBox>
         <Label Grid.Row="1" Grid.Column="0">Length units:</Label>
         <ComboBox Grid.Row="1" Grid.Column="1" x:Name="LengthComboBox" SelectionChanged="OnSelectionChanged">

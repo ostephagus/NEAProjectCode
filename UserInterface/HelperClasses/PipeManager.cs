@@ -214,6 +214,11 @@ namespace UserInterface.HelperClasses
             pipeStream.WaitForConnection();
         }
 
+        public void CloseConnection()
+        {
+            pipeStream.Close();
+        }
+
         /// <summary>
         /// Sends a parameter to the backend
         /// </summary>

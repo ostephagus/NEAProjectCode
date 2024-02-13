@@ -250,6 +250,8 @@ namespace UserInterface.ViewModels
         public Commands.CreatePopup CreatePopupCommand { get; set; }
         public Commands.EditObstacles EditObstaclesCommand { get; set; }
 
+        public Commands.SimScreenBack BackCommand { get; set; }
+
         private enum SidePanelButton //Different side panels on SimluationScreen
         {
             BtnParametersSelect,
@@ -284,6 +286,7 @@ namespace UserInterface.ViewModels
             SwitchPanelCommand = new Commands.SwitchPanel(this);
             BackendCommand = new Commands.PauseResumeBackend(this);
             EditObstaclesCommand = new Commands.EditObstacles(this);
+            BackCommand = new Commands.SimScreenBack(this);
             ChangeWindowCommand = new Commands.ChangeWindow();
             CreatePopupCommand = new Commands.CreatePopup();
             RecToPolConverter = new RectangularToPolar();

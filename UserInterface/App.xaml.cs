@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using UserInterface.HelperClasses;
@@ -36,7 +37,7 @@ namespace UserInterface
 
         private void CreatePopup(object? sender, UserControlChangeEventArgs e)
         {
-            currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder]);
+            currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder]);
             popupWindowContainer.Content = currentPopup;
 
             popupWindowContainer.Show();
@@ -91,6 +92,12 @@ namespace UserInterface
         {
             if (currentUserControl is SimulationScreen simulationScreen) // Close the backend if it is running when application exits (current screen will be SimulationScreen).
             {
+                SimulationScreenVM viewModel = simulationScreen.ViewModel;
+                if (viewModel.BackendStatus == BackendStatus.Running)
+                {
+                    viewModel.BackendCommand.Execute(null);
+                }
+                Thread.Sleep(100);
                 simulationScreen.ViewModel.CloseBackend();
             }
         }
