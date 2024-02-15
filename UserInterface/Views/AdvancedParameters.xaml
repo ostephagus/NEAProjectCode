@@ -29,7 +29,7 @@
         <Label Grid.Row="2" Grid.Column="0">SOR relaxation parameter &#969;</Label>
         <helpercontrols:SliderWithValue x:Name="sliderOmega" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding Omega}" Unit="{Binding DimensionlessUnit}" />
         <Label Grid.Row="3" Grid.Column="0">Pressure residual tolerance r</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="10" Value="{Binding RMax}" Unit="{Binding DimensionlessUnit}" />
+        <helpercontrols:SliderWithValue x:Name="sliderRMax" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding RMax}" Unit="{Binding DimensionlessUnit}" />
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
         <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" ForceIntegers="True" Value="{Binding IterMax}" Unit="{Binding DimensionlessUnit}" />
         <Button x:Name="ResetButton" Grid.Row="6" Grid.Column="0" FontSize="16" Command="{Binding ResetCommand}">Reset values</Button>

@@ -223,7 +223,7 @@ void GPUSolver::Timestep(REAL& simulationTime) {
     pressureIterations = Poisson(streams, threadsPerBlock, pressure, RHS, devFlags, devCoordinates, coordinatesLength, numFluidCells, iMax, jMax, numColoursSOR, delX, delY, parameters.pressureResidualTolerance, parameters.pressureMinIterations, parameters.pressureMaxIterations, parameters.relaxationParameter, &pressureResidualNorm);
     if (pressureIterations == 0) goto free; // Here 0 is the error case.
 
-    printf("Number of iterations: %i, residual norm: %f.\n", pressureIterations, pressureResidualNorm);
+    //printf("Number of iterations: %i, residual norm: %f.\n", pressureIterations, pressureResidualNorm);
     
     cudaMemcpy2DAsync(copiedPressure, (jMax + 2) * sizeof(REAL), pressure.ptr, pressure.pitch, (jMax + 2) * sizeof(REAL), iMax + 2, cudaMemcpyDeviceToHost, streams[computationStreams + 0]); // Pressure is unchanged after this point, so can copy it async
 

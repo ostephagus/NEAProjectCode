@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
         parameters.relaxationParameter = (REAL)1.7;
         parameters.pressureResidualTolerance = 2;
         parameters.pressureMinIterations = 5;
-        parameters.pressureMaxIterations = 1000;
+        parameters.pressureMaxIterations = 2000;
         parameters.reynoldsNo = 2000;
         parameters.dynamicViscosity = (REAL)0.00001983;
         parameters.fluidDensity = (REAL)1.293;
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         for (int i = 1; i <= iMax; i++) { for (int j = 1; j <= jMax; j++) { obstacles[i][j] = 1; } } // Set all the cells to fluid
 
         int boundaryLeft = (int)(0.45 * iMax);
-        int boundaryRight = (int)(0.45 * iMax + 2);
+        int boundaryRight = (int)(0.55 * iMax);
         int boundaryBottom = (int)(0.45 * jMax);
         int boundaryTop = (int)(0.55 * jMax);
         for (int i = boundaryLeft; i < boundaryRight; i++) { // Create a square of boundary cells
@@ -41,14 +41,14 @@ int main(int argc, char** argv) {
             }
         }
 
-        std::cout << "Obstacle set to a line." << std::endl;
+        std::cout << "Obstacle set to a box.\n";
 
         solver.ProcessObstacles();
         solver.PerformSetup();
 
         REAL cumulativeTimestep = 0;
 
-        int numIterations = 100;
+        int numIterations = 1000;
         std::cerr << "2 seconds to attach profiler / debugger\n";
         Sleep(2000);
         /*std::cout << "Enter number of iterations: ";
@@ -56,11 +56,14 @@ int main(int argc, char** argv) {
 
         float timeTakenSum = 0;
 
+        std::cout << "[1";
         for (int i = 0; i < numIterations; i++) {
             solver.Timestep(cumulativeTimestep);
             REAL dragCoefficient = solver.GetDragCoefficient();
-            std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << ", drag coefficient " << dragCoefficient << ".\n";
+            //std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << ", drag coefficient " << dragCoefficient << ".\n";
+            std::cout << ", " << dragCoefficient;
         }
+        std::cout << "]";
 
         return 0;
     }
