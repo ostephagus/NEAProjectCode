@@ -4,13 +4,10 @@ namespace UserInterface.HelperClasses
 {
     public class CircularQueue<T> : Queue<T>
     {
-        //protected bool isFull;
-        //protected bool isEmpty;
         protected int count;
 
         public CircularQueue(int length) : base(length)
         {
-            //isEmpty = true;
             count = 0;
         }
 
@@ -27,8 +24,6 @@ namespace UserInterface.HelperClasses
             {
                 back = 0;
             }
-            //isEmpty = false; //Set isEmpty to false, and IsEmpty to true if the front is equal to the back
-            //isFull = (front == back);
             count++;
         }
 
@@ -45,8 +40,6 @@ namespace UserInterface.HelperClasses
             {
                 front = 0;
             }
-            //isFull = false; //Set isFull to false, and isEmpty to true if the front is equal to the back
-            //isEmpty = (front == back);
             count--;
 
             return removedItem;

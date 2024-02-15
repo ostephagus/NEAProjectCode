@@ -97,17 +97,10 @@ namespace UserInterface
                 {
                     viewModel.BackendCommand.Execute(null);
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(100); // Give the backend time to stop
                 simulationScreen.ViewModel.CloseBackend();
             }
         }
-
-        //public void StartVisualisationDebugging(object sender, StartupEventArgs e)
-        //{
-        //    fullScreenWindowContainer = new MainWindow();
-        //    fullScreenWindowContainer.Content = new VisualisationControl();
-        //    fullScreenWindowContainer.Show();
-        //}
     }
 
     public class UserControlChangeEventArgs : EventArgs // EventArgs derivative containing the typename of the new user control

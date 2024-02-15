@@ -5,7 +5,7 @@ using UserInterface.HelperClasses;
 namespace UserInterface.ViewModels
 {
     /// <summary>
-    /// The equivalent of SwappableScreen for Views, provides handling of ParameterHolder and UnitHolder, as well as some VM-specific features.
+    /// Abstract parent class for view models, providing functionality common to all view models.
     /// </summary>
     public abstract class ViewModel : INotifyPropertyChanged
     {
