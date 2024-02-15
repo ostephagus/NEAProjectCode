@@ -18,7 +18,6 @@ namespace UserInterface
     {
         private readonly ShaderManager fieldShaderManager;
         private readonly ShaderManager contourShaderManager;
-        //private ComputeShaderManager computeShaderManager;
 
         private readonly float[] vertices;
         private readonly uint[] fieldIndices;
@@ -28,10 +27,8 @@ namespace UserInterface
 
         private int hVBO;
         private int hFieldVAO;
-        //private int hFieldEBO;
 
         private int hContourVAO;
-        //private int hContourEBO;
 
         private int hSubtrahend;
         private int hScalar;
@@ -78,7 +75,6 @@ namespace UserInterface
 
             fieldShaderManager = new ShaderManager([("fieldShader.frag", ShaderType.FragmentShader), ("fieldShader.vert", ShaderType.VertexShader)]);
             contourShaderManager = new ShaderManager([("contourShader.frag", ShaderType.FragmentShader), ("contourShader.vert", ShaderType.VertexShader)]);
-            //computeShaderManager = new ComputeShaderManager("shader.comp");
 
             GL.Enable(EnableCap.PrimitiveRestart);
             GL.PrimitiveRestartIndex(primitiveRestartIndex);
@@ -88,8 +84,6 @@ namespace UserInterface
 
         private void HandleData(out float[] vertices, out uint[] fieldIndices, out uint[] contourIndices)
         {
-            //GL.ClearColor(0.1f, 0.7f, 0.5f, 1.0f);
-
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             fieldIndices = GLHelper.FillIndices(dataWidth, dataHeight);
             contourIndices = GLHelper.FindContourIndices(streamFunction, parameterHolder.ContourTolerance.Value, parameterHolder.ContourSpacing.Value, primitiveRestartIndex, dataWidth, dataHeight);
@@ -101,9 +95,7 @@ namespace UserInterface
             hVBO = GLHelper.CreateVBO(vertices.Length + fieldParameters.field.Length);
 
             GLHelper.BufferSubData(vertices, 0);
-            //Trace.WriteLine(GL.GetError().ToString());
             GLHelper.BufferSubData(fieldParameters.field, vertices.Length);
-            //Trace.WriteLine(GL.GetError().ToString());
 
             GLHelper.CreateAttribPointer(0, 2, 2, 0); // Vertex pointer
             GLHelper.CreateAttribPointer(1, 1, 1, vertices.Length); // Field value pointer

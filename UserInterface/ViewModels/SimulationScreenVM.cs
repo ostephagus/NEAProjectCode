@@ -310,7 +310,6 @@ namespace UserInterface.ViewModels
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
-            //SendObstacles();
             EmbedObstacles();
 
             Task.Run(StartComputation);
@@ -416,35 +415,6 @@ namespace UserInterface.ViewModels
             }
             return fieldParameters;
         }
-
-        //private bool SendObstacles() // Temporary method to create a square of obstacle cells
-        //{
-        //    bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
-
-        //    for (int i = 1; i <= dataWidth; i++)
-        //    {
-        //        for (int j = 1; j <= dataHeight; j++)
-        //        {
-        //            obstacles[i * (dataHeight + 2) + j] = true; // Set cells to fluid
-        //        }
-        //    }
-
-        //    int leftCell = (int)(boundaryLeft * dataWidth);
-        //    int rightCell = (int)((boundaryLeft + boundaryWidth) * dataWidth);
-        //    int bottomCell = (int)((boundaryTop - boundaryHeight) * dataHeight);
-        //    int topCell = (int)(boundaryTop * dataHeight);
-
-        //    for (int i = leftCell; i < rightCell; i++)
-        //    { // Create a square of boundary cells
-        //        for (int j = bottomCell; j < topCell; j++)
-        //        {
-        //            obstacles[(i + 1) * (dataHeight + 2) + j + 1] = false;
-        //        }
-        //    }
-
-
-        //    return backendManager.SendObstacles(obstacles);
-        //}
 
         public void StartComputation()
         {

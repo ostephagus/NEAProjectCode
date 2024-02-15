@@ -170,7 +170,6 @@ REAL ComputeObstacleDrag(DoubleField velocities, REAL** pressure, BYTE** flags, 
 
     REAL viscousDrag = ComputeViscousDrag(velocities, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector, viscosity) * VISCOSITY_CONVERSION;
     REAL pressureDrag = ComputePressureDrag(pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector) * PRESSURE_CONVERSION; 
-    //printf("Viscous drag: %f, pressure drag: %f.\n", viscousDrag, pressureDrag);
     return viscousDrag + pressureDrag;
 }
 
@@ -197,17 +196,8 @@ REAL ComputeProjectionArea(std::pair<int, int>* coordinates, int coordinatesLeng
 REAL ComputeDragCoefficient(DoubleField velocities, REAL** pressure, BYTE** flags, std::pair<int, int>* coordinates, int coordinatesLength, int iMax, int jMax, DoubleReal stepSizes, REAL viscosity, REAL density, REAL inflowVelocity)
 {
     // Normal operation:
-    /*REAL dragForce = ComputeObstacleDrag(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, viscosity);
+    REAL dragForce = ComputeObstacleDrag(velocities, pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, viscosity);
     REAL projectedArea = ComputeProjectionArea(coordinates, coordinatesLength, stepSizes.y);
-    return (2 * dragForce) / (density * inflowVelocity * inflowVelocity * projectedArea);*/
-
-    // TESTING:
-    DoubleReal fluidVector = DoubleReal(-1, 0);
-
-    REAL viscousDrag = ComputeViscousDrag(velocities, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector, viscosity) * VISCOSITY_CONVERSION;
-    REAL pressureDrag = ComputePressureDrag(pressure, flags, coordinates, coordinatesLength, iMax, jMax, stepSizes, fluidVector) * PRESSURE_CONVERSION;
-    REAL coefficientScalar = 2 / (density * inflowVelocity * inflowVelocity * ComputeProjectionArea(coordinates, coordinatesLength, stepSizes.y));
-    printf("Contributions from: pressure drag %f, viscosity drag %f.\n", pressureDrag * coefficientScalar, viscousDrag * coefficientScalar);
-    return coefficientScalar * (viscousDrag + pressureDrag);
+    return (2 * dragForce) / (density * inflowVelocity * inflowVelocity * projectedArea);
 }
 
