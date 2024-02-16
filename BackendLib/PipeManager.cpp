@@ -135,7 +135,7 @@ bool PipeManager::ReceiveObstacles(bool* obstacles, int xLength, int yLength) {
 	int fieldLength = xLength * yLength;
 	int bufferLength = fieldLength / 8 + (fieldLength % 8 == 0 ? 0 : 1);
 
-	//Assume there has been a FLDSTART before
+	// Assume there has been a FLDSTART before
 	BYTE* buffer = new BYTE[bufferLength + 1]; // Have to use new keyword because length of array is not a constant expression
 
 	Read(buffer, bufferLength + 1);

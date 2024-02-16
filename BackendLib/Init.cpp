@@ -10,7 +10,7 @@ REAL** MatrixMAlloc(int xLength, int yLength) {
 	// Create array of pointers pointing to more arrays
 	REAL** matrix = new REAL* [xLength];
 
-	//Create the arrays inside each outer array
+	// Create the arrays inside each outer array
 	for (int i = 0; i < xLength; ++i) {
 		matrix[i] = new REAL[yLength]();
 	}
@@ -23,7 +23,7 @@ BYTE** FlagMatrixMAlloc(int xLength, int yLength) {
 	// Create array of pointers pointing to more arrays
 	BYTE** matrix = new BYTE * [xLength];
 
-	//Create the arrays inside each outer array
+	// Create the arrays inside each outer array
 	for (int i = 0; i < xLength; ++i) {
 		matrix[i] = new BYTE[yLength]();
 	}
@@ -35,7 +35,7 @@ bool** ObstacleMatrixMAlloc(int xLength, int yLength) {
 	// Create array of pointers pointing to more arrays
 	bool** matrix = new bool* [xLength];
 
-	//Create the arrays inside each outer array
+	// Create the arrays inside each outer array
 	for (int i = 0; i < xLength; ++i) {
 		matrix[i] = new bool[yLength]();
 	}

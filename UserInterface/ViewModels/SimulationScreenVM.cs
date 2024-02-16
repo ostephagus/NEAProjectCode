@@ -22,39 +22,35 @@ namespace UserInterface.ViewModels
         private float visLowerBound;
         private float visUpperBound;
 
-        private float[] velocity;
-        private float[] pressure;
-        private float[] streamFunction;
+        private readonly float[] velocity;
+        private readonly float[] pressure;
+        private readonly float[] streamFunction;
         private FieldParameters pressureParameters;
         private FieldParameters velocityParameters;
         private SelectedField selectedField;
 
-        private BackendManager backendManager;
+        private readonly BackendManager backendManager;
         private CancellationTokenSource backendCTS;
-        private UnitConversionPanel unitsPanel;
-        private VisualisationControl visualisationControl;
-        private MovingAverage<float> visFrameTimeAverage;
-        private MovingAverage<float> backFrameTimeAverage;
-        private MovingAverage<float> dragCoefficientAverage;
-        private RectangularToPolar RecToPolConverter;
+        private readonly UnitConversionPanel unitsPanel;
+        private readonly VisualisationControl visualisationControl;
+        private readonly MovingAverage<float> visFrameTimeAverage;
+        private readonly MovingAverage<float> backFrameTimeAverage;
+        private readonly MovingAverage<float> dragCoefficientAverage;
+        private readonly RectangularToPolar RecToPolConverter;
 
-        private int dataWidth;
-        private int dataHeight;
+        private readonly int dataWidth;
+        private readonly int dataHeight;
 
-        private ObservableCollection<PolarPoint> obstaclePoints;
-        private ObservableCollection<PolarPoint> controlPoints;
-        private PolarSplineCalculator obstaclePointCalculator;
+        private readonly ObservableCollection<PolarPoint> obstaclePoints;
+        private readonly ObservableCollection<PolarPoint> controlPoints;
+        private readonly PolarSplineCalculator obstaclePointCalculator;
         private bool editingObstacles;
         private Point obstacleCentre;
 
-        private const int numObstaclePoints = 80;
-        private const float boundaryTop = 0.55f;
-        private const float boundaryLeft = 0.15f;
-        private const float boundaryHeight = 0.1f;
-        private const float boundaryWidth = 0.1f;
+        private readonly int numObstaclePoints = 80;
 
 
-        public string? CurrentButton //Conversion between string and internal enum value done in property
+        public string? CurrentButton // Conversion between string and internal enum value done in property
         {
             get
             {
@@ -252,7 +248,7 @@ namespace UserInterface.ViewModels
 
         public Commands.SimScreenBack BackCommand { get; set; }
 
-        private enum SidePanelButton //Different side panels on SimluationScreen
+        private enum SidePanelButton // Different side panels on SimluationScreen
         {
             BtnParametersSelect,
             BtnUnitsSelect,
@@ -272,8 +268,8 @@ namespace UserInterface.ViewModels
         {
             #region Parameters related to View
             currentButton = null; // Initially no panel selected
-            obstaclePoints = new ObservableCollection<PolarPoint>();
-            controlPoints = new ObservableCollection<PolarPoint>();
+            obstaclePoints = [];
+            controlPoints = [];
             obstacleCentre = new Point(50, 50);
             obstaclePointCalculator = new PolarSplineCalculator();
             CreateDefaultObstacle();
@@ -399,7 +395,7 @@ namespace UserInterface.ViewModels
 
         }
 
-        private FieldParameters ModifyFieldParameters(FieldParameters fieldParameters, float[]? newField, float? newMin, float? newMax)
+        private static FieldParameters ModifyFieldParameters(FieldParameters fieldParameters, float[]? newField, float? newMin, float? newMax)
         {
             if (newField is not null)
             {

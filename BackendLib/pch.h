@@ -8,4 +8,4 @@
 #include <memory>
 #include "Definitions.h"
 
-#endif //PCH_H
+#endif // PCH_H

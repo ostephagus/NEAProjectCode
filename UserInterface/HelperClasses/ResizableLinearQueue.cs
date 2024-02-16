@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Windows.Navigation;
 
 namespace UserInterface.HelperClasses
 {
@@ -24,7 +22,7 @@ namespace UserInterface.HelperClasses
         /// <summary>
         /// Initialises the linear queue with a default initial length of 1.
         /// </summary>
-        public ResizableLinearQueue() : this(1) { } //If no length is specified, start at 1.
+        public ResizableLinearQueue() : this(1) { } // If no length is specified, start at 1.
 
         /// <summary>
         /// Moves all the elements forwards in the array such the front of the queue is at position 0 and the rest are stored contiguously.
@@ -33,9 +31,9 @@ namespace UserInterface.HelperClasses
         {
             for (int i = front; i < length; i++)
             {
-                array[i - front] = array[i]; //Reshuffle the array by copying each item back a certain number of spaces
+                array[i - front] = array[i]; // Reshuffle the array by copying each item back a certain number of spaces
             }
-            back -= front; //Reshuffle the pointers
+            back -= front; // Reshuffle the pointers
             front = 0;
         }
 
@@ -43,17 +41,17 @@ namespace UserInterface.HelperClasses
         {
             if (back == length)
             {
-                if (front > 0) //If the queue is full and the front is not at 0, there is unused space at the start of the array
+                if (front > 0) // If the queue is full and the front is not at 0, there is unused space at the start of the array
                 {
                     Reshuffle();
                 }
-                else //If the queue is completely full (front pointer at 0), make the queue 2x longer (don't reshuffle because this will have no effect)
+                else // If the queue is completely full (front pointer at 0), make the queue 2x longer (don't reshuffle because this will have no effect)
                 {
                     length *= 2;
                     Array.Resize(ref array, length);
                 }
             }
-            array[back] = value; //Put an item at the back and increase the back pointer
+            array[back] = value; // Put an item at the back and increase the back pointer
             back++;
         }
 
@@ -66,13 +64,13 @@ namespace UserInterface.HelperClasses
             T removedItem = array[front];
             front++;
 
-            if (back - front < length / 4) //If only 1/4 of the array now is used, reshuffle it and halve the size
+            if (back - front < length / 4) // If only 1/4 of the array now is used, reshuffle it and halve the size
             {
                 Reshuffle();
                 length /= 2;
                 Array.Resize(ref array, length);
             }
-            return removedItem; //Return the item that has been "removed"
+            return removedItem; // Return the item that has been "removed"
         }
 
         public override bool IsEmpty => front == back;

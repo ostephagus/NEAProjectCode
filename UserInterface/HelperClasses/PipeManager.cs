@@ -27,7 +27,7 @@ namespace UserInterface.HelperClasses
     /// </summary>
     public class PipeManager
     {
-        private NamedPipeServerStream pipeStream;
+        private readonly NamedPipeServerStream pipeStream;
 
         public PipeManager(string pipeName)
         {
@@ -69,7 +69,7 @@ namespace UserInterface.HelperClasses
             TaskCompletionSource<byte> taskCompletionSource = new TaskCompletionSource<byte>();
 
             byte[] buffer = new byte[1];
-            pipeStream.Read(buffer, 0, 1); //Read one byte. ReadByte method is not used because that returns -1 if there is nothing to read, whereas we want to wait until there is data available which Read does
+            pipeStream.Read(buffer, 0, 1); // Read one byte. ReadByte method is not used because that returns -1 if there is nothing to read, whereas we want to wait until there is data available which Read does
 
             taskCompletionSource.SetResult(buffer[0]);
             return taskCompletionSource.Task;

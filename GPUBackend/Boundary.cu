@@ -8,7 +8,7 @@ __global__ void SetFlags(PointerWithPitch<bool> obstacles, PointerWithPitch<BYTE
     if (rowNum > iMax) return;
     if (colNum > jMax) return;
 
-    F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); //5 bits in the format: self, north, east, south, west.
+    F_PITCHACCESS(flags.ptr, flags.pitch, rowNum, colNum) = ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum) << 4) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum + 1) << 3) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum + 1, colNum) << 2) + ((BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum, colNum - 1) << 1) + (BYTE)B_PITCHACCESS(obstacles.ptr, obstacles.pitch, rowNum - 1, colNum); // 5 bits in the format: self, north, east, south, west.
 }
 
 __global__ void TopBoundary(PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax)

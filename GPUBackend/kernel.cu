@@ -51,20 +51,12 @@ int main(int argc, char** argv) {
         int numIterations = 1000;
         std::cerr << "2 seconds to attach profiler / debugger\n";
         Sleep(2000);
-        /*std::cout << "Enter number of iterations: ";
-        std::cin >> numIterations;*/
 
-        float timeTakenSum = 0;
-
-        std::cout << "[1";
         for (int i = 0; i < numIterations; i++) {
             solver.Timestep(cumulativeTimestep);
             REAL dragCoefficient = solver.GetDragCoefficient();
-            //std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << ", drag coefficient " << dragCoefficient << ".\n";
-            std::cout << ", " << dragCoefficient;
+            std::cout << "Iteration " << i << ", time taken: " << cumulativeTimestep << ", drag coefficient " << dragCoefficient << ".\n";
         }
-        std::cout << "]";
-
         return 0;
     }
     else if (argc == 2) { // Linked to a frontend.
