@@ -5,7 +5,7 @@ This is a repository for the code I make as part of my technical solution of my 
 The CPU Backend is the first part of the project, allowing me to get to grips with C++, and is mostly the same as the code in the Griebels Book. **DONE**
 
 ## GPU Backend
-The GPU Backend is the evolution of the CPU Backend to work on a GPU, using parallelisation and SIMD (Single-Instruction Multiple-Data) for greater processing efficiency. **INDEV**
+The GPU Backend is the evolution of the CPU Backend to work on a GPU, using parallelisation and SIMD (Single-Instruction Multiple-Data) for greater processing efficiency. **DONE**
 
 ## UI
 The UI is written in C# using the WPF library and provides a GUI for the project. **INDEV**
@@ -26,11 +26,7 @@ The visualiusation is complete.
 ### User Interface
 The User Interface is now able to change and send parameters and the click-and-drag node system works, although key areas still to work on are adding tooltips, and reading in a file for obstacles.
 
-## Current areas of work (Early Feb 24)
-### GPU Backend
-Drag calculation in parallel
+## Current areas of work (March 24)
 
 ### User Interface
-- Customisable units
-- Edit a few slider bounds (velocity closer to 40m/s)
-- Reading in a file for obstacles? - might have to remove from objectives.
+- 2 modes for obstacles - self-drawn or using binary files (latter locks structure editing).
