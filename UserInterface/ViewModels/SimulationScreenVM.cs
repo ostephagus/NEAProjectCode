@@ -296,7 +296,7 @@ namespace UserInterface.ViewModels
             bool connectionSuccess = backendManager.ConnectBackend();
             if (!connectionSuccess)
             {
-                MessageBox.Show("Fatal error: backend did not connect properly.");
+                MessageBox.Show("Backend did not connect properly.", "ERROR: Backend did not connect properly");
                 throw new IOException("Backend did not connect properly.");
             }
 
@@ -421,11 +421,11 @@ namespace UserInterface.ViewModels
             }
             catch (IOException e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show(e.Message, "ERROR");
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Generic error: {e.Message}");
+                MessageBox.Show($"Generic error: {e.Message}", "ERROR");
             }
         }
 

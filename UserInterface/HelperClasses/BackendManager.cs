@@ -111,7 +111,7 @@ namespace UserInterface.HelperClasses
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, "ERROR!");
                 return false;
             }
         }
@@ -272,7 +272,7 @@ namespace UserInterface.HelperClasses
             }
             else
             {
-                MessageBox.Show("Could not find backend executable. Make sure that CPUBackend.exe exists in the same folder as UserInterface.exe");
+                MessageBox.Show("Could not find backend executable. Make sure that CPUBackend.exe exists in the same folder as UserInterface.exe", "ERROR: Could not find backend executable.");
                 throw new FileNotFoundException("Backend executable could not be found");
             }
 #else // ^^ NO_GPU_BACKEND ^^ / vv !NO_GPU_BACKEND vv
@@ -294,7 +294,7 @@ namespace UserInterface.HelperClasses
             }
             else
             {
-                MessageBox.Show("Could not find backend executable. Make sure that either GPUBackend.exe or CPUBackend.exe exists in the same folder as UserInterface.exe");
+                MessageBox.Show("Could not find backend executable. Make sure that either GPUBackend.exe or CPUBackend.exe exists in the same folder as UserInterface.exe", "ERROR: Could not find backend executable.");
                 throw new FileNotFoundException("Backend executable could not be found");
             }
 #endif // !NO_GPU_BACKEND

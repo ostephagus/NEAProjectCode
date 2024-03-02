@@ -40,7 +40,7 @@ namespace UserInterface
             currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder]);
             popupWindowContainer.Content = currentPopup;
 
-            popupWindowContainer.Show();
+            popupWindowContainer.ShowDialog();
         }
 
         private void DeletePopup(object? sender, EventArgs e)
