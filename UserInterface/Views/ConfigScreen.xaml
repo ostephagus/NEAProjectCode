@@ -13,60 +13,61 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" MaxHeight="100" />
             <RowDefinition Height="*" MaxHeight="50" />
-            <RowDefinition Height="8*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MaxHeight="50" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="0.1*" />
             <RowDefinition Height="*" MaxHeight="50" />
         </Grid.RowDefinitions>
+        
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Text="Simulation configuration" Grid.ColumnSpan="2" />
-        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="0" Text="Parameters" />
-        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="1" Text="Units" />
-        <Grid Grid.Row="2" Grid.Column="0" Margin="0 0 10 0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0">Flow velocity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="40" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
-            
-            <Label Grid.Row="1" Grid.Column="0">Material Friction</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Chi}" Unit="{Binding DimensionlessUnit}" />
-            
-            <Label Grid.Row="2" Grid.Column="0">Simulation width</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Width}" Unit="{Binding LengthUnit}" />
-            
-            <Label Grid.Row="3" Grid.Column="0">Simulation height</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Height}" Unit="{Binding LengthUnit}" />
 
-            <Button x:Name="BtnReset" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
-            
-            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
-            <helpercontrols:ResizableCentredTextBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="50" Text="Fluid parameters" />
-            <Label Grid.Row="7" Grid.Column="0">Reynolds number</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderReynoldsNo" Grid.Row="7" Grid.Column="1" Value="{Binding ReynoldsNo}" Minimum="1000" Maximum="100000" Unit="{Binding DimensionlessUnit}" />
-            <Label Grid.Row="8" Grid.Column="0">Viscosity</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderViscosity" Grid.Row="8" Grid.Column="1" Value="{Binding Viscosity}" Minimum="2E-5" Maximum="1" Unit="{Binding ViscosityUnit}" />
-            <Label Grid.Row="9" Grid.Column="0">Density</Label>
-            <helpercontrols:SliderWithValue x:Name="SliderDensity" Grid.Row="9" Grid.Column="1" Value="{Binding Density}" Minimum="0" Maximum="10" Unit="{Binding DensityUnit}" />
-            <Button Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding SetAirCommand}">Reset to air at room temperature (20°C)</Button>
-        </Grid>
-        <ContentControl Grid.Row="2" Grid.Column="2" Content="{Binding UnitsPanel}" />
-        <Button Grid.Row="3" Grid.Column="1" Command="{Binding ChangeWindowCommand}" CommandParameter="{x:Type local:SimulationScreen}">Simulate</Button>
+        <helpercontrols:ResizableCentredTextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="Simulation configuration" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="Parameters" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Text="Units" />
+       
+        <Label Grid.Row="2" Grid.Column="0">Flow velocity</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderInVel" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="40" Value="{Binding InVel}" Unit="{Binding SpeedUnit}" />
+
+        <Label Grid.Row="3" Grid.Column="0">Material Friction</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderChi" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding Chi}" Unit="{Binding DimensionlessUnit}" />
+
+        <Label Grid.Row="4" Grid.Column="0">Simulation width</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderWidth" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Width}" Unit="{Binding LengthUnit}" />
+
+        <Label Grid.Row="5" Grid.Column="0">Simulation height</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderHeight" Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding Height}" Unit="{Binding LengthUnit}" />
+
+        <Button x:Name="BtnReset" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ResetCommand}">Reset parameters</Button>
+
+        <Button Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding CreatePopupCommand}" CommandParameter="{x:Type local:AdvancedParameters}">Advanced parameters</Button>
+        <helpercontrols:ResizableCentredTextBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="50" Text="Fluid parameters" />
+        <Label Grid.Row="9" Grid.Column="0">Reynolds number</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderReynoldsNo" Grid.Row="9" Grid.Column="1" Value="{Binding ReynoldsNo}" Minimum="1000" Maximum="100000" Unit="{Binding DimensionlessUnit}" />
+        <Label Grid.Row="10" Grid.Column="0">Viscosity</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderViscosity" Grid.Row="10" Grid.Column="1" Value="{Binding Viscosity}" Minimum="2E-5" Maximum="1" Unit="{Binding ViscosityUnit}" />
+        <Label Grid.Row="11" Grid.Column="0">Density</Label>
+        <helpercontrols:SliderWithValue x:Name="SliderDensity" Grid.Row="11" Grid.Column="1" Value="{Binding Density}" Minimum="0" Maximum="10" Unit="{Binding DensityUnit}" />
+        <Button Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding SetAirCommand}">Reset to air at room temperature (20°C)</Button>
+        <ContentControl Grid.Row="2" Grid.Column="2" Grid.RowSpan="6" Grid.ColumnSpan="2" Content="{Binding UnitsPanel}" />
+        <helpercontrols:ResizableCentredTextBox Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" MaxHeight="50" Text="Obstacle file" />
+        <Label Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Margin="5 0 0 0">Use obstacles from file</Label>
+        <CheckBox Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" IsChecked="{Binding UsingObstacleFile}" d:IsChecked="True" />
+        <Button Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="2" Margin="5 0 0 0" Command="{Binding SelectObstacleFileCommand}">Select file</Button>
+        <TextBlock Grid.Row="11" Grid.Column="2" Grid.ColumnSpan="2" Margin="5 5 5 5" Text="{Binding DisplayFileName}" d:Text="No file selected" TextWrapping="Wrap" />
+        <Button Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding TrySimulateCommand}" Margin="5 0 0 0">Simulate</Button>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
@@ -196,7 +197,10 @@ namespace UserInterface.HelperClasses
 
             private void VMPropertyChanged(object? sender, PropertyChangedEventArgs e)
             {
-                if (e.PropertyName == nameof(parentViewModel.EditingObstacles)) OnCanExecuteChanged(sender, e);
+                if (e.PropertyName == nameof(parentViewModel.EditingObstacles))
+                {
+                    OnCanExecuteChanged(sender, e);
+                }
             }
         }
 
@@ -220,6 +224,58 @@ namespace UserInterface.HelperClasses
             public EditObstacles(SimulationScreenVM parentViewModel) : base(parentViewModel)
             {
                 BackendCommand = new PauseResumeBackend(parentViewModel);
+            }
+        }
+
+        public class SelectObstacleFile : VMCommandBase<ConfigScreenVM>
+        {
+            public override bool CanExecute(object? parameter)
+            {
+                return parentViewModel.UsingObstacleFile;
+            }
+            public override void Execute(object? parameter)
+            {
+                OpenFileDialog openDialog = new();
+                openDialog.Title = "Open Obstacle File";
+                openDialog.Filter = "Obstacle Files (*.simobst)|*.simobst|Binary Files (*.bin)|*.bin|All Files|*.*";
+                if (openDialog.ShowDialog() == true) // OK pressed rather than cancel
+                {
+                    parentViewModel.FileName = openDialog.FileName;
+                }
+            }
+
+            public SelectObstacleFile(ConfigScreenVM parentViewModel) : base(parentViewModel)
+            {
+                parentViewModel.PropertyChanged += VMPropertyChanged;
+            }
+
+            private void VMPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(parentViewModel.UsingObstacleFile))
+                {
+                    OnCanExecuteChanged(sender, e);
+                }
+            }
+        }
+
+        public class TrySimulate : VMCommandBase<ConfigScreenVM>
+        {
+            private ChangeWindow ChangeWindowCommand;
+            public override void Execute(object? parameter)
+            {
+                if (parentViewModel.UsingObstacleFile && parentViewModel.FileName is null)
+                {
+                    MessageBox.Show("You must select a file with obstacles, or deselect the checkbox.", "ERROR: No file selected");
+                }
+                else
+                {
+                    ChangeWindowCommand.Execute(typeof(SimulationScreen));
+                }
+            }
+
+            public TrySimulate(ConfigScreenVM parentViewModel) : base(parentViewModel)
+            {
+                ChangeWindowCommand = new();
             }
         }
 
