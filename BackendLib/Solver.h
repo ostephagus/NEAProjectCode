@@ -60,6 +60,9 @@ public:
     int GetIMax() const;
     int GetJMax() const;
 
+    void SetIMax(int iMax);
+    void SetJMax(int jMax);
+
     virtual REAL* GetHorizontalVelocity() const = 0;
 
     virtual REAL* GetVerticalVelocity() const = 0;

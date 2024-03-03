@@ -293,7 +293,16 @@ namespace UserInterface.ViewModels
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCTS.Cancel();
 
             backendManager = new BackendManager(parameterHolder);
-            bool connectionSuccess = backendManager.ConnectBackend();
+            bool connectionSuccess;
+            if (obstacleHolder.DataWidth == 0 && obstacleHolder.DataHeight == 0)
+            {
+                connectionSuccess = backendManager.ConnectBackend();
+            }
+            else
+            {
+                connectionSuccess = backendManager.ConnectBackend(obstacleHolder.DataWidth, obstacleHolder.DataHeight);
+            }
+
             if (!connectionSuccess)
             {
                 MessageBox.Show("Backend did not connect properly.", "ERROR: Backend did not connect properly");

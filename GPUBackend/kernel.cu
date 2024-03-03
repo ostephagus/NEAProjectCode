@@ -59,8 +59,10 @@ int main(int argc, char** argv) {
         }
         return 0;
     }
-    else if (argc == 2) { // Linked to a frontend.
+    else if (argc == 2) {
+        std::cout << "Linked to a frontend.\n";
         char* pipeName = argv[1];
+        Sleep(5000);
         Solver* solver = new GPUSolver(parameters, iMax, jMax);
         BackendCoordinator backendCoordinator(iMax, jMax, std::string(pipeName), solver);
         int retValue = backendCoordinator.Run();

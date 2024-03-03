@@ -115,16 +115,18 @@ std::pair<int, int> PipeManager::Handshake() {
 
 	if (receivedByte != PipeConstants::Status::HELLO) { return std::pair<int, int>(0, 0); } // We need a HELLO byte, (0,0) is the error case
 
-	BYTE buffer[13];
+	Write(PipeConstants::Status::HELLO);
+
+	BYTE buffer[12];
 	Read(buffer, 12);
 
-	if (buffer[1] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should start with PRMSTART
-	int iMax = *reinterpret_cast<int*>(buffer + 2);
-	if (buffer[6] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should end with PRMEND
+	if (buffer[0] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should start with PRMSTART
+	int iMax = *reinterpret_cast<int*>(buffer + 1);
+	if (buffer[5] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::IMAX)) { return std::pair<int, int>(0, 0); } // Should end with PRMEND
 
-	if (buffer[7] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
-	int jMax = *reinterpret_cast<int*>(buffer + 8);
-	if (buffer[12] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
+	if (buffer[6] != (PipeConstants::Marker::PRMSTART | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
+	int jMax = *reinterpret_cast<int*>(buffer + 7);
+	if (buffer[11] != (PipeConstants::Marker::PRMEND | PipeConstants::Marker::JMAX)) { return std::pair<int, int>(0, 0); }
 
 	Write(PipeConstants::Status::OK); // Send an OK byte to show the transmission was successful
 

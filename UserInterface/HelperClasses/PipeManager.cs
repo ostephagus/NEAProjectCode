@@ -156,19 +156,15 @@ namespace UserInterface.HelperClasses
                 return false;
             }
 
-            pipeStream.WaitForPipeDrain();
-
             buffer[0] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.IMAX); // Send PRMSTART with iMax
             SerialisePrimitive(buffer, 1, iMax);
             buffer[5] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send corresponding PRMEND
 
             buffer[6] = (byte)(PipeConstants.Marker.PRMSTART | PipeConstants.Marker.JMAX); // Send PRMSTART with jMax
             SerialisePrimitive(buffer, 7, jMax);
-            buffer[11] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.IMAX); // Send PRMEND
+            buffer[11] = (byte)(PipeConstants.Marker.PRMEND | PipeConstants.Marker.JMAX); // Send PRMEND
 
             pipeStream.Write(new ReadOnlySpan<byte>(buffer));
-
-            pipeStream.WaitForPipeDrain();
 
             ReadResults readResults = AttemptRead();
             if (readResults.anythingRead == false || readResults.data[0] != PipeConstants.Status.OK) // If nothing was read or no OK byte, param read was unsuccessful

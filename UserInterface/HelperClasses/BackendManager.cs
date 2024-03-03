@@ -60,6 +60,7 @@ namespace UserInterface.HelperClasses
         private ParameterHolder parameterHolder;
 
         private readonly string pipeName = "NEAFluidDynamicsPipe";
+        private readonly bool createNoWindow = false;
 
         public int FieldLength { get => iMax * jMax; }
         public int IMax { get => iMax; set => iMax = value; }
@@ -104,7 +105,7 @@ namespace UserInterface.HelperClasses
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
                 backendProcess.StartInfo.ArgumentList.Add(pipeName);
-                backendProcess.StartInfo.CreateNoWindow = true;
+                backendProcess.StartInfo.CreateNoWindow = createNoWindow;
                 backendProcess.Start();
                 BackendStatus = BackendStatus.NotStarted;
                 return true;
@@ -122,6 +123,13 @@ namespace UserInterface.HelperClasses
             pipeManager.WaitForConnection();
             (iMax, jMax) = pipeManager.Handshake();
             return iMax > 0 && jMax > 0; // (0,0) is the error condition
+        }
+
+        private bool PipeHandshake(int iMax, int jMax)
+        {
+            pipeManager = new PipeManager(pipeName);
+            pipeManager.WaitForConnection();
+            return pipeManager.Handshake(iMax, jMax);
         }
 
         private bool SendControlByte(byte controlByte)
@@ -303,12 +311,23 @@ namespace UserInterface.HelperClasses
         }
 
         /// <summary>
-        /// Method to start and connect to the backend process
+        /// Method to start and connect to the backend process, with default field dimensions.
         /// </summary>
         /// <returns>Boolean result indicating whether the connection was successful</returns>
         public bool ConnectBackend()
         {
             return CreateBackend() && PipeHandshake(); // Return true only if both were successful. Also doesn't attempt handshake if backend did not start correctly
+        }
+
+        /// <summary>
+        /// Method to start and connect to the backend process, with field dimensions specified.
+        /// </summary>
+        /// <returns>Boolean result indicating whether the connection was successful</returns>
+        public bool ConnectBackend(int iMax, int jMax)
+        {
+            this.iMax = iMax;
+            this.jMax = jMax;
+            return CreateBackend() && PipeHandshake(iMax, jMax);
         }
 
         public async void SendAllParameters()
