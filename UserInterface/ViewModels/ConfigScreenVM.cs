@@ -7,9 +7,6 @@ namespace UserInterface.ViewModels
     {
         private readonly UnitConversionPanel unitsPanel;
 
-        private string? fileName;
-        private bool usingObstacleFile;
-
         public float InVel
         {
             get => parameterHolder.InflowVelocity.Value;
@@ -75,10 +72,10 @@ namespace UserInterface.ViewModels
 
         public string? FileName
         {
-            get => fileName;
+            get => obstacleHolder.FileName;
             set
             {
-                fileName = value;
+                obstacleHolder.FileName = value;
                 OnPropertyChanged(this, nameof(FileName));
                 OnPropertyChanged(this, nameof(DisplayFileName));
             }
@@ -87,24 +84,24 @@ namespace UserInterface.ViewModels
         {
             get
             {
-                if (UsingObstacleFile == false)
+                if (obstacleHolder.UsingObstacleFile == false)
                 {
                     return "Not using obstacle files.";
                 }
-                if (fileName == null)
+                if (obstacleHolder.FileName == null)
                 {
                     return "No File Selected.";
                 }
-                string[] fileParts = fileName.Split('\\');
+                string[] fileParts = obstacleHolder.FileName.Split('\\');
                 return $"File selected: {fileParts[^1]}";
             }
         }
         public bool UsingObstacleFile
         {
-            get => usingObstacleFile;
+            get => obstacleHolder.UsingObstacleFile;
             set
             {
-                usingObstacleFile = value;
+                obstacleHolder.UsingObstacleFile = value;
                 OnPropertyChanged(this, nameof(UsingObstacleFile));
                 OnPropertyChanged(this, nameof(DisplayFileName));
             }
@@ -118,7 +115,7 @@ namespace UserInterface.ViewModels
         public Commands.TrySimulate TrySimulateCommand { get; set; }
         public Commands.CreatePopup CreatePopupCommand { get; set; }
 
-        public ConfigScreenVM(ParameterHolder parameterHolder, UnitHolder unitHolder) : base(parameterHolder, unitHolder)
+        public ConfigScreenVM(ParameterHolder parameterHolder, UnitHolder unitHolder, ObstacleHolder obstacleHolder) : base(parameterHolder, unitHolder, obstacleHolder)
         {
             InVel = parameterHolder.InflowVelocity.Value;
             Chi = parameterHolder.SurfaceFriction.Value;
@@ -127,8 +124,6 @@ namespace UserInterface.ViewModels
             ReynoldsNo = parameterHolder.ReynoldsNumber.Value;
             Viscosity = parameterHolder.FluidViscosity.Value;
             Density = parameterHolder.FluidDensity.Value;
-
-            usingObstacleFile = true;
 
             unitsPanel = new UnitConversionPanel(unitHolder);
             ResetCommand = new Commands.ConfigScreenReset(this, parameterHolder);

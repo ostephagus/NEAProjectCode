@@ -27,11 +27,11 @@ namespace UserInterface.Views
 
         private static readonly double POINT_TOLERANCE = 0.1f;
 
-        public SimulationScreen(ParameterHolder parameterHolder, UnitHolder unitHolder)
+        public SimulationScreen(ParameterHolder parameterHolder, UnitHolder unitHolder, ObstacleHolder obstacleHolder)
         {
             InitializeComponent();
 
-            viewModel = new SimulationScreenVM(parameterHolder, unitHolder);
+            viewModel = new SimulationScreenVM(parameterHolder, unitHolder, obstacleHolder);
             DataContext = viewModel;
 
             RecToPolConverter = new();

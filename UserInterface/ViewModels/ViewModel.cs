@@ -18,6 +18,7 @@ namespace UserInterface.ViewModels
 
         protected ParameterHolder? parameterHolder;
         protected UnitHolder? unitHolder;
+        protected ObstacleHolder? obstacleHolder;
 
         protected ParameterStruct<T> ModifyParameterValue<T>(ParameterStruct<T> parameterStruct, T newValue)
         {
@@ -27,6 +28,7 @@ namespace UserInterface.ViewModels
 
         public UnitHolder UnitHolder { get => unitHolder!; set => unitHolder = value; }
         public ParameterHolder ParameterHolder { get => parameterHolder!; set => parameterHolder = value; }
+        public ObstacleHolder ObstacleHolder { get => obstacleHolder!; set => obstacleHolder = value; }
 
         public UnitClasses.Dimensionless DimensionlessUnit { get; } = new UnitClasses.Dimensionless();
         public UnitClasses.LengthUnit LengthUnit { get => UnitHolder.LengthUnit; }
@@ -37,10 +39,11 @@ namespace UserInterface.ViewModels
 
         public ViewModel() { }
 
-        public ViewModel(ParameterHolder parameterHolder, UnitHolder unitHolder)
+        public ViewModel(ParameterHolder parameterHolder, UnitHolder unitHolder, ObstacleHolder obstacleHolder)
         {
             this.parameterHolder = parameterHolder;
             this.unitHolder = unitHolder;
+            this.obstacleHolder = obstacleHolder;
             unitHolder.PropertyChanged += OnUnitsChanged;
         }
 

@@ -264,7 +264,7 @@ namespace UserInterface.ViewModels
         public event CancelEventHandler StopBackendExecuting;
         #endregion
 
-        public SimulationScreenVM(ParameterHolder parameterHolder, UnitHolder unitHolder) : base(parameterHolder, unitHolder)
+        public SimulationScreenVM(ParameterHolder parameterHolder, UnitHolder unitHolder, ObstacleHolder obstacleHolder) : base(parameterHolder, unitHolder, obstacleHolder)
         {
             #region Parameters related to View
             currentButton = null; // Initially no panel selected

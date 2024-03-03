@@ -21,8 +21,10 @@ namespace UserInterface
         private UserControl? currentPopup;
         private MainWindow fullScreenWindowContainer; // 2 different container windows to allow for usercontrols to either be popups (that don't take up the whole screen), or fullscreen
         private PopupWindow popupWindowContainer;
+
         private ParameterHolder parameterHolder;
         private UnitHolder unitHolder;
+        private ObstacleHolder obstacleHolder;
 
         public static event EventHandler<UserControlChangeEventArgs>? UserControlChanged;
         public static event EventHandler<UserControlChangeEventArgs>? PopupCreated;
@@ -30,7 +32,7 @@ namespace UserInterface
 
         private void ChangeUserControl(object? sender, UserControlChangeEventArgs e)
         {
-            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder]); // Use the Type parameter to create a new instance
+            currentUserControl = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder, obstacleHolder]); // Use the Type parameter to create a new instance
 
             fullScreenWindowContainer.Content = currentUserControl;
         }
@@ -78,8 +80,9 @@ namespace UserInterface
 
             parameterHolder = new(DefaultParameters.WIDTH, DefaultParameters.HEIGHT, DefaultParameters.TIMESTEP_SAFETY_FACTOR, DefaultParameters.RELAXATION_PARAMETER, DefaultParameters.PRESSURE_RESIDUAL_TOLERANCE, DefaultParameters.PRESSURE_MAX_ITERATIONS, DefaultParameters.REYNOLDS_NUMBER, DefaultParameters.FLUID_VISCOSITY, DefaultParameters.FLUID_VELOCITY, DefaultParameters.FLUID_DENSITY, DefaultParameters.SURFACE_FRICTION, new FieldParameters(), DefaultParameters.DRAW_CONTOURS, DefaultParameters.CONTOUR_TOLERANCE, DefaultParameters.CONTOUR_SPACING); // Use the defaults from DefaultParameters constant holder
             unitHolder = new UnitHolder();
+            obstacleHolder = new ObstacleHolder(null, true);
 
-            currentUserControl = new ConfigScreen(parameterHolder, unitHolder);
+            currentUserControl = new ConfigScreen(parameterHolder, unitHolder, obstacleHolder);
             fullScreenWindowContainer.Content = currentUserControl;
             fullScreenWindowContainer.Show();
 

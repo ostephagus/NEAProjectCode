@@ -9,10 +9,10 @@ namespace UserInterface.Views
     /// </summary>
     public partial class ConfigScreen : UserControl
     {
-        public ConfigScreen(ParameterHolder parameterHolder, UnitHolder unitHolder)
+        public ConfigScreen(ParameterHolder parameterHolder, UnitHolder unitHolder, ObstacleHolder obstacleHolder)
         {
             InitializeComponent();
-            DataContext = new ConfigScreenVM(parameterHolder, unitHolder);
+            DataContext = new ConfigScreenVM(parameterHolder, unitHolder, obstacleHolder);
         }
     }
 }
