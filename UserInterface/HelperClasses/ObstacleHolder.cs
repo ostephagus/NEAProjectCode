@@ -19,8 +19,8 @@ namespace UserInterface.HelperClasses
         {
             this.fileName = fileName;
             this.usingObstacleFile = usingObstacleFile;
-            dataWidth = 100;
-            dataHeight = 100;
+            dataWidth = 128;
+            dataHeight = 256;
         }
     }
 }

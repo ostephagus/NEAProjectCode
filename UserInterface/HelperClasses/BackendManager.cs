@@ -98,13 +98,15 @@ namespace UserInterface.HelperClasses
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private bool CreateBackend()
+        private bool CreateBackend(int iMax = 0, int jMax = 0)
         {
             try
             {
                 backendProcess = new Process();
                 backendProcess.StartInfo.FileName = filePath;
                 backendProcess.StartInfo.ArgumentList.Add(pipeName);
+                backendProcess.StartInfo.ArgumentList.Add(iMax.ToString());
+                backendProcess.StartInfo.ArgumentList.Add(jMax.ToString());
                 backendProcess.StartInfo.CreateNoWindow = createNoWindow;
                 backendProcess.Start();
                 BackendStatus = BackendStatus.NotStarted;
@@ -310,6 +312,11 @@ namespace UserInterface.HelperClasses
         public bool ConnectBackend()
         {
             return CreateBackend() && PipeHandshake(); // Return true only if both were successful. Also doesn't attempt handshake if backend did not start correctly
+        }
+
+        public bool ConnectBackend(int iMax, int jMax)
+        {
+            return CreateBackend(iMax, jMax) && PipeHandshake();
         }
 
         public async void SendAllParameters()

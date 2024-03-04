@@ -6,11 +6,11 @@
 #include <chrono>
 
 int main(int argc, char** argv) {
-    int iMax = 200;
-    int jMax = 100;
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
         std::cout << "Running without a fronted attached.\n";
+        int iMax = 200;
+        int jMax = 100;
         parameters.width = 1;
         parameters.height = 1;
         parameters.timeStepSafetyFactor = (REAL)0.5;
@@ -59,10 +59,17 @@ int main(int argc, char** argv) {
         }
         return 0;
     }
-    else if (argc == 2) {
+    else if (argc == 4) {
         std::cout << "Linked to a frontend.\n";
+
         char* pipeName = argv[1];
-        Sleep(5000);
+        int iMax = atoi(argv[2]);
+        int jMax = atoi(argv[3]);
+        if (iMax == 0 || jMax == 0) { // Set defaults
+            iMax = 200;
+            jMax = 100;
+        }
+        std::cout << "iMax and jMax set to " << iMax << " and " << jMax << ".\n";
         Solver* solver = new GPUSolver(parameters, iMax, jMax);
         BackendCoordinator backendCoordinator(iMax, jMax, std::string(pipeName), solver);
         int retValue = backendCoordinator.Run();
@@ -70,7 +77,7 @@ int main(int argc, char** argv) {
         return retValue;
     }
     else {
-        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name to connect to a frontend, or without to run without a frontend.\n";
+        std::cerr << "Incorrect number of command-line arguments. Run the executable with the pipe name and field dimensions to connect to a frontend, or without to run without a frontend.\n";
         return -1;
     }
 }
