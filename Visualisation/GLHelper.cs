@@ -67,8 +67,9 @@ namespace Visualisation
         /// <param name="width">The width of the simulation space</param>
         /// <param name="height">The height of the simulation space</param>
         /// <returns>An array of <c>uint</c>s, to be passed to the EBO</returns>
-        public static uint[] FindContourIndices(float[] streamFunction, float contourTolerance, float spacingMultiplier, uint primitiveRestartSentinel, int width, int height)
+        public static uint[] FindContourIndices(float[] streamFunction, float contourTolerance, float numContours, uint primitiveRestartSentinel, int width, int height)
         {
+            float spacingMultiplier = streamFunction[height - 1] / numContours;
             List<List<uint>> levelSets = new();
             for (int j = 0; j < height; j++) // Find level sets 
             {

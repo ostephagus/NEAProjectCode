@@ -16,7 +16,7 @@
 
         public static readonly bool DRAW_CONTOURS = true;
         public static readonly float CONTOUR_TOLERANCE = 0.01f;
-        public static readonly float CONTOUR_SPACING = 0.071f;
+        public static readonly float NUM_CONTOURS = 15f;
         public static readonly int FPS_WINDOW_SIZE = 500;
         public static readonly int DRAG_COEF_WINDOW_SIZE = 10;
 

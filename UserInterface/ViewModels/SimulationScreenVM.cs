@@ -125,13 +125,13 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(VisUpperBound));
             }
         }
-        public float ContourSpacing
+        public float NumContours
         {
-            get => parameterHolder.ContourSpacing.Value;
+            get => parameterHolder.NumContours.Value;
             set
             {
-                parameterHolder.ContourSpacing = ModifyParameterValue(parameterHolder.ContourSpacing, value);
-                OnPropertyChanged(this, nameof(ContourSpacing));
+                parameterHolder.NumContours = ModifyParameterValue(parameterHolder.NumContours, value);
+                OnPropertyChanged(this, nameof(NumContours));
             }
         }
         public float ContourTolerance

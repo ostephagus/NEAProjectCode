@@ -86,7 +86,7 @@ namespace UserInterface
         {
             vertices = GLHelper.FillVertices(dataWidth, dataHeight);
             fieldIndices = GLHelper.FillIndices(dataWidth, dataHeight);
-            contourIndices = GLHelper.FindContourIndices(streamFunction, parameterHolder.ContourTolerance.Value, parameterHolder.ContourSpacing.Value, primitiveRestartIndex, dataWidth, dataHeight);
+            contourIndices = GLHelper.FindContourIndices(streamFunction, parameterHolder.ContourTolerance.Value, parameterHolder.NumContours.Value, primitiveRestartIndex, dataWidth, dataHeight);
 
             FieldParameters fieldParameters = parameterHolder.FieldParameters.Value;
 
@@ -143,7 +143,7 @@ namespace UserInterface
             // Drawing contour lines over the top
             if (parameterHolder.DrawContours.Value)
             {
-                contourIndices = GLHelper.FindContourIndices(streamFunction, parameterHolder.ContourTolerance.Value, parameterHolder.ContourSpacing.Value, primitiveRestartIndex, dataWidth, dataHeight);
+                contourIndices = GLHelper.FindContourIndices(streamFunction, parameterHolder.ContourTolerance.Value, parameterHolder.NumContours.Value, primitiveRestartIndex, dataWidth, dataHeight);
                 contourShaderManager.Use();
 
                 GL.BindVertexArray(hContourVAO);

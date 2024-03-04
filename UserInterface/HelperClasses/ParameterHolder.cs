@@ -81,7 +81,7 @@ namespace UserInterface.HelperClasses
         private ParameterStruct<FieldParameters> fieldParameters;
         private ParameterStruct<bool> drawContours;
         private ParameterStruct<float> contourTolerance;
-        private ParameterStruct<float> contourSpacing;
+        private ParameterStruct<float> numContours;
 
         #region Properties
         public ParameterStruct<float> Width
@@ -214,13 +214,13 @@ namespace UserInterface.HelperClasses
                 contourTolerance = value;
             }
         }
-        public ParameterStruct<float> ContourSpacing
+        public ParameterStruct<float> NumContours
         {
-            get => contourSpacing;
+            get => numContours;
 
             set
             {
-                contourSpacing = value;
+                numContours = value;
             }
         }
         public ParameterStruct<bool> DrawContours
@@ -234,7 +234,7 @@ namespace UserInterface.HelperClasses
         }
         #endregion
 
-        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidViscosity, float fluidVelocity, float fluidDensity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float contourSpacing)
+        public ParameterHolder(float width, float height, float timeStepSafetyFactor, float relaxationParameter, float pressureResidualTolerance, float pressureMaxIterations, float reynoldsNumber, float fluidViscosity, float fluidVelocity, float fluidDensity, float surfaceFriction, FieldParameters fieldParameters, bool drawContours, float contourTolerance, float numContours)
         {
 
             this.width = new ParameterStruct<float>(width, ParameterUsage.Backend, false);
@@ -251,7 +251,7 @@ namespace UserInterface.HelperClasses
             this.fieldParameters = new ParameterStruct<FieldParameters>(fieldParameters, ParameterUsage.Visualisation, true);
             this.drawContours = new ParameterStruct<bool>(drawContours, ParameterUsage.Visualisation, true);
             this.contourTolerance = new ParameterStruct<float>(contourTolerance, ParameterUsage.Visualisation, true);
-            this.contourSpacing = new ParameterStruct<float>(contourSpacing, ParameterUsage.Visualisation, true);
+            this.numContours = new ParameterStruct<float>(numContours, ParameterUsage.Visualisation, true);
         }
 
         private void OnPropertyChanged(float value, [CallerMemberName] string name = "")
