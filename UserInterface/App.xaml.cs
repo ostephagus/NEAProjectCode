@@ -39,7 +39,7 @@ namespace UserInterface
 
         private void CreatePopup(object? sender, UserControlChangeEventArgs e)
         {
-            currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder]);
+            currentPopup = (UserControl)Activator.CreateInstance(e.NewUserControlType, [parameterHolder, unitHolder, obstacleHolder]);
             popupWindowContainer.Content = currentPopup;
 
             popupWindowContainer.ShowDialog();

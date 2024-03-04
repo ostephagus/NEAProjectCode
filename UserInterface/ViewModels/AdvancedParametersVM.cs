@@ -33,6 +33,25 @@ namespace UserInterface.ViewModels
             set { iterMax = value; OnPropertyChanged(this, nameof(IterMax)); }
         }
 
+        public float DelX
+        {
+            get => parameterHolder.Width.Value / obstacleHolder.DataWidth;
+            set
+            {
+                obstacleHolder.DataWidth = (int)(parameterHolder.Width.Value / value);
+                OnPropertyChanged(this, nameof(DelX));
+            }
+        }
+        public float DelY
+        {
+            get => parameterHolder.Height.Value / obstacleHolder.DataHeight;
+            set
+            {
+                obstacleHolder.DataHeight = (int)(parameterHolder.Height.Value / value);
+                OnPropertyChanged(this, nameof(DelY));
+            }
+        }
+
         public Commands.AdvancedParametersReset ResetCommand { get; set; }
 
         public Commands.SaveParameters SaveCommand { get; set; }
