@@ -49,13 +49,7 @@ void Solver::SetParameters(SimulationParameters parameters) {
 int Solver::GetIMax() const {
     return iMax;
 }
+
 int Solver::GetJMax() const {
     return jMax;
-}
-
-void Solver::SetIMax(int iMax) {
-	this->iMax = iMax;
-}
-void Solver::SetJMax(int jMax) {
-	this->jMax = jMax;
 }
