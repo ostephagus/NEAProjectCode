@@ -212,9 +212,7 @@ BackendCoordinator::BackendCoordinator(int iMax, int jMax, std::string pipeName,
 }
 
 int BackendCoordinator::Run() {
-    std::pair<int, int> fieldDimensions = pipeManager.Handshake();
-    solver->SetIMax(fieldDimensions.first);
-    solver->SetJMax(fieldDimensions.second);
+    pipeManager.Handshake(solver->GetIMax(), solver->GetJMax());
     std::cout << "Handshake completed ok\n";
 
     bool closeRequested = false;
