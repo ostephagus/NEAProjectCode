@@ -22,5 +22,10 @@ namespace UserInterface.HelperClasses
             dataWidth = 128;
             dataHeight = 256;
         }
+
+        public bool[] ReadObstacleFile()
+        {
+            throw new System.NotImplementedException("ReadObstacleFile is not yet implemented");
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UserInterface.HelperClasses;
+﻿using System.Windows.Navigation;
+using UserInterface.HelperClasses;
 
 namespace UserInterface.ViewModels
 {
@@ -50,6 +51,11 @@ namespace UserInterface.ViewModels
                 obstacleHolder.DataHeight = (int)(parameterHolder.Height.Value / value);
                 OnPropertyChanged(this, nameof(DelY));
             }
+        }
+
+        public bool CanChangeGridSizes
+        {
+            get => !obstacleHolder.UsingObstacleFile;
         }
 
         public Commands.AdvancedParametersReset ResetCommand { get; set; }

@@ -34,9 +34,9 @@
         <Label Grid.Row="4" Grid.Column="0">Maximum SOR iterations</Label>
         <helpercontrols:SliderWithValue x:Name="sliderIterMax" Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="10000" ForceIntegers="True" Value="{Binding IterMax}" Unit="{Binding DimensionlessUnit}" />
         <Label Grid.Row="5" Grid.Column="0">Grid cell size (horizontal)</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderDelX" Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="0.1" ForceIntegers="False" Value="{Binding DelX}" Unit="{Binding LengthUnit}" />
+        <helpercontrols:SliderWithValue x:Name="sliderDelX" Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="0.1" ForceIntegers="False" Value="{Binding DelX}" Unit="{Binding LengthUnit}" IsEnabled="{Binding CanChangeGridSizes, Mode=OneWay}" />
         <Label Grid.Row="6" Grid.Column="0">Grid cell size (vertical)</Label>
-        <helpercontrols:SliderWithValue x:Name="sliderDelY" Grid.Row="6" Grid.Column="1" Minimum="0" Maximum="0.1" ForceIntegers="False" Value="{Binding DelY}" Unit="{Binding LengthUnit}" />
+        <helpercontrols:SliderWithValue x:Name="sliderDelY" Grid.Row="6" Grid.Column="1" Minimum="0" Maximum="0.1" ForceIntegers="False" Value="{Binding DelY}" Unit="{Binding LengthUnit}" IsEnabled="{Binding CanChangeGridSizes, Mode=OneWay}" />
         <Button x:Name="ResetButton" Grid.Row="7" Grid.Column="0" FontSize="16" Command="{Binding ResetCommand}">Reset values</Button>
         <Button x:Name="SaveButton" Grid.Row="7" Grid.Column="1" FontSize="16" Command="{Binding SaveCommand}">Save and return</Button>
     </Grid>

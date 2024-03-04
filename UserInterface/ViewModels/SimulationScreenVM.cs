@@ -293,16 +293,7 @@ namespace UserInterface.ViewModels
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCTS.Cancel();
 
             backendManager = new BackendManager(parameterHolder);
-            bool connectionSuccess;
-            if (obstacleHolder.DataWidth == 0 && obstacleHolder.DataHeight == 0)
-            {
-                connectionSuccess = backendManager.ConnectBackend();
-            }
-            else
-            {
-                connectionSuccess = backendManager.ConnectBackend(obstacleHolder.DataWidth, obstacleHolder.DataHeight);
-            }
-
+            bool connectionSuccess = backendManager.ConnectBackend(obstacleHolder.DataWidth, obstacleHolder.DataHeight);
             if (!connectionSuccess)
             {
                 MessageBox.Show("Backend did not connect properly.", "ERROR: Backend did not connect properly");
@@ -315,7 +306,14 @@ namespace UserInterface.ViewModels
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
-            EmbedObstacles();
+            if (!obstacleHolder.UsingObstacleFile)
+            {
+                EmbedObstacles();
+            }
+            else
+            {
+                _ = backendManager.SendObstacles(obstacleHolder.ReadObstacleFile());
+            }
 
             Task.Run(StartComputation);
             backFrameTimeAverage = new MovingAverage<float>(DefaultParameters.FPS_WINDOW_SIZE);
