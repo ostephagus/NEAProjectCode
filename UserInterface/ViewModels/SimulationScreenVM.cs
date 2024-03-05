@@ -306,13 +306,27 @@ namespace UserInterface.ViewModels
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
+            if (obstacleHolder.UsingObstacleFile)
+            {
+                try
+                {
+                    _ = backendManager.SendObstacles(obstacleHolder.ReadObstacleFile());
+                }
+                catch (FileNotFoundException e)
+                {
+                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: obstacle file not found.");
+                    obstacleHolder.UsingObstacleFile = false;
+                }
+                catch (FileFormatException e)
+                {
+                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: malformed obstacle file.");
+                    obstacleHolder.UsingObstacleFile = false;
+                }
+            }
+
             if (!obstacleHolder.UsingObstacleFile)
             {
                 EmbedObstacles();
-            }
-            else
-            {
-                _ = backendManager.SendObstacles(obstacleHolder.ReadObstacleFile());
             }
 
             Task.Run(StartComputation);
