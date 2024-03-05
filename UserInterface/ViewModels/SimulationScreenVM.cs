@@ -272,7 +272,11 @@ namespace UserInterface.ViewModels
             controlPoints = [];
             obstacleCentre = new Point(50, 50);
             obstaclePointCalculator = new PolarSplineCalculator();
+            if (!obstacleHolder.UsingObstacleFile)
+            {
             CreateDefaultObstacle();
+            }
+
             controlPoints.CollectionChanged += OnControlPointsChanged;
             editingObstacles = false;
             InVel = parameterHolder.InflowVelocity.Value;
@@ -292,6 +296,25 @@ namespace UserInterface.ViewModels
             backendCTS = new CancellationTokenSource();
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCTS.Cancel();
 
+            bool[]? obstaclesFromFile = null;
+            if (obstacleHolder.UsingObstacleFile)
+            {
+                try
+                {
+                    obstaclesFromFile = obstacleHolder.ReadObstacleFile();
+                }
+                catch (FileNotFoundException e)
+                {
+                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: obstacle file not found.");
+                    obstacleHolder.UsingObstacleFile = false;
+                }
+                catch (FileFormatException e)
+                {
+                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: malformed obstacle file.");
+                    obstacleHolder.UsingObstacleFile = false;
+                }
+            }
+
             backendManager = new BackendManager(parameterHolder);
             bool connectionSuccess = backendManager.ConnectBackend(obstacleHolder.DataWidth, obstacleHolder.DataHeight);
             if (!connectionSuccess)
@@ -306,26 +329,13 @@ namespace UserInterface.ViewModels
             streamFunction = new float[backendManager.FieldLength];
             dataWidth = backendManager.IMax;
             dataHeight = backendManager.JMax;
+
             if (obstacleHolder.UsingObstacleFile)
             {
-                try
-                {
-                    _ = backendManager.SendObstacles(obstacleHolder.ReadObstacleFile());
+                _ = backendManager.SendObstacles(obstaclesFromFile!);
                 }
-                catch (FileNotFoundException e)
+            else
                 {
-                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: obstacle file not found.");
-                    obstacleHolder.UsingObstacleFile = false;
-                }
-                catch (FileFormatException e)
-                {
-                    MessageBox.Show(e.Message + "Reverting to drawable obstacles.", "Error: malformed obstacle file.");
-                    obstacleHolder.UsingObstacleFile = false;
-                }
-            }
-
-            if (!obstacleHolder.UsingObstacleFile)
-            {
                 EmbedObstacles();
             }
 

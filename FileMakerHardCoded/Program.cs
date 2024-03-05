@@ -8,6 +8,7 @@
 
         private static bool ObstacleDefiningFunction((int, int) pointTuple)
         {
+            // 1 is an obstacle cell, 0 is a fluid cell.
             (int x, int y) = pointTuple;
             return x > iMax * 0.45 && x < iMax * 0.55 && y > jMax * 0.45 && y < jMax * 0.55;
         }

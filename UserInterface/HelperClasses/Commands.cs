@@ -207,6 +207,12 @@ namespace UserInterface.HelperClasses
         public class EditObstacles : VMCommandBase<SimulationScreenVM>
         {
             PauseResumeBackend BackendCommand;
+
+            public override bool CanExecute(object? parameter)
+            {
+                return !parentViewModel.ObstacleHolder.UsingObstacleFile;
+            }
+
             public override void Execute(object? parameter)
             {
                 if (parentViewModel.EditingObstacles) // Obstacle editing is finished, need to embed obstacles and start backend executing.

@@ -9,7 +9,7 @@
             {
                 for (int j = 0; j < yLength; j++)
                 {
-                    obstacleArray[i * yLength + j] = ObstacleDefiningFunction((i, j));
+                    obstacleArray[i * yLength + j] = !ObstacleDefiningFunction((i, j)); // 1 means fluid cell, 0 means obstacle cell (opposite to defining function).
                 }
             }
             return obstacleArray;

@@ -44,8 +44,8 @@ namespace UserInterface.HelperClasses
                 {
                     dataWidth = reader.ReadInt32(); // Read iMax and jMax
                     dataHeight = reader.ReadInt32();
-                    int fieldLength = dataWidth * dataHeight;
-                    int obstacleDataLength = fieldLength / 8 + (fieldLength % 8 == 0 ? 1 : 0); // Field length divided by 8 plus an extra byte for any remaining bits
+                    int fieldLength = (dataWidth + 2) * (dataHeight + 2);
+                    int obstacleDataLength = fieldLength / 8 + (fieldLength % 8 == 0 ? 0 : 1); // Field length divided by 8 plus an extra byte for any remaining bits
                     obstacleData = reader.ReadBytes(obstacleDataLength);
                 }
                 catch (IOException e)
@@ -55,7 +55,7 @@ namespace UserInterface.HelperClasses
                 }
             }
 
-            bool[] obstacles = new bool[dataWidth * dataHeight];
+            bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
             int byteNumber = 0;
             for (int i = 0; i < obstacles.Length; i++)
             {
