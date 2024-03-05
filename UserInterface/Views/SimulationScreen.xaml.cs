@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 using UserInterface.Converters;
 using UserInterface.HelperClasses;
 using UserInterface.HelperControls;
@@ -16,6 +19,8 @@ namespace UserInterface.Views
     /// </summary>
     public partial class SimulationScreen : UserControl
     {
+        private const float CELL_EXTRA_SIZE = 0.2f;
+
         private readonly SimulationScreenVM viewModel;
         private readonly RectangularToPolar RecToPolConverter;
         public SimulationScreenVM ViewModel => viewModel;
@@ -38,9 +43,31 @@ namespace UserInterface.Views
             pointsPlaced = false;
             isCentreMoved = false;
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+            if (obstacleHolder.UsingObstacleFile)
+            {
+                PlaceObstacleCells();
+            }
         }
 
         #region Private helper methods
+        private void PlaceObstacleCells()
+        {
+            foreach (ObstacleCell cell in ViewModel.ObstacleCells)
+            {
+                Rectangle rectangle = new Rectangle
+                {
+                    Width = cell.Width + CELL_EXTRA_SIZE,
+                    Height = cell.Height + CELL_EXTRA_SIZE,
+                    Fill = Brushes.Black,
+                    Stroke = null
+                };
+
+                Canvas.SetLeft(rectangle, cell.X);
+                Canvas.SetBottom(rectangle, cell.Y);
+                SimulationCanvas.Children.Add(rectangle);
+            }
+        }
+
         private void PlaceInitialPoints()
         {
             foreach (PolarPoint polarPoint in ViewModel.ControlPoints)

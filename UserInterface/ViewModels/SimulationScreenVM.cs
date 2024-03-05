@@ -16,6 +16,8 @@ namespace UserInterface.ViewModels
 {
     public class SimulationScreenVM : ViewModel
     {
+        private const int CANVAS_WIDTH = 100;
+        private const int CANVAS_HEIGHT = 100;
         #region Fields, Properties and Enums
         private SidePanelButton? currentButton;
 
@@ -193,7 +195,6 @@ namespace UserInterface.ViewModels
             }
         }
         public ObservableCollection<PolarPoint> ObstaclePoints { get => obstaclePoints; }
-
         public ObservableCollection<PolarPoint> ControlPoints { get => controlPoints; }
         public Point ObstacleCentre
         {
@@ -204,6 +205,7 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(ObstacleCentre));
             }
         }
+        public ObservableCollection<ObstacleCell> ObstacleCells { get; private set; }
 
         public VisualisationControl VisualisationControl { get => visualisationControl; }
         public UnitConversionPanel UnitsPanel { get => unitsPanel; }
@@ -272,9 +274,10 @@ namespace UserInterface.ViewModels
             controlPoints = [];
             obstacleCentre = new Point(50, 50);
             obstaclePointCalculator = new PolarSplineCalculator();
+            ObstacleCells = new ObservableCollection<ObstacleCell>();
             if (!obstacleHolder.UsingObstacleFile)
             {
-            CreateDefaultObstacle();
+                CreateDefaultObstacle();
             }
 
             controlPoints.CollectionChanged += OnControlPointsChanged;
@@ -296,12 +299,11 @@ namespace UserInterface.ViewModels
             backendCTS = new CancellationTokenSource();
             StopBackendExecuting += (object? sender, CancelEventArgs e) => backendCTS.Cancel();
 
-            bool[]? obstaclesFromFile = null;
             if (obstacleHolder.UsingObstacleFile)
             {
                 try
                 {
-                    obstaclesFromFile = obstacleHolder.ReadObstacleFile();
+                    obstacleHolder.ReadObstacleFile();
                 }
                 catch (FileNotFoundException e)
                 {
@@ -332,10 +334,11 @@ namespace UserInterface.ViewModels
 
             if (obstacleHolder.UsingObstacleFile)
             {
-                _ = backendManager.SendObstacles(obstaclesFromFile!);
-                }
+                _ = backendManager.SendObstacles(obstacleHolder.ObstacleData!);
+                CoverObstacleCells();
+            }
             else
-                {
+            {
                 EmbedObstacles();
             }
 
@@ -492,6 +495,28 @@ namespace UserInterface.ViewModels
             OnPropertyChanged(this, nameof(ObstaclePoints));
         }
 
+        private void CoverObstacleCells()
+        {
+            float cellWidth = (float)CANVAS_WIDTH / backendManager.IMax;
+            float cellHeight = (float)CANVAS_HEIGHT / backendManager.JMax;
+            for (int i = 1; i <= backendManager.IMax; i++)
+            {
+                for (int j = 1; j <= backendManager.JMax; j++)
+                {
+                    if (!obstacleHolder.ObstacleData[i * obstacleHolder.DataHeight + j]) // Obstacle cells
+                    {
+                        ObstacleCells.Add(new ObstacleCell
+                        {
+                            X = i * cellWidth,
+                            Y = j * cellHeight,
+                            Width = cellWidth,
+                            Height = cellHeight
+                        });
+                    }
+                }
+            }
+        }
+
         public void EmbedObstacles()
         {
             bool[] obstacles = new bool[(dataWidth + 2) * (dataHeight + 2)];
@@ -507,8 +532,8 @@ namespace UserInterface.ViewModels
             {
                 for (int j = 1; j <= dataHeight; j++)
                 {
-                    float screenX = i * (float)100 / dataWidth;
-                    float screenY = j * (float)100 / dataHeight;
+                    float screenX = i * (float)CANVAS_WIDTH / dataWidth;
+                    float screenY = j * (float)CANVAS_HEIGHT / dataHeight;
                     PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(screenX, screenY), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
                     if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle)) // Within the obstacle
                     {
