@@ -2,9 +2,19 @@
 {
     public class Program
     {
+        private const int iMax = 200;
+        private const int jMax = 100;
+        private const string filePath = "square.simobst";
+
+        private static bool ObstacleDefiningFunction((int, int) pointTuple)
+        {
+            (int x, int y) = pointTuple;
+            return x > iMax * 0.45 && x < iMax * 0.55 && y > jMax * 0.45 && y < jMax * 0.55;
+        }
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            FileMaker.CreateFile(filePath, iMax + 2, jMax + 2, ObstacleDefiningFunction);
         }
     }
 }
