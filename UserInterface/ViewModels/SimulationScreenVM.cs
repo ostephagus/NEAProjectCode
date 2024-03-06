@@ -503,12 +503,12 @@ namespace UserInterface.ViewModels
             {
                 for (int j = 1; j <= backendManager.JMax; j++)
                 {
-                    if (!obstacleHolder.ObstacleData[i * obstacleHolder.DataHeight + j]) // Obstacle cells
+                    if (!obstacleHolder.ObstacleData[i * (obstacleHolder.DataHeight + 2) + j]) // Obstacle cells
                     {
                         ObstacleCells.Add(new ObstacleCell
                         {
-                            X = i * cellWidth,
-                            Y = j * cellHeight,
+                            X = (i - 1) * cellWidth,
+                            Y = (j - 1) * cellHeight,
                             Width = cellWidth,
                             Height = cellHeight
                         });
