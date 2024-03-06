@@ -15,6 +15,25 @@
             return obstacleArray;
         }
 
+        private static bool[] CreateObstacleArray(int xLength, int yLength, Constraint[] obstacleDefiningConstraints)
+        {
+            bool[] obstacleArray = new bool[xLength * yLength];
+            for (int i = 0; i < xLength; i++)
+            {
+                for (int j = 0; j < yLength; j++)
+                {
+                    bool cellIsObstacle = true;
+                    foreach (Constraint constraint in obstacleDefiningConstraints)
+                    {
+                        cellIsObstacle &= constraint.Evaluate(i, j);
+                    }
+                    obstacleArray[i * yLength + j] = !cellIsObstacle; // 1 means fluid cell, 0 means obstacle cell (opposite to defining function).
+                }
+            }
+            return obstacleArray;
+        }
+
+
         private static void WriteFile(string filePath, bool[] obstacleArray, int xLength, int yLength)
         {
             byte[] buffer = new byte[obstacleArray.Length / 8 + (obstacleArray.Length % 8 == 0 ? 0 : 1)]; // Divide the length by 8 and add one if the length does not divide evenly. Also add 1 byte for FLDEND
@@ -40,6 +59,12 @@
         public static void CreateFile(string filePath, int xLength, int yLength, Predicate<(int, int)> ObstacleDefiningFunction)
         {
             bool[] obstacleArray = CreateObstacleArray(xLength, yLength, ObstacleDefiningFunction);
+            WriteFile(filePath, obstacleArray, xLength, yLength);
+        }
+
+        public static void CreateFile(string filePath, int xLength, int yLength, Constraint[] obstacleDefiningConstraints)
+        {
+            bool[] obstacleArray = CreateObstacleArray(xLength, yLength, obstacleDefiningConstraints);
             WriteFile(filePath, obstacleArray, xLength, yLength);
         }
     }
