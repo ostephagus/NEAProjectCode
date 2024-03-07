@@ -4,7 +4,7 @@ namespace FileMakerCLI
 {
     public static class ConstraintParser
     {
-        private static readonly char[] operators = ['^', '/', '*', '+', '-']; // In order of precendence
+        public static readonly char[] Operators = ['^', '/', '*', '+', '-']; // In order of precendence
         private static readonly Dictionary<char, (int, bool)> operatorData = new Dictionary<char, (int, bool)>() // lowest int means highest precendence, true means right associativity, false means left associativity
         {
             {'^', (1, true) },
@@ -13,7 +13,8 @@ namespace FileMakerCLI
             {'-', (3, false) },
             {'+', (3, false) }
         };
-        private static readonly string[] mathsFunctions = ["cos", "sin", "tan"];
+        public static readonly string[] MathsFunctions = ["cos", "sin", "tan"];
+        public static readonly string[] OperatorsAndFunctions = Operators.Select(x => x.ToString()).Concat(MathsFunctions).ToArray();
         private static readonly int functionLength = 3;
 
         private static string[] Tokenise(string input)
@@ -47,19 +48,24 @@ namespace FileMakerCLI
                 }
                 else if (currentChar == 'x' || currentChar == 'y') // variables
                 {
-                    if (char.IsDigit(lastChar) || currentChar == 'x' || currentChar == 'y') // last char was a number or another variable
+                    if (!Operators.Contains(lastChar) && lastChar != '(') // last char was not an operator or open bracket
                     {
-                        tokens.Add("*"); // Add a multiplication sign between the number and variable
+                        tokens.Add("*"); // Add a multiplication sign between the 2 tokens if it was not an operator before.
                     }
                     tokens.Add(currentChar.ToString());
                 }
-                else if (operators.Contains(currentChar) || currentChar == '(' || currentChar == ')') // operators
+                else if (Operators.Contains(currentChar) || currentChar == '(' || currentChar == ')') // Operators
                 {
                     tokens.Add(currentChar.ToString());
                 }
-                else if (input.Length - stringPos > functionLength && mathsFunctions.Contains(input[stringPos..(stringPos + functionLength)])) // Check there is enough characters left and then see if the next characters are a function
+                else if (input.Length - stringPos > functionLength && MathsFunctions.Contains(input[stringPos..(stringPos + functionLength)])) // Check there is enough characters left and then see if the next characters are a function
                 {
+                    if (!Operators.Contains(lastChar) && lastChar != '(') // last char was not an operator or open bracket
+                    {
+                        tokens.Add("*"); // Add a multiplication sign between the 2 tokens if it was not an operator before.
+                    }
                     tokens.Add(input[stringPos..(stringPos + functionLength)]);
+                    stringPos += functionLength - 1;
                 }
                 else
                 {
@@ -70,7 +76,7 @@ namespace FileMakerCLI
             return tokens.ToArray();
         }
 
-        public static string[] ConvertToRPN(string infix)
+        private static string[] ConvertToRPN(string infix)
         {
             string[] tokens = Tokenise(infix);
             List<string> output = new List<string>();
@@ -90,7 +96,7 @@ namespace FileMakerCLI
                     {
                         output.Add(currentToken);
                     }
-                    else if (operators.Contains(symbol))
+                    else if (Operators.Contains(symbol))
                     {
                         if (operatorStack.IsEmpty)
                         {
@@ -102,6 +108,7 @@ namespace FileMakerCLI
                             while (topOfStack != '(' && (operatorData[topOfStack].Item1 < operatorData[symbol].Item1 || (operatorData[topOfStack].Item1 == operatorData[symbol].Item1 && !operatorData[symbol].Item2)))
                             {
                                 output.Add(operatorStack.Pop());
+                                if (operatorStack.IsEmpty) break;
                                 topOfStack = operatorStack.Peek()[0];
                             }
                             operatorStack.Push(currentToken);
@@ -121,21 +128,63 @@ namespace FileMakerCLI
                         }
                         while (topOfStack != "(");
                         output.RemoveAt(output.Count - 1); // Remove the last element (a "(").
+                        if (!operatorStack.IsEmpty && operatorStack.Peek().Length == functionLength) // Function at the top of the stack
+                        {
+                            output.Add(operatorStack.Pop());
+                        }
                     }
                 }
                 tokenPos++;
             }
-
-            do // Pop the rest of the stack onto the output list
+            if (!operatorStack.IsEmpty)
             {
-                output.Add(operatorStack.Pop());
-            } while (!operatorStack.IsEmpty);
+                do // Pop the rest of the stack onto the output list
+                {
+                    output.Add(operatorStack.Pop());
+                } while (!operatorStack.IsEmpty);
+            }
             return output.ToArray();
         }
 
-        //public static Constraint Parse(string stringConstraint)
-        //{
-        //    string[] postFix = ConvertToRPN(stringConstraint);
-        //}
+        public static RPNConstraint? Parse(string stringConstraint)
+        {
+            string leftHandSide;
+            Inequality inequality;
+            float constant;
+            if (stringConstraint.Contains("<="))
+            {
+                string[] equationSides = stringConstraint.Split("<=");
+                leftHandSide = equationSides[0];
+                inequality = Inequality.LessThanOrEqual;
+                constant = float.Parse(equationSides[1]);
+            }
+            else if (stringConstraint.Contains('<'))
+            {
+                string[] equationSides = stringConstraint.Split('<');
+                leftHandSide = equationSides[0];
+                inequality = Inequality.LessThan;
+                constant = float.Parse(equationSides[1]);
+            }
+            else if (stringConstraint.Contains(">="))
+            {
+                string[] equationSides = stringConstraint.Split(">=");
+                leftHandSide = equationSides[0];
+                inequality = Inequality.GreaterThanOrEqual;
+                constant = float.Parse(equationSides[1]);
+            }
+            else if (stringConstraint.Contains('>'))
+            {
+                string[] equationSides = stringConstraint.Split('>');
+                leftHandSide = equationSides[0];
+                inequality = Inequality.GreaterThan;
+                constant = float.Parse(equationSides[1]);
+            }
+            else
+            {
+                return null;
+            }
+            string[] postFix = ConvertToRPN(leftHandSide);
+            return new RPNConstraint(postFix, inequality, constant);
+        }
     }
 }

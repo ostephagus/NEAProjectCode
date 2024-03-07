@@ -1,5 +1,4 @@
 ﻿using FileMakerHardCoded;
-using System.Dynamic;
 
 namespace FileMakerCLI
 {
@@ -31,19 +30,32 @@ namespace FileMakerCLI
             Constraint[] constraints = new Constraint[stringConstraints.Length];
             for (int i = 0; i < stringConstraints.Length; i++)
             {
-                //constraints[i] = ConstraintParser.Parse(stringConstraints[i]);
+                RPNConstraint? constraint = ConstraintParser.Parse(stringConstraints[i]);
+                if (constraint is null)
+                {
+                    Console.WriteLine("One of your inequalities was incorrectly formatted.");
+                }
+                else
+                {
+                    constraints[i] = constraint;
+                }
             }
             FileMaker.CreateFile(filePath, xLength, yLength, constraints);
         }
 
         static void Main(string[] args)
         {
-            //RunProgram(args);
-            string[] postfixOutput = ConstraintParser.ConvertToRPN("3 + 4x * 2 / (1 - 5) ^ 2 ^ 3");
-            foreach (string s in postfixOutput)
-            {
-                Console.Write(s + " ");
-            }
+            RunProgram(args);
+            //string input = "8tan(3x)+2y^(x-4)";
+            //Console.WriteLine("Input: " + input);
+            //string[] postfixOutput = ConstraintParser.ConvertToRPN(input);
+            //foreach (string s in postfixOutput)
+            //{
+            //    Console.Write(s + " ");
+            //}
+            //Console.WriteLine();
+            //RPNConstraint constraint = new RPNConstraint(postfixOutput, Inequality.LessThan, 1);
+            //Console.WriteLine(constraint.RPNProcess(-4, 60));
         }
     }
 }

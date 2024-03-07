@@ -13,21 +13,26 @@
     /// </summary>
     public class Constraint
     {
-        private readonly Func<float, float, float> function;
-        private readonly Inequality inequality;
-        private readonly float constant;
+        protected readonly Func<float, float, float> function;
+        protected readonly Inequality inequality;
+        protected readonly float constant;
 
-        public bool Evaluate(float x, float y)
+        protected bool InequalityCompare(float left)
         {
-            float leftHandSide = function(x, y);
             return inequality switch
             {
-                Inequality.LessThan => leftHandSide < constant,
-                Inequality.LessThanOrEqual => leftHandSide <= constant,
-                Inequality.GreaterThan => leftHandSide > constant,
-                Inequality.GreaterThanOrEqual => leftHandSide >= constant,
+                Inequality.LessThan => left < constant,
+                Inequality.LessThanOrEqual => left <= constant,
+                Inequality.GreaterThan => left > constant,
+                Inequality.GreaterThanOrEqual => left >= constant,
                 _ => false
             };
+        }
+
+        public virtual bool Evaluate(float x, float y)
+        {
+            float leftHandSide = function(x, y);
+            return InequalityCompare(leftHandSide);
         }
 
         public Constraint(Func<float, float, float> function, Inequality inequality, float constant)
