@@ -23,9 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileMakerHardCoded", "FileMakerHardCoded\FileMakerHardCoded.csproj", "{199952F4-6AAA-40DA-8176-4D98763369BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileMakerBackend", "FileMakerHardCoded\FileMakerBackend.csproj", "{199952F4-6AAA-40DA-8176-4D98763369BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileMakerCLI", "FileMakerCLI\FileMakerCLI.csproj", "{5BBADAF0-7F65-433A-926D-D6A2246F299B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileMakerCLI", "FileMakerCLI\FileMakerCLI.csproj", "{5BBADAF0-7F65-433A-926D-D6A2246F299B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

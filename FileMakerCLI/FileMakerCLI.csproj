@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FileMakerHardCoded\FileMakerHardCoded.csproj" />
+    <ProjectReference Include="..\FileMakerHardCoded\FileMakerBackend.csproj" />
   </ItemGroup>
 
 </Project>

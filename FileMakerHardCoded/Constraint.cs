@@ -1,4 +1,4 @@
-﻿namespace FileMakerHardCoded
+﻿namespace FileMakerBackend
 {
     public enum Inequality
     {
