@@ -161,7 +161,7 @@ namespace FileMakerCLI
             return output.ToArray();
         }
 
-        public static RPNConstraint? Parse(string stringConstraint)
+        public static RPNConstraint Parse(string stringConstraint)
         {
             string leftHandSide;
             Inequality inequality;
@@ -196,7 +196,7 @@ namespace FileMakerCLI
             }
             else
             {
-                return null;
+                throw new FormatException("Constraint was incorrectly formatted.");
             }
             string[] postFix = ConvertToRPN(leftHandSide);
             return new RPNConstraint(postFix, inequality, constant);

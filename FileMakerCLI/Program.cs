@@ -30,14 +30,14 @@ namespace FileMakerCLI
             Constraint[] constraints = new Constraint[stringConstraints.Length];
             for (int i = 0; i < stringConstraints.Length; i++)
             {
-                RPNConstraint? constraint = ConstraintParser.Parse(stringConstraints[i]);
-                if (constraint is null)
+                try
+                {
+                    RPNConstraint? constraint = ConstraintParser.Parse(stringConstraints[i]);
+                    constraints[i] = constraint;
+                }
+                catch (FormatException)
                 {
                     Console.WriteLine("One of your inequalities was incorrectly formatted.");
-                }
-                else
-                {
-                    constraints[i] = constraint;
                 }
             }
             FileMaker.CreateFile(filePath, xLength, yLength, constraints);
