@@ -23,9 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileMakerBackend", "FileMakerHardCoded\FileMakerBackend.csproj", "{199952F4-6AAA-40DA-8176-4D98763369BB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileMakerCLI", "FileMakerCLI\FileMakerCLI.csproj", "{5BBADAF0-7F65-433A-926D-D6A2246F299B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileMakerBackend", "FileMakerBackend\FileMakerBackend.csproj", "{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,18 +97,6 @@ Global
 		{ECA6C4FF-7826-4804-9243-F7A35C78424D}.Release|x64.Build.0 = Release|x64
 		{ECA6C4FF-7826-4804-9243-F7A35C78424D}.Release|x86.ActiveCfg = Release|x64
 		{ECA6C4FF-7826-4804-9243-F7A35C78424D}.Release|x86.Build.0 = Release|x64
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|x64.Build.0 = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Debug|x86.Build.0 = Debug|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|x64.ActiveCfg = Release|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|x64.Build.0 = Release|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|x86.ActiveCfg = Release|Any CPU
-		{199952F4-6AAA-40DA-8176-4D98763369BB}.Release|x86.Build.0 = Release|Any CPU
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -121,6 +109,18 @@ Global
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Release|x64.Build.0 = Release|Any CPU
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Release|x86.ActiveCfg = Release|Any CPU
 		{5BBADAF0-7F65-433A-926D-D6A2246F299B}.Release|x86.Build.0 = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|x64.Build.0 = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Debug|x86.Build.0 = Debug|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|x64.ActiveCfg = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|x64.Build.0 = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|x86.ActiveCfg = Release|Any CPU
+		{7EA2D3B4-D253-4A94-9DCE-6740BCAD4910}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

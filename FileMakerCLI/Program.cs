@@ -46,7 +46,7 @@ namespace FileMakerCLI
         static void Main(string[] args)
         {
             RunProgram(args);
-            //string input = "8tan(3x)+2y^(x-4)";
+            //string input = "8.5tan(.3x)+2y^(x-4)";
             //Console.WriteLine("Input: " + input);
             //string[] postfixOutput = ConstraintParser.ConvertToRPN(input);
             //foreach (string s in postfixOutput)

@@ -37,13 +37,24 @@ namespace FileMakerCLI
                 
                 if (char.IsDigit(currentChar))
                 {
-                    if (char.IsDigit(lastChar)) // If the last char was a digit, use same token.
+                    if (char.IsDigit(lastChar) || lastChar == '.') // If the last char was a digit, use same token.
                     {
                         tokens[^1] += currentChar.ToString();
                     }
                     else // If not, start a new token.
                     {
                         tokens.Add(currentChar.ToString());
+                    }
+                }
+                else if (currentChar == '.')
+                {
+                    if (char.IsDigit(lastChar)) // Most common use case: decimal point after a number
+                    {
+                        tokens[^1] += currentChar.ToString();
+                    }
+                    else // Less common use case: decimal point implying a zero
+                    {
+                        tokens.Add("0.");
                     }
                 }
                 else if (currentChar == 'x' || currentChar == 'y') // variables
@@ -76,7 +87,7 @@ namespace FileMakerCLI
             return tokens.ToArray();
         }
 
-        private static string[] ConvertToRPN(string infix)
+        public static string[] ConvertToRPN(string infix)
         {
             string[] tokens = Tokenise(infix);
             List<string> output = new List<string>();
@@ -85,14 +96,18 @@ namespace FileMakerCLI
             while (tokenPos < tokens.Length)
             {
                 string currentToken = tokens[tokenPos];
-                if (currentToken.Length == functionLength) // Current token is a function
+                if (float.TryParse(currentToken, out _)) // Token is a number
+                {
+                    output.Add(currentToken);
+                }
+                else if (currentToken.Length == functionLength) // Current token is a function
                 {
                     operatorStack.Push(currentToken);
                 }
                 else
                 {
                     char symbol = currentToken[0]; // All other tokens have only 1 character.
-                    if (char.IsDigit(symbol) || symbol == 'x' || symbol == 'y')
+                    if (symbol == 'x' || symbol == 'y')
                     {
                         output.Add(currentToken);
                     }

@@ -37,7 +37,7 @@
         private static void WriteFile(string filePath, bool[] obstacleArray, int xLength, int yLength)
         {
             byte[] buffer = new byte[obstacleArray.Length / 8 + (obstacleArray.Length % 8 == 0 ? 0 : 1)]; // Divide the length by 8 and add one if the length does not divide evenly. Also add 1 byte for FLDEND
-            
+
             int index = 0;
             for (int i = 0; i < obstacleArray.Length; i++)
             {
