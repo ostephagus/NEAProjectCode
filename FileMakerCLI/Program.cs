@@ -4,58 +4,71 @@ namespace FileMakerCLI
 {
     internal class Program
     {
-        static string[] GetConstraints()
+        static T ConstrainedInput<T>(string prompt, Predicate<string> requirements, Func<string, T> conversionFunction)
         {
-            List<string> constraints = new List<string>();
-            string? userInput = "";
+            Console.WriteLine(prompt);
+            string? userInput = Console.ReadLine();
+            while (userInput is null || !requirements(userInput))
+            {
+                Console.WriteLine("Input was not valid.");
+                Console.WriteLine(prompt);
+                userInput = Console.ReadLine();
+            }
+            return conversionFunction(userInput);
+        }
+
+        static int IntInput(string prompt, bool requirePositive = false)
+        {
+            Predicate<string> requirements;
+            if (requirePositive)
+            {
+                requirements = input => int.TryParse(input, out int value) && value > 0;
+            }
+            else
+            {
+                requirements = input => int.TryParse(input, out _);                 
+            }
+            return ConstrainedInput(prompt, requirements, int.Parse);
+        }
+
+        static string NonNullInput(string prompt)
+        {
+            return ConstrainedInput(prompt, input => input is not null, input => input);
+        }
+
+        static Constraint[] GetConstraints()
+        {
+            List<Constraint> constraints = new List<Constraint>();
             Console.WriteLine("Type a constraint in the format f(x) + g(y) ? k, where f and g are functions, k is a constant, and ? is an inequality symbol.\nFor example, you could enter 2x^2+3y>=5.\nTo stop entering constraints, type q and press enter.");
-            userInput = Console.ReadLine();
+            string? userInput = Console.ReadLine();
             while (userInput != "q" && userInput is not null)
             {
-                constraints.Add(userInput);
+                try
+                {
+                    constraints.Add(ConstraintParser.Parse(userInput));
+                } catch (FormatException)
+                {
+                    Console.WriteLine("Constraint was incorrectly formatted and has not been added.");
+                }
                 Console.WriteLine("Type a constraint in the format f(x) + g(y) ? k, where f and g are functions, k is a constant, and ? is an inequality symbol.\nTo stop entering constraints, type q and press enter.");
                 userInput = Console.ReadLine();
             }
             return constraints.ToArray();
         }
+
         static void RunProgram(string[] args)
         {
-            Console.Write("Enter number of cells in x direction: ");
-            int xLength = int.Parse(Console.ReadLine());
-            Console.Write("Enter number of cells in y direction: ");
-            int yLength = int.Parse(Console.ReadLine());
-            Console.Write("Enter file path to output to: ");
-            string filePath = Console.ReadLine();
-            string[] stringConstraints = GetConstraints();
-            Constraint[] constraints = new Constraint[stringConstraints.Length];
-            for (int i = 0; i < stringConstraints.Length; i++)
-            {
-                try
-                {
-                    RPNConstraint? constraint = ConstraintParser.Parse(stringConstraints[i]);
-                    constraints[i] = constraint;
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine("One of your inequalities was incorrectly formatted.");
-                }
-            }
+            int xLength = IntInput("Enter number of cells in x direction: ", true);
+            int yLength = IntInput("Enter number of cells in y direction: ", true);
+            string filePath = NonNullInput("Enter file path to output to.");
+            Constraint[] constraints = GetConstraints();
+
             FileMaker.CreateFile(filePath, xLength, yLength, constraints);
         }
 
         static void Main(string[] args)
         {
             RunProgram(args);
-            //string input = "8.5tan(.3x)+2y^(x-4)";
-            //Console.WriteLine("Input: " + input);
-            //string[] postfixOutput = ConstraintParser.ConvertToRPN(input);
-            //foreach (string s in postfixOutput)
-            //{
-            //    Console.Write(s + " ");
-            //}
-            //Console.WriteLine();
-            //RPNConstraint constraint = new RPNConstraint(postfixOutput, Inequality.LessThan, 1);
-            //Console.WriteLine(constraint.RPNProcess(-4, 60));
         }
     }
 }

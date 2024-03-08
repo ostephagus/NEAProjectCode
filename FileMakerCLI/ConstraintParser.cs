@@ -23,15 +23,14 @@ namespace FileMakerCLI
             List<string> tokens = new List<string>();
             int stringPos = 0;
             //int tokenPos = 0;
-            char lastChar = input[0];
+            char lastChar = '\0';
             char currentChar;
-            tokens.Add(input[0].ToString());
-            while (stringPos < input.Length - 1)
+            while (stringPos < input.Length)
             {
-                stringPos++;
                 currentChar = input[stringPos];
                 if (currentChar == ' ')
                 {
+                    stringPos++;
                     continue; // Skip spaces
                 }
                 
@@ -59,7 +58,7 @@ namespace FileMakerCLI
                 }
                 else if (currentChar == 'x' || currentChar == 'y') // variables
                 {
-                    if (!Operators.Contains(lastChar) && lastChar != '(') // last char was not an operator or open bracket
+                    if (!Operators.Contains(lastChar) && lastChar != '(' && lastChar != '\0') // last char was not an operator, open bracket or start of string.
                     {
                         tokens.Add("*"); // Add a multiplication sign between the 2 tokens if it was not an operator before.
                     }
@@ -71,7 +70,7 @@ namespace FileMakerCLI
                 }
                 else if (input.Length - stringPos > functionLength && MathsFunctions.Contains(input[stringPos..(stringPos + functionLength)])) // Check there is enough characters left and then see if the next characters are a function
                 {
-                    if (!Operators.Contains(lastChar) && lastChar != '(') // last char was not an operator or open bracket
+                    if (!Operators.Contains(lastChar) && lastChar != '(' && lastChar != '\0') // last char was not an operator, open bracket or start of string.
                     {
                         tokens.Add("*"); // Add a multiplication sign between the 2 tokens if it was not an operator before.
                     }
@@ -82,6 +81,7 @@ namespace FileMakerCLI
                 {
                     throw new FormatException("Input was not in the correct format.");
                 }
+                stringPos++;
                 lastChar = currentChar;
             }
             return tokens.ToArray();
@@ -138,6 +138,10 @@ namespace FileMakerCLI
                         string topOfStack;
                         do
                         {
+                            if (operatorStack.IsEmpty)
+                            {
+                                throw new FormatException("Input was not a valid infix expression");
+                            }
                             topOfStack = operatorStack.Pop();
                             output.Add(topOfStack);
                         }
@@ -155,7 +159,12 @@ namespace FileMakerCLI
             {
                 do // Pop the rest of the stack onto the output list
                 {
-                    output.Add(operatorStack.Pop());
+                    string topOfStack = operatorStack.Pop();
+                    if (topOfStack == "(" || topOfStack == ")")
+                    {
+                        throw new FormatException("Input was not a valid infix expression.");
+                    }
+                    output.Add(topOfStack);
                 } while (!operatorStack.IsEmpty);
             }
             return output.ToArray();
