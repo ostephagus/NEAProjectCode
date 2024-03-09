@@ -39,8 +39,9 @@ __device__ REAL ComputeWallShear(REAL2* shearUnitVector, PointerWithPitch<REAL> 
         iExtended = i + (int)roundf(unitNormal.x * DIAGONAL_CELL_DISTANCE) * 2;
         jExtended = j + (int)roundf(unitNormal.y * DIAGONAL_CELL_DISTANCE) * 2;
     }
-    *shearUnitVector = make_REAL2(F_PITCHACCESS(hVel.ptr, hVel.pitch, iExtended, jExtended), F_PITCHACCESS(vVel.ptr, vVel.pitch, iExtended, jExtended));
-    return viscosity * PVPd(hVel, vVel, distance, i, j, iExtended, jExtended);
+    *shearUnitVector = GetUnitVector(make_REAL2(F_PITCHACCESS(hVel.ptr, hVel.pitch, iExtended, jExtended), F_PITCHACCESS(vVel.ptr, vVel.pitch, iExtended, jExtended)));
+    REAL wallShear = viscosity * PVPd(hVel, vVel, distance, i, j, iExtended, jExtended);
+    return wallShear;
 }
 
 __global__ void ComputeViscousDrag(REAL* integrandArray, DragCoordinate* viscosityCoordinates, int viscosityCoordinatesLength, PointerWithPitch<REAL> hVel, PointerWithPitch<REAL> vVel, int iMax, int jMax, REAL2 fluidVector, REAL delX, REAL delY, REAL viscosity) {
@@ -49,7 +50,7 @@ __global__ void ComputeViscousDrag(REAL* integrandArray, DragCoordinate* viscosi
     DragCoordinate dragCoordinate = viscosityCoordinates[coordinateNum];
     REAL2 shearDirection;
     REAL wallShear = ComputeWallShear(&shearDirection, hVel, vVel, dragCoordinate.unitNormal, dragCoordinate.coordinate.x, dragCoordinate.coordinate.y, delX, delY, viscosity);
-    integrandArray[coordinateNum] = wallShear * -Dot(fluidVector, shearDirection) * dragCoordinate.stepSize;
+    integrandArray[coordinateNum] = abs(wallShear * Dot(fluidVector, shearDirection)) * dragCoordinate.stepSize;
 }
 
 __global__ void ComputeBaselinePressure(REAL* baselinePressure, PointerWithPitch<REAL> pressure, int iMax, int jMax) {

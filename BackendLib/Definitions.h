@@ -34,8 +34,8 @@ constexpr BYTE WESTSHIFT  = 0; // Amount to shift for WEST bit at LSB.
 
 // Constants used for dealing with drag coefficient.
 constexpr REAL DIAGONAL_CELL_DISTANCE = (REAL)1.41421356237; // Sqrt 2
-constexpr REAL PRESSURE_CONVERSION = (REAL)3.2090762; // Conversion ratio for pressure.
-constexpr REAL VISCOSITY_CONVERSION = (REAL)26.28041; // Conversion ratio for viscosity.
+constexpr REAL PRESSURE_CONVERSION = (REAL)0.180972; // Conversion ratio for pressure.
+constexpr REAL VISCOSITY_CONVERSION = (REAL)23.62593; // Conversion ratio for viscosity.
 
 struct DoubleField
 {

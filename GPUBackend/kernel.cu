@@ -9,8 +9,8 @@ int main(int argc, char** argv) {
     SimulationParameters parameters = SimulationParameters();
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "debug") == 0)) { // Not linked to a frontend.
         std::cout << "Running without a fronted attached.\n";
-        int iMax = 200;
-        int jMax = 100;
+        int iMax = 500;
+        int jMax = 250;
         parameters.width = 1;
         parameters.height = 1;
         parameters.timeStepSafetyFactor = (REAL)0.5;
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
         parameters.pressureResidualTolerance = 2;
         parameters.pressureMinIterations = 5;
         parameters.pressureMaxIterations = 2000;
-        parameters.reynoldsNo = 2000;
+        parameters.reynoldsNo = 10000;
         parameters.dynamicViscosity = (REAL)0.00001983;
         parameters.fluidDensity = (REAL)1.293;
         parameters.inflowVelocity = 5;
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
         REAL cumulativeTimestep = 0;
 
-        int numIterations = 1000;
+        int numIterations = 100;
         std::cerr << "2 seconds to attach profiler / debugger\n";
         Sleep(2000);
 

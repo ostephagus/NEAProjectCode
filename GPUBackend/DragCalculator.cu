@@ -39,6 +39,7 @@ REAL DragCalculator::ComputeObstacleDrag(cudaStream_t streamToUse, PointerWithPi
     cudaFree(pressureIntegrandArray);
     cudaFree(baselinePressure);
     cudaFree(pressureIntegral);
+    printf("Pressure drag: %f, viscous drag: %f.\n", pressureDrag, viscousDrag);
     return viscousDrag * VISCOSITY_CONVERSION + pressureDrag * PRESSURE_CONVERSION;
 }
 
@@ -148,6 +149,7 @@ void DragCalculator::FindViscosityCoordinates(BYTE** flags, int iMax, int jMax, 
     cudaMalloc(&viscosityCoordinates, viscosityCoordinatesLength * sizeof(DragCoordinate));
     cudaMemcpy(viscosityCoordinates, coordinatesVec.data(), viscosityCoordinatesLength * sizeof(DragCoordinate), cudaMemcpyHostToDevice);
     projectionArea = (highestY - lowestY) * delY;
+    projectionArea *= projectionArea; // Square to get area.
 }
 
 DragCalculator::DragCalculator() : viscosityCoordinates(nullptr), viscosityCoordinatesLength(0), pressureCoordinates(nullptr), pressureCoordinatesLength(0), projectionArea(0), threadsPerBlock(1024) {}
