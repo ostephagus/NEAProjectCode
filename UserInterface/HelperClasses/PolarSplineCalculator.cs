@@ -86,10 +86,6 @@ namespace UserInterface.HelperClasses
             splineFunctionCoefficients = cubicCoefficients.Solve(rhsValues);
         }
 
-        /// <summary>
-        /// Adds a new control point.
-        /// </summary>
-        /// <param name="point">The point to add.</param>
         public override void AddControlPoint(PolarPoint point)
         {
             
@@ -97,6 +93,7 @@ namespace UserInterface.HelperClasses
             controlPoints.Sort();
             if (controlPoints.Count >= 3)
             {
+                IsValidSpline = true;
                 CalculateSplineFunction();
             }
         }
@@ -112,11 +109,6 @@ namespace UserInterface.HelperClasses
             }
         }
 
-        /// <summary>
-        /// Removes a control point. If the control point does not exist, does nothing.
-        /// </summary>
-        /// <param name="point">The point to remove.</param>
-        /// <exception cref="InvalidOperationException">Thrown if there were fewer than 3 points when the method was called.</exception>
         public override void RemoveControlPoint(PolarPoint point)
         {
             if (controlPoints.Count < 3)
@@ -138,7 +130,6 @@ namespace UserInterface.HelperClasses
                 throw new ArgumentOutOfRangeException(nameof(splineProgress), "Supplied spline progress must be between 0 and 1.");
             }
 
-            IsValidSpline = true;
             double theta = 2 * Math.PI * splineProgress;
             if (theta < controlPoints[0].Angle) theta += 2 * Math.PI; // If theta is before the first control point, it is in the last segment so add 2 pi to it so it conforms to the bounds of the last segment.
 
