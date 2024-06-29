@@ -4,14 +4,14 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace UserInterface.HelperClasses
 {
-    public class PolarSplineCalculator
+    public class PolarSplineCalculator : SplineCalculator<PolarPoint>
     {
         private List<PolarPoint> controlPoints;
 
         private Vector<double>? splineFunctionCoefficients;
         private bool isValidSpline;
 
-        public bool IsValidSpline { get => isValidSpline; private set => isValidSpline = value; }
+        public override bool IsValidSpline { get => isValidSpline; protected set => isValidSpline = value; }
 
         public PolarSplineCalculator()
         {
@@ -90,7 +90,7 @@ namespace UserInterface.HelperClasses
         /// Adds a new control point.
         /// </summary>
         /// <param name="point">The point to add.</param>
-        public void AddControlPoint(PolarPoint point)
+        public override void AddControlPoint(PolarPoint point)
         {
             
             controlPoints.Add(point);
@@ -101,7 +101,7 @@ namespace UserInterface.HelperClasses
             }
         }
 
-        public void ModifyControlPoint(PolarPoint oldPoint, PolarPoint newPoint)
+        public override void ModifyControlPoint(PolarPoint oldPoint, PolarPoint newPoint)
         {
             controlPoints.Remove(oldPoint);
             controlPoints.Add(newPoint);
@@ -117,7 +117,7 @@ namespace UserInterface.HelperClasses
         /// </summary>
         /// <param name="point">The point to remove.</param>
         /// <exception cref="InvalidOperationException">Thrown if there were fewer than 3 points when the method was called.</exception>
-        public void RemoveControlPoint(PolarPoint point)
+        public override void RemoveControlPoint(PolarPoint point)
         {
             if (controlPoints.Count < 3)
             {
@@ -127,26 +127,19 @@ namespace UserInterface.HelperClasses
             CalculateSplineFunction();
         }
 
-        /// <summary>
-        /// Uses the calculated spline function to return a radius for a given angle.
-        /// </summary>
-        /// <param name="theta">The angle of the point.</param>
-        /// <returns>The calculated radius of a point at the supplied angle.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if there are fewer than 3 coordinates supplied.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="theta"/> is not between 0 and 2 pi.</exception>
-        public double CalculatePoint(double theta)
+        public override PolarPoint CalculatePoint(double splineProgress)
         {
             if (splineFunctionCoefficients is null)
             {
                 throw new InvalidOperationException("CalculatePoint cannot be called when there are fewer than 3 coordinates supplied.");
             }
-            if (theta < 0 || theta > 2 * Math.PI)
+            if (splineProgress < 0 || splineProgress > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(theta), "Supplied angle must be between 0 and 2 pi.");
+                throw new ArgumentOutOfRangeException(nameof(splineProgress), "Supplied spline progress must be between 0 and 1.");
             }
 
             IsValidSpline = true;
-
+            double theta = 2 * Math.PI * splineProgress;
             if (theta < controlPoints[0].Angle) theta += 2 * Math.PI; // If theta is before the first control point, it is in the last segment so add 2 pi to it so it conforms to the bounds of the last segment.
 
             int segmentNo = controlPoints.Count - 1; // If theta is less than none of the coordinates then it must be in the last segment. segmentNo starts as this in case none of the conditions in the loop are met.
@@ -166,12 +159,12 @@ namespace UserInterface.HelperClasses
             
             if (radius > 0)
             {
-                return radius;
+                return new PolarPoint(radius, theta);
             }
             else
             {
                 IsValidSpline = false;
-                return 0;
+                return new PolarPoint(0, theta);
             }
         }
     }

@@ -5,9 +5,6 @@ namespace UserInterface.HelperClasses
     /// <summary>
     /// Represents a point defined by polar coordinates.
     /// </summary>
-    /// <summary>
-    /// Represents a point defined by polar coordinates.
-    /// </summary>
     public class PolarPoint : IComparable<PolarPoint>, IEquatable<PolarPoint>
     {
         /// <summary>

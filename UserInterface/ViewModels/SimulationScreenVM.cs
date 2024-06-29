@@ -490,7 +490,7 @@ namespace UserInterface.ViewModels
             ObstaclePoints.Clear();
             for (double i = 0; i < numObstaclePoints; i++)
             {
-                ObstaclePoints.Add(new PolarPoint(obstaclePointCalculator.CalculatePoint(i / numObstaclePoints * 2 * Math.PI), i / numObstaclePoints * 2 * Math.PI));
+                ObstaclePoints.Add(obstaclePointCalculator.CalculatePoint(i / numObstaclePoints));
             }
             OnPropertyChanged(this, nameof(ObstaclePoints));
         }
@@ -535,7 +535,7 @@ namespace UserInterface.ViewModels
                     float screenX = i * (float)CANVAS_WIDTH / dataWidth;
                     float screenY = j * (float)CANVAS_HEIGHT / dataHeight;
                     PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(screenX, screenY), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
-                    if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle)) // Within the obstacle
+                    if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle / (2 * Math.PI)).Radius) // Within the obstacle
                     {
                         obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
                     }

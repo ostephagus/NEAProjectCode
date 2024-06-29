@@ -60,7 +60,11 @@ namespace UserInterface.HelperClasses
         private ParameterHolder parameterHolder;
 
         private readonly string pipeName = "NEAFluidDynamicsPipe";
+#if DEBUG
+        private readonly bool createNoWindow = false;
+#else
         private readonly bool createNoWindow = true;
+#endif // DEBUG
 
         public int FieldLength { get => iMax * jMax; }
         public int IMax { get => iMax; set => iMax = value; }
