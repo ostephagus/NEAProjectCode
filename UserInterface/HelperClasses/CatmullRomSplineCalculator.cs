@@ -1,7 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
-using System;
 
 namespace UserInterface.HelperClasses
 {
@@ -34,6 +34,41 @@ namespace UserInterface.HelperClasses
             return (times * definingMatrix * points)[0]; // This returns a 1-D vector, so just return the single value within.
         }
 
+        private int FindOptimalPointIndex(Point point)
+        {
+            int closestPointIndex = FindClosestPointIndex(point);
+
+            Point pointAbove = controlPoints[closestPointIndex];
+            Point pointBelow = controlPoints[WrappingIndexAdd(closestPointIndex, -1)];
+
+            if ((point - pointAbove).LengthSquared > (point - pointBelow).LengthSquared) // Closer to point below
+            {
+                return WrappingIndexAdd(closestPointIndex, -1);
+            }
+            else
+            {
+                return closestPointIndex;
+            }
+        }
+
+        private int FindClosestPointIndex(Point point)
+        {
+            double shortestSquareDistance = 0;
+            int closestPointIndex = 0;
+            double squareDistance;
+            for (int i = 0; i < controlPoints.Count; i++)
+            {
+                squareDistance = (point - controlPoints[i]).LengthSquared;
+                if (squareDistance < shortestSquareDistance)
+                {
+                    closestPointIndex = i;
+                    shortestSquareDistance = squareDistance;
+                }
+            }
+
+            return closestPointIndex;
+        }
+
         public CatmullRomSplineCalculator() : base() 
         {
             controlPoints = new List<Point>();
@@ -42,14 +77,22 @@ namespace UserInterface.HelperClasses
 
         public override void AddControlPoint(Point point)
         {
-            throw new NotImplementedException("Need to figure out how to add control points in the correct place in list of control points");
+            if (controlPoints.Count < 3)
+            {
+                controlPoints.Add(point); // Add point at the end
+            }
+            else
+            {
+                int optimalIndex = FindOptimalPointIndex(point);
+                controlPoints.Insert(optimalIndex, point);
+            }
         }
 
         public override void ModifyControlPoint(Point oldPoint, Point newPoint)
         {
             controlPoints.Remove(oldPoint);
-            controlPoints.Add(newPoint);
-            throw new NotImplementedException("Need to figure out how to add control points in the correct place in list of control points");
+            int optimalIndex = FindOptimalPointIndex(newPoint);
+            controlPoints.Insert(optimalIndex, newPoint);
         }
 
         public override void RemoveControlPoint(Point point)
