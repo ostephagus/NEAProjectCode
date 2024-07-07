@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,19 +36,17 @@ namespace UserInterface.ViewModels
         private readonly MovingAverage<float> visFrameTimeAverage;
         private readonly MovingAverage<float> backFrameTimeAverage;
         private readonly MovingAverage<float> dragCoefficientAverage;
-        private readonly RectangularToPolar RecToPolConverter;
 
         private readonly int dataWidth;
         private readonly int dataHeight;
 
-        private readonly ObservableCollection<PolarPoint> obstaclePoints;
-        private readonly ObservableCollection<PolarPoint> controlPoints;
-        private readonly PolarSplineCalculator obstaclePointCalculator;
+        private readonly ObservableCollection<Point> obstaclePoints;
+        private readonly ObservableCollection<Point> controlPoints;
+        private readonly SplineCalculator obstaclePointCalculator;
         private bool editingObstacles;
         private Point obstacleCentre;
 
         private readonly int numObstaclePoints = 80;
-
 
         public string? CurrentButton // Conversion between string and internal enum value done in property
         {
@@ -194,8 +190,8 @@ namespace UserInterface.ViewModels
                 OnPropertyChanged(this, nameof(EditObstaclesButtonText));
             }
         }
-        public ObservableCollection<PolarPoint> ObstaclePoints { get => obstaclePoints; }
-        public ObservableCollection<PolarPoint> ControlPoints { get => controlPoints; }
+        public ObservableCollection<Point> ObstaclePoints { get => obstaclePoints; }
+        public ObservableCollection<Point> ControlPoints { get => controlPoints; }
         public Point ObstacleCentre
         {
             get => obstacleCentre;
@@ -273,7 +269,7 @@ namespace UserInterface.ViewModels
             obstaclePoints = [];
             controlPoints = [];
             obstacleCentre = new Point(50, 50);
-            obstaclePointCalculator = new PolarSplineCalculator();
+            obstaclePointCalculator = new CatmullRomSplineCalculator();
             ObstacleCells = new ObservableCollection<ObstacleCell>();
             if (!obstacleHolder.UsingObstacleFile)
             {
@@ -292,7 +288,6 @@ namespace UserInterface.ViewModels
             BackCommand = new Commands.SimScreenBack(this);
             ChangeWindowCommand = new Commands.ChangeWindow();
             CreatePopupCommand = new Commands.CreatePopup();
-            RecToPolConverter = new RectangularToPolar();
             #endregion
 
             #region Parameters related to Backend
@@ -364,29 +359,29 @@ namespace UserInterface.ViewModels
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (object? point in e.NewItems)
+                    foreach (object? addedPoint in e.NewItems)
                     {
-                        if (point is not PolarPoint polarPoint)
+                        if (addedPoint is not Point point)
                         {
                             throw new ArgumentException("The item added to the collection was not valid.");
                         }
-                        obstaclePointCalculator.AddControlPoint(polarPoint);
+                        obstaclePointCalculator.AddControlPoint(point);
                     }
                     break;
                     
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (object? point in e.OldItems)
+                    foreach (object? removedPoint in e.OldItems)
                     {
-                        if (point is not PolarPoint polarPoint)
+                        if (removedPoint is not Point point)
                         {
                             throw new ArgumentException("The item removed from the collection was not valid");
                         }
-                        obstaclePointCalculator.RemoveControlPoint(polarPoint);
+                        obstaclePointCalculator.RemoveControlPoint(point);
                     }
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    if (e.OldItems[0] is not PolarPoint oldPoint || e.NewItems[0] is not PolarPoint newPoint)
+                    if (e.OldItems[0] is not Point oldPoint || e.NewItems[0] is not Point newPoint)
                     {
                         throw new ArgumentException("The item removed from the collection was not valid");
                     }
@@ -468,13 +463,13 @@ namespace UserInterface.ViewModels
             double scale = 10;
 
             // Define the bean.
-            controlPoints.Add(new PolarPoint(scale, Math.PI / 4));
-            controlPoints.Add(new PolarPoint(scale, 3 * Math.PI / 4));
-            controlPoints.Add(new PolarPoint(scale, 5 * Math.PI / 4));
-            controlPoints.Add(new PolarPoint(scale, 7 * Math.PI / 4));
-            controlPoints.Add(new PolarPoint(scale / Math.Sqrt(2), Math.PI / 2));
+            controlPoints.Add(new Point(scale, scale));
+            controlPoints.Add(new Point(-scale, scale));
+            controlPoints.Add(new Point(-scale, -scale));
+            controlPoints.Add(new Point(scale, -scale));
+            controlPoints.Add(new Point(0, scale));
 
-            foreach (PolarPoint controlPoint in controlPoints)
+            foreach (Point controlPoint in controlPoints)
             {
                 obstaclePointCalculator.AddControlPoint(controlPoint);
             }
@@ -528,19 +523,21 @@ namespace UserInterface.ViewModels
                 }
             }
 
-            for (int i = 1; i <= dataWidth; i++)
-            {
-                for (int j = 1; j <= dataHeight; j++)
-                {
-                    float screenX = i * (float)CANVAS_WIDTH / dataWidth;
-                    float screenY = j * (float)CANVAS_HEIGHT / dataHeight;
-                    PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(screenX, screenY), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
-                    if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle / (2 * Math.PI)).Radius) // Within the obstacle
-                    {
-                        obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
-                    }
-                }
-            }
+            //for (int i = 1; i <= dataWidth; i++)
+            //{
+            //    for (int j = 1; j <= dataHeight; j++)
+            //    {
+            //        float screenX = i * (float)CANVAS_WIDTH / dataWidth;
+            //        float screenY = j * (float)CANVAS_HEIGHT / dataHeight;
+            //        PolarPoint polarPoint = (PolarPoint)RecToPolConverter.Convert(new Point(screenX, screenY), typeof(PolarPoint), ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
+            //        if (polarPoint.Radius < obstaclePointCalculator.CalculatePoint(polarPoint.Angle / (2 * Math.PI)).Radius) // Within the obstacle
+            //        {
+            //            obstacles[i * (dataHeight + 2) + j] = false; // Set cells to obstacle
+            //        }
+            //    }
+            //}
+
+            //throw new NotImplementedException("Haven't figured out how to embed obstacles with new system.");
             _ = backendManager.SendObstacles(obstacles);
         }
 

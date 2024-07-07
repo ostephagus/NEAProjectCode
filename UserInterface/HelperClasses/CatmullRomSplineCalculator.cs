@@ -1,11 +1,11 @@
-﻿using System;
-using System.Windows;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
-using MathNet.Numerics.LinearAlgebra;
+using System.Windows;
 
 namespace UserInterface.HelperClasses
 {
-    public class CatmullRomSplineCalculator : SplineCalculator<Point>
+    public class CatmullRomSplineCalculator : SplineCalculator
     {
         private readonly double[] definingMatrixData = [0, -0.5, 1, -0.5, 1, 0, -2.5, 1.5, 0, 0.5, 2, -1.5, 0, 0, -0.5, 0.5]; // Defining matrix for Catmull-Rom stored in column-major order
 
@@ -27,7 +27,7 @@ namespace UserInterface.HelperClasses
         /// <returns>The coordinate, interpolated along the spline.</returns>
         private double Interpolate(double t, double p0, double p1, double p2, double p3)
         {
-            Matrix<double> times = Matrix<double>.Build.Dense(4, 1, [1.0, t, t * t, t * t * t]);
+            Matrix<double> times = Matrix<double>.Build.Dense(1, 4, [1.0, t, t * t, t * t * t]);
 
             Vector<double> points = Vector<double>.Build.Dense([p0, p1, p2, p3]);
 
@@ -53,7 +53,7 @@ namespace UserInterface.HelperClasses
 
         private int FindClosestPointIndex(Point point)
         {
-            double shortestSquareDistance = 0;
+            double shortestSquareDistance = double.MaxValue;
             int closestPointIndex = 0;
             double squareDistance;
             for (int i = 0; i < controlPoints.Count; i++)
@@ -90,9 +90,9 @@ namespace UserInterface.HelperClasses
 
         public override void ModifyControlPoint(Point oldPoint, Point newPoint)
         {
+            int pointIndex = controlPoints.IndexOf(oldPoint);
             controlPoints.Remove(oldPoint);
-            int optimalIndex = FindOptimalPointIndex(newPoint);
-            controlPoints.Insert(optimalIndex, newPoint);
+            controlPoints.Insert(pointIndex, newPoint);
         }
 
         public override void RemoveControlPoint(Point point)

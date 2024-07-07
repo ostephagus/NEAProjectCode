@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
@@ -50,6 +49,9 @@ namespace UserInterface.Views
         }
 
         #region Private helper methods
+        private Point MakeAbsolute(Point point) => point + (Vector)ViewModel.ObstacleCentre;
+        private Point MakeRelative(Point point) => point - (Vector)ViewModel.ObstacleCentre;
+
         private void PlaceObstacleCells()
         {
             foreach (ObstacleCell cell in ViewModel.ObstacleCells)
@@ -70,9 +72,9 @@ namespace UserInterface.Views
 
         private void PlaceInitialPoints()
         {
-            foreach (PolarPoint polarPoint in ViewModel.ControlPoints)
+            foreach (Point point in ViewModel.ControlPoints)
             {
-                SimulationCanvas.Children.Add(new VisualPoint(ConvertToRect(polarPoint)));
+                SimulationCanvas.Children.Add(new VisualPoint(MakeAbsolute(point)));
             }
             SimulationCanvas.Children.Add(new VisualPoint(ViewModel.ObstacleCentre));
         }
@@ -91,47 +93,36 @@ namespace UserInterface.Views
         private void AddPoint(VisualPoint point)
         {
             SimulationCanvas.Children.Add(point);
-            ViewModel.ControlPoints.Add(ConvertToPolar(point.Point));
+            ViewModel.ControlPoints.Add(MakeRelative(point.Point));
         }
 
         private void RemovePoint(VisualPoint point)
         {
             SimulationCanvas.Children.Remove(point);
-            PolarPoint polarPoint = ConvertToPolar(point.Point);
-            int polarPointIndex = FindIndexOfPolarPoint(polarPoint);
-            ViewModel.ControlPoints.RemoveAt(polarPointIndex);
+            int pointIndex = FindIndexOfPoint(point.Point);
+            ViewModel.ControlPoints.RemoveAt(pointIndex);
         }
 
-        private int FindIndexOfPolarPoint(PolarPoint polarPoint)
+        private int FindIndexOfPoint(Point point)
         {
-            int polarPointIndex = ViewModel.ControlPoints.IndexOf(polarPoint);
-            if (polarPointIndex == -1)
+            int pointIndex = ViewModel.ControlPoints.IndexOf(MakeRelative(point));
+            if (pointIndex == -1)
             {
                 for (int i = 0; i < ViewModel.ControlPoints.Count; i++)
                 {
-                    PolarPoint comparisonPoint = ViewModel.ControlPoints[i];
-                    if (Math.Abs(polarPoint.Radius - comparisonPoint.Radius) < POINT_TOLERANCE && Math.Abs(polarPoint.Angle - comparisonPoint.Angle) < POINT_TOLERANCE) // Allow some inexactness
+                    Point comparisonPoint = MakeAbsolute(ViewModel.ControlPoints[i]);
+                    if ((point - comparisonPoint).LengthSquared < POINT_TOLERANCE * POINT_TOLERANCE) // Allow some inexactness in distance from comparison point
                     {
-                        polarPointIndex = i;
+                        pointIndex = i;
                     }
                 }
-                if (polarPointIndex == -1) // If still not found
+                if (pointIndex == -1) // If still not found
                 {
                     throw new InvalidOperationException("Could not find index of polar point.");
                 }
             }
 
-            return polarPointIndex;
-        }
-
-        private PolarPoint ConvertToPolar(Point rectangularPoint)
-        {
-            return (PolarPoint)RecToPolConverter.Convert(rectangularPoint, typeof(PolarPoint), ViewModel.ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
-        }
-
-        private Point ConvertToRect(PolarPoint polarPoint)
-        {
-            return (Point)RecToPolConverter.ConvertBack(polarPoint, typeof(PolarPoint), ViewModel.ObstacleCentre, System.Globalization.CultureInfo.CurrentCulture);
+            return pointIndex;
         }
         #endregion
 
@@ -172,10 +163,10 @@ namespace UserInterface.Views
                 mousePosition = e.GetPosition(SimulationCanvas);
                 draggedPoint = point;
                 draggedPoint.IsDragged = true;
-                Trace.WriteLine($"difference in X coordinate: {Math.Abs(draggedPoint.Point.X - ViewModel.ObstacleCentre.X)}");
-                Trace.WriteLine($"difference in Y coordinate: {Math.Abs(draggedPoint.Point.Y - ViewModel.ObstacleCentre.Y)}");
-                isCentreMoved = Math.Abs(draggedPoint.Point.X - ViewModel.ObstacleCentre.X) < POINT_TOLERANCE && Math.Abs(draggedPoint.Point.Y - ViewModel.ObstacleCentre.Y) < POINT_TOLERANCE;
-                
+                //Trace.WriteLine($"difference in X coordinate: {Math.Abs(draggedPoint.Point.X - ViewModel.ObstacleCentre.X)}");
+                //Trace.WriteLine($"difference in Y coordinate: {Math.Abs(draggedPoint.Point.Y - ViewModel.ObstacleCentre.Y)}");
+                isCentreMoved = (draggedPoint.Point - ViewModel.ObstacleCentre).LengthSquared < POINT_TOLERANCE * POINT_TOLERANCE;
+
                 Panel.SetZIndex(draggedPoint, 1); // Make point go in front of everything else while is is dragged
             }
             else
@@ -215,9 +206,9 @@ namespace UserInterface.Views
                 Vector offsetYFlip = new Vector(offset.X, -offset.Y);
                 if (!isCentreMoved) // Normal control points
                 {
-                    int draggedPointIndex = FindIndexOfPolarPoint(ConvertToPolar(draggedPoint.Point));
+                    int draggedPointIndex = FindIndexOfPoint(draggedPoint.Point);
                     draggedPoint.Point += offsetYFlip;
-                    ViewModel.ControlPoints[draggedPointIndex] = ConvertToPolar(draggedPoint.Point);
+                    ViewModel.ControlPoints[draggedPointIndex] = MakeRelative(draggedPoint.Point);
                 }
                 else
                 {

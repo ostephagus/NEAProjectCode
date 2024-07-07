@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Windows;
 
 namespace UserInterface.HelperClasses
 {
     /// <summary>
     /// Abstract base class for spline calculators, allowing easy swapping of calculation methods.
     /// </summary>
-    /// <typeparam name="PointT">The type of points that will be used for calculations.</typeparam>
-    public abstract class SplineCalculator<PointT>
+    public abstract class SplineCalculator
     {
         /// <summary>
         /// Adds or subtracts in modulo arithmetic, keeping the number between 0 and <c><paramref name="comparison"/> - 1</c>.
@@ -33,26 +33,26 @@ namespace UserInterface.HelperClasses
         /// Adds a new control point.
         /// </summary>
         /// <param name="point">The point to add.</param>
-        public abstract void AddControlPoint(PointT point);
+        public abstract void AddControlPoint(Point point);
 
         /// <summary>
         /// Replaces a control point.
         /// </summary>
         /// <param name="oldPoint">The existing control point to replace.</param>
         /// <param name="newPoint">The new control point that should be added instead.</param>
-        public abstract void ModifyControlPoint(PointT oldPoint, PointT newPoint);
+        public abstract void ModifyControlPoint(Point oldPoint, Point newPoint);
 
         /// <summary>
         /// Removes a control point. If the control point does not exist, does nothing.
         /// </summary>
         /// <param name="point">The point to remove.</param>
         /// <exception cref="InvalidOperationException">Thrown if there were fewer than 3 points when the method was called.</exception>
-        public abstract void RemoveControlPoint(PointT point);
+        public abstract void RemoveControlPoint(Point point);
 
         /// <summary>
         /// Returns the point <paramref name="splineProgress"/> of the way through the spline, for rendering.
         /// </summary>
         /// <param name="splineProgress">A parameter from 0 to 1 representing how far through the spline the point is.</param>
-        public abstract PointT CalculatePoint(double splineProgress);
+        public abstract Point CalculatePoint(double splineProgress);
     }
 }

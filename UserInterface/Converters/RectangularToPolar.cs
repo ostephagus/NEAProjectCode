@@ -18,7 +18,7 @@ namespace UserInterface.Converters
         /// <param name="value">The rectangular coordinate, as a <see cref="Point"/>.</param>
         /// <param name="parameter">The pole to use in the conversion (as a rectangular <see cref="Point"/> or <see cref="string"/>), or <see cref="null"/> to use (0, 0).</param>
         /// <returns>A <see cref="PolarPoint"/> representing the converted coordinate.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not Point || !(parameter is Point || parameter is string || parameter is null))
             {

@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UserInterface.Views"
              xmlns:helpercontrols="clr-namespace:UserInterface.HelperControls"
-             xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              xmlns:viewmodels="clr-namespace:UserInterface.ViewModels;assembly=UserInterface"
              xmlns:converters="clr-namespace:UserInterface.Converters"
              d:DataContext="{d:DesignInstance Type=viewmodels:SimulationScreenVM}"
@@ -14,10 +13,10 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:SignificantFigures x:Key="SignificantFiguresConverter" />
-            <converters:PolarListToRectList x:Key="PolarListToRectListConverter" />
+            <converters:RelativeListToAbsList x:Key="RelativeListToAbsListConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid> 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MaxHeight="150"/>
             <RowDefinition Height="Auto" />
@@ -150,7 +149,7 @@
             <Canvas Width="100" Height="100" x:Name="SimulationCanvas" MouseLeftButtonDown="CanvasMouseLeftButtonDown" MouseRightButtonDown="CanvasMouseRightButtonDown" MouseLeftButtonUp="CanvasMouseLeftButtonUp" MouseMove="CanvasMouseMove">
                 <Polygon x:Name="ObstaclePolygon" Fill="Black">
                     <Polygon.Points>
-                        <MultiBinding Converter="{StaticResource PolarListToRectListConverter}">
+                        <MultiBinding Converter="{StaticResource RelativeListToAbsListConverter}">
                             <Binding Path="ObstaclePoints" />
                             <Binding Path="ObstacleCentre" />
                         </MultiBinding>

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace UserInterface.HelperClasses
 {
-    public class PolarSplineCalculator : SplineCalculator<PolarPoint>
+    public class PolarSplineCalculator : SplineCalculator
     {
+        private Converters.RectangularToPolar recToPolConverter;
+
         private List<PolarPoint> controlPoints;
 
         private Vector<double>? splineFunctionCoefficients;
@@ -17,6 +20,7 @@ namespace UserInterface.HelperClasses
         {
             controlPoints = new List<PolarPoint>();
             IsValidSpline = false;
+            recToPolConverter = new Converters.RectangularToPolar();
         }
 
         /// <summary>
@@ -26,6 +30,9 @@ namespace UserInterface.HelperClasses
         /// <param name="comparison">The number that <paramref name="input"/> must be less than.</param>
         /// <returns><paramref name="input"/> + 1, or 0.</returns>
         private static int WrapAdd(int input, int comparison) => (input + 1) == comparison ? 0 : (input + 1);
+
+        private PolarPoint QuickConvert(Point point) => (PolarPoint)recToPolConverter.Convert(point, typeof(PolarPoint), null, System.Globalization.CultureInfo.CurrentCulture);
+        private Point QuickConvert(PolarPoint point) => (Point)recToPolConverter.ConvertBack(point, typeof(Point), null, System.Globalization.CultureInfo.CurrentCulture);
 
         private void CalculateSplineFunction()
         {
@@ -86,10 +93,9 @@ namespace UserInterface.HelperClasses
             splineFunctionCoefficients = cubicCoefficients.Solve(rhsValues);
         }
 
-        public override void AddControlPoint(PolarPoint point)
+        public override void AddControlPoint(Point point)
         {
-            
-            controlPoints.Add(point);
+            controlPoints.Add(QuickConvert(point));
             controlPoints.Sort();
             if (controlPoints.Count >= 3)
             {
@@ -98,10 +104,10 @@ namespace UserInterface.HelperClasses
             }
         }
 
-        public override void ModifyControlPoint(PolarPoint oldPoint, PolarPoint newPoint)
+        public override void ModifyControlPoint(Point oldPoint, Point newPoint)
         {
-            controlPoints.Remove(oldPoint);
-            controlPoints.Add(newPoint);
+            controlPoints.Remove(QuickConvert(oldPoint));
+            controlPoints.Add(QuickConvert(newPoint));
             controlPoints.Sort();
             if (controlPoints.Count >= 3)
             {
@@ -109,17 +115,17 @@ namespace UserInterface.HelperClasses
             }
         }
 
-        public override void RemoveControlPoint(PolarPoint point)
+        public override void RemoveControlPoint(Point point)
         {
             if (controlPoints.Count < 3)
             {
                 throw new InvalidOperationException("A spline must have at least 3 points.");
             }
-            controlPoints.Remove(point);
+            controlPoints.Remove(QuickConvert(point));
             CalculateSplineFunction();
         }
 
-        public override PolarPoint CalculatePoint(double splineProgress)
+        public override Point CalculatePoint(double splineProgress)
         {
             if (splineFunctionCoefficients is null)
             {
@@ -147,16 +153,20 @@ namespace UserInterface.HelperClasses
             + splineFunctionCoefficients[4 * segmentNo + 1] * Math.Pow(theta, 2)
             + splineFunctionCoefficients[4 * segmentNo + 2] * theta
             + splineFunctionCoefficients[4 * segmentNo + 3];
-            
+
+            PolarPoint finalPoint;
+
             if (radius > 0)
             {
-                return new PolarPoint(radius, theta);
+                finalPoint = new PolarPoint(radius, theta);
             }
             else
             {
                 IsValidSpline = false;
-                return new PolarPoint(0, theta);
+                finalPoint = new PolarPoint(0, theta);
             }
+
+            return QuickConvert(finalPoint);
         }
     }
 }
